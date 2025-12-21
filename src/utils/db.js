@@ -50,7 +50,7 @@ export const saveRunningData = async (data) => {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🔑 세션 ID:', data.sessionId);
     console.log('⏰ 타임스탬프:', new Date(data.timestamp).toLocaleString('ko-KR'));
-    console.log('📍 위치:', data.position ? `[${data.position[0].toFixed(6)}, ${data.position[1].toFixed(6)}]` : 'N/A');
+    console.log('📍 위치:', data.position ? `[${data.position.lat?.toFixed(6)}, ${data.position.lng?.toFixed(6)}]` : 'N/A');
     console.log('📏 거리:', data.distance ? `${data.distance.toFixed(3)} km` : '0 km');
     console.log('🏃 속도:', data.speed ? `${data.speed.toFixed(2)} km/h` : '0 km/h');
     console.log('⚡ 페이스:', data.pace ? `${data.pace.toFixed(2)} min/km` : '0 min/km');

@@ -8,8 +8,33 @@ function RunnerDetailPanel({ runner, onClose }) {
         <div className="runner-detail-panel">
             <div className="panel-header">
                 <div className="panel-title">
-                    <span className="panel-icon">🏃</span>
-                    <h2>{runner.name}</h2>
+                    <span
+                        className="panel-grade-badge"
+                        style={{
+                            backgroundColor: RUNNER_GRADES[runner.grade].color
+                        }}
+                    >
+                        {RUNNER_GRADES[runner.grade].name}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h2 style={{ margin: 0 }}>{runner.name}</h2>
+                        {runner.crew && (
+                            <div style={{
+                                width: '24px',
+                                height: '24px',
+                                borderRadius: '6px',
+                                background: runner.crew.bg,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '14px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                cursor: 'help'
+                            }} title={`Crew: ${runner.crew.name}`}>
+                                {runner.crew.emoji}
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <button className="close-button" onClick={onClose}>
                     ✕
@@ -17,50 +42,34 @@ function RunnerDetailPanel({ runner, onClose }) {
             </div>
 
             <div className="panel-content">
-                {/* 등급 배지 */}
-                <div className="detail-section">
-                    <div
-                        className="grade-badge-large"
-                        style={{
-                            backgroundColor: RUNNER_GRADES[runner.grade].color
-                        }}
-                    >
-                        {RUNNER_GRADES[runner.grade].name}
-                    </div>
-                </div>
 
                 {/* 주요 통계 */}
                 <div className="detail-section">
                     <h3 className="section-title">주요 통계</h3>
-                    <div className="stats-grid">
-                        <div className="stat-card">
-                            <div className="stat-icon">📏</div>
-                            <div className="stat-info">
-                                <div className="stat-label">총 거리</div>
-                                <div className="stat-value-large">{runner.distance} km</div>
-                            </div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="stat-icon">⏱️</div>
-                            <div className="stat-info">
-                                <div className="stat-label">러닝 시간</div>
-                                <div className="stat-value-large">{runner.duration} 분</div>
-                            </div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="stat-icon">🏃‍♂️</div>
-                            <div className="stat-info">
-                                <div className="stat-label">평균 속도</div>
-                                <div className="stat-value-large">{runner.speed} km/h</div>
-                            </div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="stat-icon">⚡</div>
-                            <div className="stat-info">
-                                <div className="stat-label">페이스</div>
-                                <div className="stat-value-large">{runner.pace} 분/km</div>
-                            </div>
-                        </div>
+                    <div className="stats-horizontal">
+                        <span className="stat-inline">
+                            <span className="stat-icon-inline">📏</span>
+                            <span className="stat-value-inline">{runner.distance}</span>
+                            <span className="stat-unit">km</span>
+                        </span>
+                        <span className="stat-divider-inline">|</span>
+                        <span className="stat-inline">
+                            <span className="stat-icon-inline">⏱️</span>
+                            <span className="stat-value-inline">{runner.duration}</span>
+                            <span className="stat-unit">분</span>
+                        </span>
+                        <span className="stat-divider-inline">|</span>
+                        <span className="stat-inline">
+                            <span className="stat-icon-inline">🏃‍♂️</span>
+                            <span className="stat-value-inline">{runner.speed}</span>
+                            <span className="stat-unit">km/h</span>
+                        </span>
+                        <span className="stat-divider-inline">|</span>
+                        <span className="stat-inline">
+                            <span className="stat-icon-inline">⚡</span>
+                            <span className="stat-value-inline">{runner.pace}</span>
+                            <span className="stat-unit">분/km</span>
+                        </span>
                     </div>
                 </div>
 
@@ -79,7 +88,7 @@ function RunnerDetailPanel({ runner, onClose }) {
                         <div className="detail-item">
                             <span className="detail-label">📍 현재 위치</span>
                             <span className="detail-value">
-                                {runner.position[0].toFixed(4)}, {runner.position[1].toFixed(4)}
+                                {runner.position.lat.toFixed(4)}, {runner.position.lng.toFixed(4)}
                             </span>
                         </div>
                     </div>
@@ -94,7 +103,7 @@ function RunnerDetailPanel({ runner, onClose }) {
                             <div className="route-text">
                                 <div className="route-label">시작 위치</div>
                                 <div className="route-coords">
-                                    {runner.route[0][0].toFixed(4)}, {runner.route[0][1].toFixed(4)}
+                                    {runner.route[0].lat.toFixed(4)}, {runner.route[0].lng.toFixed(4)}
                                 </div>
                             </div>
                         </div>
@@ -106,7 +115,7 @@ function RunnerDetailPanel({ runner, onClose }) {
                             <div className="route-text">
                                 <div className="route-label">현재 위치</div>
                                 <div className="route-coords">
-                                    {runner.position[0].toFixed(4)}, {runner.position[1].toFixed(4)}
+                                    {runner.position.lat.toFixed(4)}, {runner.position.lng.toFixed(4)}
                                 </div>
                             </div>
                         </div>

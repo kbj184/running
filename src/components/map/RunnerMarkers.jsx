@@ -1,5 +1,5 @@
 import React from 'react';
-import { Marker, Polyline } from '@react-google-maps/api';
+import { MarkerF, PolylineF } from '@react-google-maps/api';
 import { RUNNER_GRADES } from '../../constants/runnerGrades';
 
 function RunnerMarkers({ runners, selectedRunner, onRunnerClick }) {
@@ -8,7 +8,7 @@ function RunnerMarkers({ runners, selectedRunner, onRunnerClick }) {
             {/* 선택된 러너의 경로 표시 */}
             {selectedRunner && (
                 <>
-                    <Polyline
+                    <PolylineF
                         path={selectedRunner.route}
                         options={{
                             strokeColor: RUNNER_GRADES[selectedRunner.grade].color,
@@ -17,7 +17,7 @@ function RunnerMarkers({ runners, selectedRunner, onRunnerClick }) {
                         }}
                     />
                     {/* 시작점 마커 */}
-                    <Marker
+                    <MarkerF
                         position={selectedRunner.route[0]}
                         icon={{
                             path: google.maps.SymbolPath.CIRCLE,
@@ -36,7 +36,7 @@ function RunnerMarkers({ runners, selectedRunner, onRunnerClick }) {
                 const gradeInfo = RUNNER_GRADES[runner.grade];
                 const isSelected = selectedRunner && selectedRunner.id === runner.id;
                 return (
-                    <Marker
+                    <MarkerF
                         key={runner.id}
                         position={runner.position}
                         onClick={() => onRunnerClick(runner)}

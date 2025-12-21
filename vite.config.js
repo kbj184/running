@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), basicSsl()],
   server: {
     host: true, // 네트워크에서 접근 가능하도록 설정
-    port: 5173,
-    https: true
+    port: 3000,
+    https: true // 기본값이 http
   }
 })

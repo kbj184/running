@@ -137,8 +137,8 @@ body {
 
 .header-stats {
     display: flex;
-    gap: var(--spacing-md);
     align-items: center;
+    gap: 12px;
 }
 
 .stat-item {
@@ -158,17 +158,20 @@ body {
     box-shadow: var(--shadow-glow);
 }
 
+.stat-divider {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 1rem;
+}
+
 .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .stat-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
 }
 
 /* Map Container */
@@ -489,8 +492,15 @@ body {
     gap: var(--spacing-sm);
 }
 
-.panel-icon {
-    font-size: 1.75rem;
+.panel-grade-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .panel-title h2 {
@@ -565,6 +575,41 @@ body {
     gap: var(--spacing-sm);
 }
 
+.stats-horizontal {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    flex-wrap: wrap;
+}
+
+.stat-inline {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.stat-icon-inline {
+    font-size: 1rem;
+}
+
+.stat-value-inline {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-unit {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.stat-divider-inline {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 1rem;
+    margin: 0 4px;
+}
+
 .stat-card {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -593,7 +638,7 @@ body {
 }
 
 .stat-value-large {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.2;
@@ -1229,7 +1274,7 @@ body {
   }
 
   .stat-value-lg {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
   }
 
   .stop-button {

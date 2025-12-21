@@ -1,0 +1,142 @@
+// 이 파일은 RunningScreen.jsx의 경로 표시 부분을 교체하기 위한 코드입니다.
+// 389-427줄을 아래 코드로 교체하세요.
+
+                        {/* 경로 표시 - 일반 구간과 급수 구간 분리 */}
+                        {route.length > 1 && (() => {
+                            const segments = [];
+                            let currentSegmentStart = 0;
+                            
+                            // 모든 급수 구간 (완료된 것 + 현재 진행 중인 것)
+                            const allWateringSegments = [...wateringSegments];
+                            if (isWatering && wateringStartIndex !== null) {
+                                allWateringSegments.push({
+                                    start: wateringStartIndex,
+                                    end: route.length
+                                });
+                            }
+                            
+                            // 급수 구간을 시작 인덱스로 정렬
+                            allWateringSegments.sort((a, b) => a.start - b.start);
+                            
+                            allWateringSegments.forEach((segment, idx) => {
+                                // 급수 구간 이전의 일반 구간
+                                if (currentSegmentStart < segment.start) {
+                                    segments.push(
+                                        <PolylineF
+                                            key={`normal-${idx}`}
+                                            path={route.slice(currentSegmentStart, segment.start + 1)}
+                                            options={{
+                                                strokeColor: "#667eea",
+                                                strokeOpacity: 0.8,
+                                                strokeWeight: 5,
+                                            }}
+                                        />
+                                    );
+                                }
+                                
+                                // 급수 구간
+                                if (segment.start < segment.end) {
+                                    segments.push(
+                                        <PolylineF
+                                            key={`water-${idx}`}
+                                            path={route.slice(segment.start, segment.end + 1)}
+                                            options={{
+                                                strokeColor: "#06b6d4",
+                                                strokeOpacity: 0.9,
+                                                strokeWeight: 6,
+                                            }}
+                                        />
+                                    );
+                                }
+                                
+                                currentSegmentStart = segment.end;
+                            });
+                            
+                            // 마지막 일반 구간
+                            if (currentSegmentStart < route.length) {
+                                segments.push(
+                                    <PolylineF
+                                        key="normal-last"
+                                        path={route.slice(currentSegmentStart)}
+                                        options={{
+                                            strokeColor: "#667eea",
+                                            strokeOpacity: 0.8,
+                                            strokeWeight: 5,
+                                        }}
+                                    />
+                                );
+                            }
+                            
+                            return segments;
+                        })()}
+
+                        {/* 급수 시작점 마커들 */}
+                        {wateringSegments.map((segment, idx) => (
+                            segment.start < route.length && (
+                                <MarkerF
+                                    key={`water-start-${idx}`}
+                                    position={route[segment.start]}
+                                    icon={{
+                                        path: google.maps.SymbolPath.CIRCLE,
+                                        scale: 7,
+                                        fillColor: "#06b6d4",
+                                        fillOpacity: 1,
+                                        strokeColor: "#ffffff",
+                                        strokeWeight: 3,
+                                    }}
+                                    label={{
+                                        text: "💧",
+                                        fontSize: "16px",
+                                        color: "transparent"
+                                    }}
+                                />
+                            )
+                        ))}
+                        
+                        {/* 현재 급수 중인 시작점 */}
+                        {isWatering && wateringStartIndex !== null && wateringStartIndex < route.length && (
+                            <MarkerF
+                                position={route[wateringStartIndex]}
+                                icon={{
+                                    path: google.maps.SymbolPath.CIRCLE,
+                                    scale: 8,
+                                    fillColor: "#06b6d4",
+                                    fillOpacity: 1,
+                                    strokeColor: "#ffffff",
+                                    strokeWeight: 3,
+                                }}
+                                label={{
+                                    text: "💧",
+                                    fontSize: "18px",
+                                    color: "transparent"
+                                }}
+                            />
+                        )}
+
+                        {/* 시작점 */}
+                        {route.length > 0 && (
+                            <MarkerF
+                                position={route[0]}
+                                icon={{
+                                    path: google.maps.SymbolPath.CIRCLE,
+                                    scale: 5,
+                                    fillColor: "#22c55e",
+                                    fillOpacity: 1,
+                                    strokeColor: "#ffffff",
+                                    strokeWeight: 3,
+                                }}
+                            />
+                        )}
+
+                        {/* 현재 위치 */}
+                        <MarkerF
+                            position={currentPosition}
+                            icon={{
+                                path: google.maps.SymbolPath.CIRCLE,
+                                scale: 8,
+                                fillColor: "#667eea",
+                                fillOpacity: 1,
+                                strokeColor: "#ffffff",
+                                strokeWeight: 3,
+                            }}
+                        />

@@ -12,14 +12,6 @@ const containerStyle = {
     height: '100%'
 };
 
-const mapOptions = {
-    disableDefaultUI: false,
-    zoomControl: true,
-    streetViewControl: false,
-    mapTypeControl: false,
-    fullscreenControl: false,
-};
-
 function MapView({
     runners,
     stats,
@@ -27,7 +19,8 @@ function MapView({
     isRunning,
     onRunnerClick,
     onRefresh,
-    onStartToggle
+    onStartToggle,
+    showLabels
 }) {
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
@@ -36,6 +29,31 @@ function MapView({
     });
 
     const [map, setMap] = useState(null);
+
+    // showLabels에 따라 동적으로 mapOptions 생성
+    const mapOptions = {
+        disableDefaultUI: false,
+        zoomControl: true,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        styles: showLabels ? [] : [
+            {
+                featureType: "poi",
+                stylers: [{ visibility: "off" }],
+            },
+            {
+                featureType: "transit",
+                elementType: "labels.icon",
+                stylers: [{ visibility: "off" }],
+            },
+            {
+                featureType: "all",
+                elementType: "labels.text",
+                stylers: [{ visibility: "off" }],
+            },
+        ],
+    };
 
     const onLoad = useCallback(function callback(map) {
         setMap(map);

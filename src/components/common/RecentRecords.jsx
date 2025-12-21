@@ -11,9 +11,12 @@ function RecentRecords({ onRefresh, onRecordClick }) {
     }, [onRefresh]);
 
     const loadRecords = async () => {
+        console.log('📋 최근 기록 로딩 시작...');
         try {
             // 4개를 가져와서 3개만 보여주고, 4번째가 있으면 '더보기' 버튼 표시
             const recent = await getRecentSessions(4);
+            console.log('📋 가져온 기록 수:', recent.length);
+            console.log('📋 기록 데이터:', recent);
             if (recent.length > 3) {
                 setRecords(recent.slice(0, 3));
                 setHasMore(true);
@@ -22,7 +25,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                 setHasMore(false);
             }
         } catch (err) {
-            console.error('Failed to load recent records:', err);
+            console.error('❌ 기록 로딩 실패:', err);
         }
     };
 

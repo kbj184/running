@@ -56,7 +56,12 @@ export const generateRunners = (count = 50) => {
             route: generateRunningRoute(currentPosition, distance.toFixed(1)),
             calories: Math.floor(distance * 60), // 대략적인 칼로리
             pace: (60 / (3 + Math.random() * 7)).toFixed(1), // 분/km
-            heartRate: Math.floor(120 + Math.random() * 60) // 120-180 bpm
+            heartRate: Math.floor(120 + Math.random() * 60), // 120-180 bpm
+            crew: Math.random() > 0.7 ? {
+                name: ['러닝크루 A', '새벽러너', '나이트런', '주말마라톤'][Math.floor(Math.random() * 4)],
+                emoji: ['🦁', '⚡', '🔥', '👑'][Math.floor(Math.random() * 4)],
+                bg: 'linear-gradient(135deg, #1e90ff 0%, #3742fa 100%)' // 임시 배경
+            } : null // 30% 확률로 크루 있음
         });
     }
 
