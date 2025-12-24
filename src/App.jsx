@@ -56,6 +56,16 @@ function App() {
     useEffect(() => {
         const checkAuth = async () => {
             try {
+                // OAuth 콜백 처리: URL에서 OAuth 관련 파라미터 확인
+                const urlParams = new URLSearchParams(window.location.search);
+                const isOAuthCallback = urlParams.has('code') || window.location.pathname.includes('/oauth2/callback');
+
+                if (isOAuthCallback) {
+                    console.log('🔐 OAuth 콜백 감지됨');
+                    // OAuth 콜백인 경우 URL 파라미터 제거 (깔끔한 URL 유지)
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+
                 // 1. 최초 접근 시 refresh token 호출 (부트스트랩 과정이므로 직접 호출)
                 console.log('🔄 자동 로그인 시도...');
                 const refreshResponse = await fetch('https://localhost:8443/refresh/token', {
