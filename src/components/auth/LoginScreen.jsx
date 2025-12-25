@@ -121,13 +121,16 @@ const LoginScreen = ({ onLogin }) => {
                     });
 
                     if (refreshResponse.ok) {
-                        const accessToken = refreshResponse.headers.get('Authorization');
+                        let accessToken = refreshResponse.headers.get('Authorization');
+                        if (accessToken && accessToken.startsWith('Bearer ')) {
+                            accessToken = accessToken.substring(7);
+                        }
 
                         // Call my endpoint to get full user profile (including nickname)
                         const myResponse = await api.request(`${import.meta.env.VITE_API_URL}/my`, {
                             method: 'GET',
                             headers: {
-                                'Authorization': accessToken,
+                                'Authorization': `Bearer ${accessToken}`, // 헤더에 보낼 땐 붙여서
                             }
                         });
 

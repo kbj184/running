@@ -37,11 +37,14 @@ function NicknameRegistration({ user, onComplete }) {
                 const updatedUser = await response.json();
                 onComplete({ ...user, ...updatedUser });
             } else {
-                setError('프로필 등록에 실패했습니다. 다시 시도해주세요.');
+                const errorText = await response.text();
+                console.error('Profile update failed with status:', response.status);
+                console.error('Error response body:', errorText);
+                setError(`프로필 등록에 실패했습니다. (Error: ${response.status})`);
             }
         } catch (err) {
-            console.error('Profile update error:', err);
-            setError('네트워크 오류가 발생했습니다.');
+            console.error('Profile update catch error:', err);
+            setError('네트워크 오류가 발생했습니다. 개발자 도구 로그를 확인해 주세요.');
         } finally {
             setIsSubmitting(false);
         }

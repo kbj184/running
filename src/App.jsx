@@ -78,7 +78,10 @@ function App() {
                 });
 
                 if (refreshResponse.ok) {
-                    const accessToken = refreshResponse.headers.get('Authorization');
+                    let accessToken = refreshResponse.headers.get('Authorization');
+                    if (accessToken && accessToken.startsWith('Bearer ')) {
+                        accessToken = accessToken.substring(7); // 'Bearer ' 제거
+                    }
                     console.log('🔑 갱신된 Access Token:', accessToken);
 
                     if (accessToken) {

@@ -19,19 +19,22 @@ export const api = {
                 });
 
                 if (refreshResponse.ok) {
-                    const newAccessToken = refreshResponse.headers.get('Authorization');
+                    let newAccessToken = refreshResponse.headers.get('Authorization');
+                    if (newAccessToken && newAccessToken.startsWith('Bearer ')) {
+                        newAccessToken = newAccessToken.substring(7); // 'Bearer ' 제거
+                    }
                     console.log('✅ Access Token refreshed successfully.');
 
                     if (newAccessToken) {
-                        // Dispatch event to notify the app to update the token state
+                        // Dispatch event with PURE token
                         window.dispatchEvent(new CustomEvent('token-refreshed', { detail: newAccessToken }));
 
-                        // Update the Authorization header for the retry
+                        // Update header: API expects 'Bearer TOKEN'
                         const newOptions = {
                             ...options,
                             headers: {
                                 ...options.headers,
-                                'Authorization': newAccessToken,
+                                'Authorization': `Bearer ${newAccessToken}`,
                             }
                         };
 
