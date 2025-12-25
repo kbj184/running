@@ -21,7 +21,7 @@ function NicknameRegistration({ user, onComplete }) {
         setError('');
 
         try {
-            const response = await api.request('https://localhost:8443/user/profile', {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/user/profile`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -87,9 +87,9 @@ function NicknameRegistration({ user, onComplete }) {
                         {error && <p style={styles.error}>{error}</p>}
                     </div>
 
-                    <button 
-                        type="submit" 
-                        disabled={isSubmitting} 
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
                         style={{
                             ...styles.button,
                             opacity: isSubmitting ? 0.7 : 1,

@@ -332,7 +332,7 @@ const LoginScreen = ({ onLogin }) => {
                                 </h3>
                                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                                     <button
-                                        onClick={() => window.location.href = `https://localhost:8443/oauth2/authorization/${socialProvider}`}
+                                        onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/${socialProvider}`}
                                         style={{
                                             padding: '0.8rem 2rem',
                                             borderRadius: '8px',
