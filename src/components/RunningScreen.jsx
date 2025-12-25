@@ -10,6 +10,7 @@ import {
     clearWatch
 } from '../utils/gps';
 import { saveRunningData } from '../utils/db';
+import { api } from '../utils/api';
 
 const containerStyle = {
     width: '100%',
@@ -45,7 +46,7 @@ const getSpeedColor = (speedKmh) => {
     return "#7c3aed"; // 초고속 (보라)
 };
 
-function RunningScreen({ onStop, sessionId }) {
+function RunningScreen({ onStop, sessionId, user }) {
     // 서울 중심 좌표
     const SEOUL_CENTER = { lat: 37.5665, lng: 126.9780 };
 
@@ -82,16 +83,98 @@ function RunningScreen({ onStop, sessionId }) {
     const startTimeRef = useRef(Date.now());
     const lastPositionRef = useRef(null);
     const saveIntervalRef = useRef(null);
+    const lastSavedDistanceRef = useRef(0);
+    const lastSavedTimeRef = useRef(Date.now());
+    const lastSyncedTimeRef = useRef(Date.now());
 
-    // 최신 상태 ref
-    const currentStateRef = useRef({
+    // 모든 실시간 데이터를 Ref로 관리하여 클로저 문제 해결
+    const dataRef = useRef({
         currentPosition: null,
         distance: 0,
         speed: 0,
         pace: 0,
         duration: 0,
-        route: []
+        route: [],
+        wateringSegments: [],
+        splits: [],
+        isWatering: false
     });
+
+    // 상태 동기화 (UI 렌더링용)
+    useEffect(() => {
+        dataRef.current.wateringSegments = wateringSegments;
+        dataRef.current.splits = splits;
+        dataRef.current.isWatering = isWatering;
+    }, [wateringSegments, splits, isWatering]);
+
+    // MariaDB 동기화 함수
+    const syncToBackend = useCallback(async (isFinal = false) => {
+        const data = dataRef.current;
+        if (!user || !user.accessToken) {
+            console.warn("⚠️ Sync skipped: User not logged in");
+            return;
+        }
+
+        try {
+            const body = {
+                sessionId,
+                distance: data.distance,
+                duration: data.duration,
+                speed: data.speed,
+                pace: data.pace,
+                route: JSON.stringify(data.route),
+                wateringSegments: JSON.stringify(data.wateringSegments),
+                splits: JSON.stringify(data.splits),
+                isComplete: isFinal
+            };
+
+            const response = await api.request('https://localhost:8443/api/running/sync', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': user.accessToken
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (response.ok) {
+                lastSyncedTimeRef.current = Date.now();
+                console.log(`☁️ MariaDB Sync Success (${isFinal ? 'Final' : 'Auto'})`);
+            } else {
+                console.error("❌ Sync failed with status:", response.status);
+            }
+        } catch (err) {
+            console.error("❌ Sync error:", err);
+        }
+    }, [sessionId, user]);
+
+    // IndexedDB 저장 함수
+    const triggerSave = useCallback(async (isFinal = false) => {
+        const data = dataRef.current;
+        if (data.currentPosition && (data.route.length > 0 || isFinal)) {
+            try {
+                await saveRunningData({
+                    sessionId,
+                    timestamp: Date.now(),
+                    position: data.currentPosition,
+                    distance: data.distance,
+                    speed: data.speed,
+                    pace: data.pace,
+                    duration: data.duration,
+                    route: data.route,
+                    wateringSegments: data.wateringSegments,
+                    isWatering: data.isWatering,
+                    isComplete: isFinal,
+                    splits: data.splits
+                });
+                lastSavedDistanceRef.current = data.distance;
+                lastSavedTimeRef.current = Date.now();
+                console.log(`💾 IndexedDB Saved (${data.distance.toFixed(3)}km)`);
+            } catch (err) {
+                console.error("❌ IndexedDB Save error:", err);
+            }
+        }
+    }, [sessionId]);
 
     const onLoad = useCallback(function callback(map) {
         setMap(map);
@@ -102,17 +185,6 @@ function RunningScreen({ onStop, sessionId }) {
     }, []);
 
     useEffect(() => {
-        currentStateRef.current = {
-            currentPosition,
-            distance,
-            speed,
-            pace,
-            duration,
-            route
-        };
-    }, [currentPosition, distance, speed, pace, duration, route]);
-
-    useEffect(() => {
         if (map && currentPosition) {
             map.panTo(currentPosition);
         }
@@ -121,17 +193,27 @@ function RunningScreen({ onStop, sessionId }) {
     useEffect(() => {
         if (testMode && !currentPosition) {
             setCurrentPosition(SEOUL_CENTER);
+            dataRef.current.currentPosition = SEOUL_CENTER;
         }
     }, [testMode]);
 
     // 위치 업데이트 및 Split 체크 공통 로직
     const handleLocationUpdate = (newPos, currentDuration) => {
+        const prevData = dataRef.current;
+
         setCurrentPosition(newPos);
         setError(null);
 
-        let newDistance = distance;
-        let newSpeed = speed;
-        let newPace = pace;
+        let newDistance = prevData.distance;
+        let newSpeed = prevData.speed;
+        let newPace = prevData.pace;
+
+        const newPoint = {
+            lat: newPos.lat,
+            lng: newPos.lng,
+            speed: newSpeed,
+            timestamp: Date.now()
+        };
 
         if (lastPositionRef.current) {
             const dist = calculateDistance(
@@ -141,11 +223,11 @@ function RunningScreen({ onStop, sessionId }) {
                 newPos.lng
             );
 
-            // 거리가 너무 작으면 튀는 값일 수 있으므로 무시 (선택 사항)
-            if (dist > 0.0005) { // 0.5m 이상 움직였을 때만
-                newDistance = distance + dist;
+            if (dist > 0.0005) { // 0.5m 이상 이동
+                newDistance = prevData.distance + dist;
                 newSpeed = calculateSpeed(newDistance, currentDuration);
                 newPace = calculatePace(newDistance, currentDuration);
+                newPoint.speed = newSpeed;
 
                 setDistance(newDistance);
                 setSpeed(newSpeed);
@@ -154,40 +236,52 @@ function RunningScreen({ onStop, sessionId }) {
                 // 1km Split 체크
                 const currentKm = Math.floor(newDistance);
                 if (currentKm > lastSplitDistanceRef.current) {
-                    // 새로운 1km 달성!
-                    const splitDuration = duration; // 현재까지 총 시간 (정확한 구간 시간은 별도 계산 필요하지만 편의상 누적 기록 사용하거나 이전 split 차감)
-
-                    // 이전 Split들의 총 시간 합산
-                    const prevDuration = splits.reduce((acc, curr) => acc + curr.duration, 0);
-                    const currentSplitDuration = duration - prevDuration; // 이번 1km 걸린 시간 (초)
-                    const currentSplitPace = currentSplitDuration / 60; // min/km (1km니까 시간이 곧 페이스)
+                    const prevSplitsDuration = prevData.splits.reduce((acc, curr) => acc + curr.duration, 0);
+                    const currentSplitDuration = currentDuration - prevSplitsDuration;
 
                     const newSplit = {
                         km: currentKm,
-                        duration: currentSplitDuration,
-                        pace: currentSplitPace,
+                        duration: currentSplitDuration > 0 ? currentSplitDuration : 1,
+                        pace: currentSplitDuration / 60,
                         totalDistance: newDistance,
-                        totalTime: duration
+                        totalTime: currentDuration
                     };
 
                     setSplits(prev => [...prev, newSplit]);
                     lastSplitDistanceRef.current = currentKm;
+                    console.log(`🚩 ${currentKm}km Split recorded!`);
+                }
 
-                    console.log(`🎉 ${currentKm}km 돌파! 기록:`, newSplit);
+                // 10m 이상 이동 시 즉시 저장 체크
+                if (newDistance - lastSavedDistanceRef.current >= 0.01) {
+                    // Ref를 먼저 업데이트하고 저장 호출
+                    dataRef.current = {
+                        ...prevData,
+                        currentPosition: newPos,
+                        distance: newDistance,
+                        speed: newSpeed,
+                        pace: newPace,
+                        route: [...prevData.route, newPoint]
+                    };
+                    triggerSave();
                 }
             }
         } else {
-            // 첫 시작점
-            console.log('🟢 시작점 설정');
+            console.log('🟢 Tracking Started');
         }
 
-        // 경로에 추가 (속도 정보 포함)
-        setRoute(prev => [...prev, {
-            lat: newPos.lat,
-            lng: newPos.lng,
-            speed: newSpeed, // 현재 구간 속도
-            timestamp: Date.now()
-        }]);
+        // 전체 데이터 Ref 업데이트
+        const updatedRoute = [...prevData.route, newPoint];
+        setRoute(updatedRoute);
+        dataRef.current = {
+            ...prevData,
+            currentPosition: newPos,
+            distance: newDistance,
+            speed: newSpeed,
+            pace: newPace,
+            route: updatedRoute,
+            duration: currentDuration
+        };
 
         lastPositionRef.current = newPos;
     };
@@ -201,8 +295,6 @@ function RunningScreen({ onStop, sessionId }) {
     };
 
     useEffect(() => {
-        // ... (로그 생략)
-
         if (!testMode) {
             watchIdRef.current = watchPosition(
                 (position) => {
@@ -218,37 +310,28 @@ function RunningScreen({ onStop, sessionId }) {
         }
 
         const durationInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+            const now = Date.now();
+            const elapsed = Math.floor((now - startTimeRef.current) / 1000);
             setDuration(elapsed);
-        }, 1000);
+            dataRef.current.duration = elapsed;
 
-        saveIntervalRef.current = setInterval(async () => {
-            const state = currentStateRef.current;
-            if (state.currentPosition && state.distance > 0) {
-                try {
-                    await saveRunningData({
-                        sessionId,
-                        timestamp: Date.now(),
-                        position: state.currentPosition,
-                        distance: state.distance,
-                        speed: state.speed,
-                        pace: state.pace,
-                        duration: state.duration,
-                        route: state.route,
-                        wateringSegments,
-                        isWatering,
-                        splits: splits // Split 정보 저장
-                    });
-                } catch (err) { }
+            // 5초마다 자동 저장 체크 (IndexedDB)
+            if (now - lastSavedTimeRef.current >= 5000) {
+                triggerSave();
             }
-        }, 2000);
+
+            // 30초마다 MariaDB 동기화 체크
+            if (now - lastSyncedTimeRef.current >= 30000) {
+                syncToBackend();
+            }
+        }, 1000);
 
         return () => {
             if (watchIdRef.current) clearWatch(watchIdRef.current);
             clearInterval(durationInterval);
-            if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
         };
-    }, [sessionId, testMode, wateringSegments, isWatering, splits]); // splits 의존성 추가
+        // syncToBackend와 triggerSave는 여기서 고정된 참조를 사용하게 함
+    }, [sessionId, testMode]); // syncToBackend, triggerSave 의존성 제거하여 인터벌 초기화 방지
 
     const handleWateringStart = () => {
         setIsWatering(true);
@@ -268,31 +351,22 @@ function RunningScreen({ onStop, sessionId }) {
 
     const handleStop = async () => {
         setIsTracking(false);
-        const state = currentStateRef.current;
-        if (state.currentPosition && state.distance > 0) {
-            await saveRunningData({
-                sessionId,
-                timestamp: Date.now(),
-                position: state.currentPosition,
-                distance: state.distance,
-                speed: state.speed,
-                pace: state.pace,
-                duration: state.duration,
-                route: state.route,
-                wateringSegments,
-                isComplete: true,
-                splits // 최종 저장 시 포함
-            });
-        }
+        const data = dataRef.current;
+
+        // IndexedDB 최종 저장
+        await triggerSave(true);
+
+        // MariaDB 최종 동기화
+        await syncToBackend(true);
+
         if (watchIdRef.current) clearWatch(watchIdRef.current);
-        if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
 
         onStop({
-            distance: state.distance,
-            duration: state.duration,
-            speed: state.speed,
-            pace: state.pace,
-            route: state.route,
+            distance: data.distance,
+            duration: data.duration,
+            speed: data.speed,
+            pace: data.pace,
+            route: data.route,
             wateringSegments,
             splits,
             sessionId

@@ -312,7 +312,7 @@ function App() {
 
     // 러닝 화면 표시
     if (screenMode === 'running') {
-        return <RunningScreen onStop={handleRunningStop} sessionId={sessionId} />;
+        return <RunningScreen onStop={handleRunningStop} sessionId={sessionId} user={user} />;
     }
 
     // 결과 화면 표시 (러닝 완료 직후 또는 기록 조회)
