@@ -12,6 +12,7 @@ import RecentRecords from './components/common/RecentRecords';
 import CreateCrewModal from './components/common/CreateCrewModal';
 import CrewDetailModal from './components/common/CrewDetailModal';
 import LoginScreen from './components/auth/LoginScreen';
+import NicknameRegistration from './components/auth/NicknameRegistration';
 import { deleteSession } from './utils/db';
 import { api } from './utils/api';
 
@@ -297,6 +298,11 @@ function App() {
     // 로그인하지 않은 경우 로그인/회원가입 화면 표시
     if (!user) {
         return <LoginScreen onLogin={handleLogin} />;
+    }
+
+    // 닉네임이 없는 경우 닉네임 등록 화면 표시
+    if (!user.nickname) {
+        return <NicknameRegistration user={user} onComplete={handleLogin} />;
     }
 
     // 카운트다운 화면 표시

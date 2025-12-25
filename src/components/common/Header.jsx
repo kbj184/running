@@ -94,21 +94,61 @@ function Header({ totalRunners, proCount, eliteCount, advancedCount, showLabels,
                     </button>
 
                     {user && (
-                        <div className="user-section" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '8px', paddingLeft: '12px', borderLeft: '1px solid rgba(255,255,255,0.2)' }}>
-                            <span style={{ fontSize: '14px', color: '#e0e0e0' }}>
-                                <span style={{ marginRight: '6px' }}>👋</span>
-                                {user.name}님
-                            </span>
+                        <div className="user-section" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            marginLeft: '8px',
+                            paddingLeft: '16px',
+                            borderLeft: '1px solid rgba(255,255,255,0.1)'
+                        }}>
+                            <div className="user-profile" style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                padding: '4px 12px 4px 6px',
+                                borderRadius: '25px',
+                                border: '1px solid rgba(255, 255, 255, 0.1)'
+                            }}>
+                                <img
+                                    src={user.nicknameImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                                    alt="Profile"
+                                    style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '50%',
+                                        background: 'rgba(255, 255, 255, 0.1)'
+                                    }}
+                                />
+                                <span style={{
+                                    fontSize: '14px',
+                                    color: '#fff',
+                                    fontWeight: '600'
+                                }}>
+                                    {user.nickname || user.name}
+                                </span>
+                            </div>
                             <button
                                 onClick={onLogout}
                                 style={{
-                                    padding: '6px 12px',
-                                    borderRadius: '12px',
-                                    border: '1px solid rgba(255,255,255,0.2)',
-                                    background: 'rgba(255,255,255,0.1)',
-                                    color: '#bdbdbd',
+                                    padding: '8px 14px',
+                                    borderRadius: '15px',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    color: '#999',
                                     fontSize: '12px',
-                                    cursor: 'pointer'
+                                    fontWeight: '500',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.color = '#fff';
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.color = '#999';
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
                                 }}
                             >
                                 로그아웃

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './auth.css';
+import { api } from '../../utils/api';
 
 const LoginScreen = ({ onLogin }) => {
     const [step, setStep] = useState(1); // 1: Email, 2: Password(Signup), 3: Terms, 4: Confirmation, 5: Password(Login)
@@ -122,20 +123,30 @@ const LoginScreen = ({ onLogin }) => {
                     if (refreshResponse.ok) {
                         const accessToken = refreshResponse.headers.get('Authorization');
 
-                        // Call main endpoint before transitioning to main screen
-                        await fetch('https://localhost:8443/', {
+                        // Call my endpoint to get full user profile (including nickname)
+                        const myResponse = await api.request('https://localhost:8443/my', {
                             method: 'GET',
                             headers: {
                                 'Authorization': accessToken,
-                            },
-                            credentials: 'include',
+                            }
                         });
 
-                        onLogin({
-                            email: email,
-                            accessToken: accessToken,
-                            type: 'login'
-                        });
+                        if (myResponse.ok) {
+                            const userData = await myResponse.json();
+                            onLogin({
+                                ...userData,
+                                email: email,
+                                accessToken: accessToken,
+                                type: 'login'
+                            });
+                        } else {
+                            // Fallback if /my fails
+                            onLogin({
+                                email: email,
+                                accessToken: accessToken,
+                                type: 'login'
+                            });
+                        }
                     }
                 } else if (response.status === 401) {
                     setShowLoginErrorModal(true);
