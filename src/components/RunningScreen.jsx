@@ -128,7 +128,7 @@ function RunningScreen({ onStop, sessionId, user }) {
                 isComplete: isFinal
             };
 
-            const response = await api.request('https://localhost:8443/api/running/sync', {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/sync`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

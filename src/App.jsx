@@ -69,7 +69,7 @@ function App() {
 
                 // 1. 최초 접근 시 refresh token 호출 (부트스트랩 과정이므로 직접 호출)
                 console.log('🔄 자동 로그인 시도...');
-                const refreshResponse = await fetch('https://localhost:8443/refresh/token', {
+                const refreshResponse = await fetch(`${import.meta.env.VITE_API_URL}/refresh/token`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ function App() {
                     if (accessToken) {
                         // 2. 토큰으로 내 정보(my) 호출 - 공통 API 유틸 사용
                         console.log('👤 내 정보(my) 호출 중...');
-                        const myResponse = await api.request('https://localhost:8443/my', {
+                        const myResponse = await api.request(`${import.meta.env.VITE_API_URL}/my`, {
                             method: 'GET',
                             headers: {
                                 'Authorization': accessToken,

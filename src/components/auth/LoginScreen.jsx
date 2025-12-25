@@ -50,7 +50,7 @@ const LoginScreen = ({ onLogin }) => {
 
     const checkEmail = async (email) => {
         try {
-            const response = await fetch(`https://localhost:8443/emailcheck?email=${email}`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/emailcheck?email=${email}`);
             if (response.ok) {
                 const text = await response.text();
                 if (!text || text === "null" || text === "false") return null;
@@ -105,7 +105,7 @@ const LoginScreen = ({ onLogin }) => {
         e.preventDefault();
         if (password) {
             try {
-                const response = await fetch('https://localhost:8443/login', {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -115,7 +115,7 @@ const LoginScreen = ({ onLogin }) => {
                 });
 
                 if (response.ok) {
-                    const refreshResponse = await fetch('https://localhost:8443/refresh/token', {
+                    const refreshResponse = await fetch(`${import.meta.env.VITE_API_URL}/refresh/token`, {
                         method: 'POST',
                         credentials: 'include',
                     });
@@ -124,7 +124,7 @@ const LoginScreen = ({ onLogin }) => {
                         const accessToken = refreshResponse.headers.get('Authorization');
 
                         // Call my endpoint to get full user profile (including nickname)
-                        const myResponse = await api.request('https://localhost:8443/my', {
+                        const myResponse = await api.request(`${import.meta.env.VITE_API_URL}/my`, {
                             method: 'GET',
                             headers: {
                                 'Authorization': accessToken,
@@ -168,7 +168,7 @@ const LoginScreen = ({ onLogin }) => {
     const handleFinalSignup = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('https://localhost:8443/join', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/join`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -280,14 +280,14 @@ const LoginScreen = ({ onLogin }) => {
                         </button>
                         <button
                             className="social-btn naver"
-                            onClick={() => window.location.href = 'https://localhost:8443/oauth2/authorization/naver'}
+                            onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/naver`}
                         >
                             <span className="naver-icon">N</span>
                             <span>네이버로 시작하기</span>
                         </button>
                         <button
                             className="social-btn google"
-                            onClick={() => window.location.href = 'https://localhost:8443/oauth2/authorization/google'}
+                            onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/google`}
                         >
                             <svg viewBox="0 0 24 24" width="20" height="20" className="social-icon">
                                 <path fill="#EA4335" d="M12 5.04c1.88 0 3.55.67 4.88 1.93l3.63-3.63C18.29 1.25 15.35 0 12 0 7.37 0 3.32 2.65 1.42 6.55l4.27 3.31C6.7 6.43 9.13 5.04 12 5.04z" />

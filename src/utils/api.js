@@ -10,7 +10,7 @@ export const api = {
             console.log('🔄 401 Unauthorized received. Attempting to refresh token...');
             try {
                 // Call the refresh token endpoint
-                const refreshResponse = await fetch('https://localhost:8443/refresh/token', {
+                const refreshResponse = await fetch(`${import.meta.env.VITE_API_URL}/refresh/token`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
