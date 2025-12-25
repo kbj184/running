@@ -25,7 +25,7 @@ function NicknameRegistration({ user, onComplete }) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': user.accessToken
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
                 },
                 body: JSON.stringify({
                     nickname: nickname,
