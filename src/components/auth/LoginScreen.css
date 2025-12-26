@@ -130,8 +130,12 @@
 
 /* Mobile tweaks */
 @media (max-width: 480px) {
+
+  /* Card takes more width on small screens */
   .auth-card {
     padding: 1.5rem;
+    width: 90%;
+    max-width: 340px;
   }
 
   .auth-title {
@@ -144,9 +148,21 @@
 
   .auth-input {
     font-size: 0.9rem;
+    padding: 0.9rem 1rem;
+    height: auto;
   }
 
   .auth-submit-btn {
     font-size: 0.9rem;
+    padding: 0.9rem 1rem;
+  }
+
+  .social-btn {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.9rem;
+  }
+
+  .divider {
+    margin: 1rem 0;
   }
 }
