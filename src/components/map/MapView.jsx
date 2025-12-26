@@ -30,7 +30,7 @@ function MapView({
 
     // showLabels에 따라 동적으로 mapOptions 생성
     const mapOptions = {
-        disableDefaultUI: false,
+        disableDefaultUI: true, // 기본 UI 제거 (브라우저 기본 위치 팝업 방지용)
         zoomControl: true,
         streetViewControl: false,
         mapTypeControl: false,
