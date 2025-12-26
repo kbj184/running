@@ -1,0 +1,96 @@
+/* Compact Running Stats Panel - Mobile Optimized */
+
+.running-stats-panel {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 90%;
+}
+
+.running-stat-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+}
+
+.running-stat-card.primary {
+    background: linear-gradient(135deg, #4318FF 0%, #5B2FFF 100%);
+    color: white;
+    padding: 0.75rem 1rem;
+}
+
+.running-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+.running-stat-card.primary .stat-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.stat-value-xl {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.stat-value-lg {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #1a1a1a;
+}
+
+.running-map {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .running-stats-panel {
+        top: 60px;
+        gap: 0.4rem;
+    }
+
+    .running-stat-card {
+        padding: 0.4rem 0.6rem;
+        min-width: 70px;
+    }
+
+    .running-stat-card.primary {
+        padding: 0.6rem 0.8rem;
+    }
+
+    .stat-label {
+        font-size: 0.65rem;
+    }
+
+    .stat-value-xl {
+        font-size: 1.3rem;
+    }
+
+    .stat-value-lg {
+        font-size: 1rem;
+    }
+}

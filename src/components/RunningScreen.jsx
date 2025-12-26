@@ -11,6 +11,7 @@ import {
 } from '../utils/gps';
 import { saveRunningData } from '../utils/db';
 import { api } from '../utils/api';
+import './running-compact.css';
 
 const containerStyle = {
     width: '100%',
