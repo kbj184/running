@@ -3,9 +3,7 @@ import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import { SEOUL_CENTER } from '../../constants/runnerGrades';
 import MapController from './MapController';
 import RunnerMarkers from './RunnerMarkers';
-import LegendPanel from './LegendPanel';
 import ControlPanel from './ControlPanel';
-import StartButton from '../common/StartButton';
 
 const containerStyle = {
     width: '100%',
@@ -84,14 +82,8 @@ function MapView({
                 />
             </GoogleMap>
 
-            {/* Legend */}
-            <LegendPanel stats={stats} show={!selectedRunner} />
-
             {/* Control Panel */}
             <ControlPanel onRefresh={onRefresh} />
-
-            {/* Start Button */}
-            <StartButton isRunning={isRunning} onClick={onStartToggle} />
         </div>
     );
 }

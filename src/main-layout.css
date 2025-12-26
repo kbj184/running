@@ -248,9 +248,9 @@
     right: 5rem;
     background: white;
     border: none;
-    padding: 0.6rem 1rem;
-    border-radius: 12px;
-    font-size: 0.9rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
     font-weight: 600;
     color: #1a1a1a;
     cursor: pointer;
