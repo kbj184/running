@@ -34,7 +34,8 @@ function MapView({
         zoomControl: true,
         streetViewControl: false,
         mapTypeControl: false,
-        fullscreenControl: false,
+        fullscreenControl: true,
+        gestureHandling: 'greedy', // 모바일에서 한 손가락으로 확대/축소 가능
         styles: showLabels ? [] : [
             {
                 featureType: "poi",
