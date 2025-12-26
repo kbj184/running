@@ -241,26 +241,29 @@
     color: white;
 }
 
-/* Runner Grade Button */
+/* Runner Grade Button - Icon Only */
 .runner-grade-btn {
     position: absolute;
     top: 1rem;
     right: 5rem;
     background: white;
     border: none;
-    padding: 0.4rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #1a1a1a;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    font-size: 1.3rem;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     transition: transform 0.2s, box-shadow 0.2s;
     z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
 }
 
 .runner-grade-btn:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 

@@ -379,8 +379,9 @@ function App() {
                         <button
                             onClick={() => setShowRunnerGradeModal(true)}
                             className="runner-grade-btn"
+                            title="러너등급"
                         >
-                            🏅 러너등급
+                            🏅
                         </button>
 
                         {/* Map */}
