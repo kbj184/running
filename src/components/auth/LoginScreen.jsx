@@ -259,16 +259,6 @@ const LoginScreen = ({ onLogin }) => {
     if (step === 1) {
         return (
             <div className="auth-container">
-                {/* Header */}
-                <div className="auth-header">
-                    <div className="auth-logo">runable</div>
-                    <div className="auth-header-icons">
-                        <span>🔔</span>
-                        <span>👤</span>
-                    </div>
-                </div>
-
-                {/* Main Content */}
                 <div className="auth-card">
                     <div className="auth-welcome">
                         <h1 className="auth-title">Let's Link Run</h1>
@@ -327,26 +317,6 @@ const LoginScreen = ({ onLogin }) => {
                             </svg>
                             <span>Google로 시작하기</span>
                         </button>
-                    </div>
-                </div>
-
-                {/* Bottom Navigation */}
-                <div className="auth-bottom-nav">
-                    <div className="nav-item active">
-                        <div className="nav-icon">🏃</div>
-                        <span>run</span>
-                    </div>
-                    <div className="nav-item">
-                        <div className="nav-icon">📝</div>
-                        <span>스토리</span>
-                    </div>
-                    <div className="nav-item">
-                        <div className="nav-icon">👥</div>
-                        <span>커뮤니티</span>
-                    </div>
-                    <div className="nav-item">
-                        <div className="nav-icon">👤</div>
-                        <span>마이</span>
                     </div>
                 </div>
 
