@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './auth.css';
+import './LoginScreen.css';
 import { api } from '../../utils/api';
 
 const LoginScreen = ({ onLogin }) => {
