@@ -334,14 +334,16 @@ function App() {
         <div className="main-app-container">
             {/* Fixed Header */}
             <div className="main-header">
-                <div className="main-logo">runable</div>
-                <div className="main-header-actions">
-                    <button onClick={handleRefresh} className="header-icon-btn" title="새로고침">
-                        🔄
-                    </button>
-                    <button onClick={handleLogout} className="header-icon-btn" title="로그아웃">
-                        🚪
-                    </button>
+                <div className="main-logo">llrun</div>
+                <div className="main-user-profile">
+                    <div className="user-profile-image">
+                        {user.profileImage ? (
+                            <img src={user.profileImage} alt={user.nickname} />
+                        ) : (
+                            <div className="default-profile-icon">👤</div>
+                        )}
+                    </div>
+                    <span className="user-nickname">{user.nickname}</span>
                 </div>
             </div>
 
