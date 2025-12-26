@@ -103,11 +103,6 @@
     height: 100%;
 }
 
-.running-tab>* {
-    width: 100%;
-    height: 100%;
-}
-
 /* Home Tab */
 .welcome-section {
     display: flex;
@@ -196,6 +191,13 @@
     font-size: 1.5rem;
     color: #1a1a1a;
     margin-bottom: 1.5rem;
+}
+
+/* Map Container */
+.map-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
 }
 
 /* Ensure MapView fills the content area */
