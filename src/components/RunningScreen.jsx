@@ -110,6 +110,10 @@ function RunningScreen({ onStop, sessionId, user }) {
 
     // MariaDB 동기화 함수
     const syncToBackend = useCallback(async (isFinal = false) => {
+        // TODO: 백엔드 /api/running/sync 엔드포인트 구현 후 활성화
+        console.log('⏸️ Backend sync disabled (endpoint not ready)');
+        return;
+
         const data = dataRef.current;
         if (!user || !user.accessToken) {
             console.warn("⚠️ Sync skipped: User not logged in");
