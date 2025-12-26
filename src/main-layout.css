@@ -100,6 +100,14 @@
 .running-tab {
     padding: 0;
     /* Map needs full space */
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.running-tab>* {
+    width: 100%;
+    height: 100%;
 }
 
 /* Home Tab */

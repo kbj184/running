@@ -477,7 +477,7 @@ function App() {
                     onClick={() => setActiveTab('running')}
                 >
                     <div className="nav-icon">🏃</div>
-                    <span>러닝센터</span>
+                    <span>런닝센터</span>
                 </div>
                 <div
                     className={`nav-item ${activeTab === 'crew' ? 'active' : ''}`}
