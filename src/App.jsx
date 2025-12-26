@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './running-styles.css';
+import './main-layout.css';
 import { RUNNER_GRADES } from './constants/runnerGrades';
 import { generateRunners } from './utils/runnerUtils';
 import Header from './components/common/Header';
@@ -330,59 +331,96 @@ function App() {
 
     // 기본 맵 화면
     return (
-        <div className="app-container">
-            {/* Header */}
-            <Header
-                totalRunners={totalRunners}
-                advancedCount={stats.ADVANCED || 0}
-                proCount={stats.PRO || 0}
-                eliteCount={stats.ELITE || 0}
-                showLabels={showLabels}
-                onToggleLabels={handleToggleLabels}
-                userCrew={userCrew}
-                onOpenCreateCrew={() => setShowCreateCrewModal(true)}
-                onOpenCrewDetail={() => setShowCrewDetailModal(true)}
-                user={user}
-                onLogout={handleLogout}
-            />
+        <div className="main-app-container">
+            {/* Fixed Header */}
+            <div className="main-header">
+                <div className="main-logo">runable</div>
+                <div className="main-header-actions">
+                    <button onClick={handleRefresh} className="header-icon-btn" title="새로고침">
+                        🔄
+                    </button>
+                    <button onClick={handleLogout} className="header-icon-btn" title="로그아웃">
+                        🚪
+                    </button>
+                </div>
+            </div>
 
-            {/* Create Crew Modal */}
-            <CreateCrewModal
-                isOpen={showCreateCrewModal}
-                onClose={() => setShowCreateCrewModal(false)}
-                onCreate={handleCreateCrew}
-            />
+            {/* Scrollable Content Area */}
+            <div className="main-content">
+                {/* Map Controls Overlay */}
+                <div className="map-controls-overlay">
+                    <button
+                        onClick={() => setShowCreateCrewModal(true)}
+                        className="map-control-btn"
+                    >
+                        👥 크루 만들기
+                    </button>
+                    <button
+                        onClick={handleToggleLabels}
+                        className={`map-control-btn ${showLabels ? 'active' : ''}`}
+                    >
+                        📍 지명 {showLabels ? 'ON' : 'OFF'}
+                    </button>
+                </div>
 
-            {/* Crew Detail Modal */}
-            <CrewDetailModal
-                isOpen={showCrewDetailModal}
-                onClose={() => setShowCrewDetailModal(false)}
-                crew={userCrew}
-            />
+                {/* Create Crew Modal */}
+                <CreateCrewModal
+                    isOpen={showCreateCrewModal}
+                    onClose={() => setShowCreateCrewModal(false)}
+                    onCreate={handleCreateCrew}
+                />
 
-            {/* Map */}
-            <MapView
-                runners={runners}
-                stats={stats}
-                selectedRunner={selectedRunner}
-                isRunning={isRunning}
-                onRunnerClick={handleRunnerClick}
-                onRefresh={handleRefresh}
-                onStartToggle={handleStartToggle}
-                showLabels={showLabels}
-            />
+                {/* Crew Detail Modal */}
+                <CrewDetailModal
+                    isOpen={showCrewDetailModal}
+                    onClose={() => setShowCrewDetailModal(false)}
+                    crew={userCrew}
+                />
 
-            {/* 최근 기록 (좌측 하단) */}
-            <RecentRecords
-                onRefresh={refreshRecords}
-                onRecordClick={handleRecordClick}
-            />
+                {/* Map */}
+                <MapView
+                    runners={runners}
+                    stats={stats}
+                    selectedRunner={selectedRunner}
+                    isRunning={isRunning}
+                    onRunnerClick={handleRunnerClick}
+                    onRefresh={handleRefresh}
+                    onStartToggle={handleStartToggle}
+                    showLabels={showLabels}
+                />
 
-            {/* Runner Detail Panel */}
-            <RunnerDetailPanel
-                runner={selectedRunner}
-                onClose={handleClosePanel}
-            />
+                {/* 최근 기록 (좌측 하단) */}
+                <RecentRecords
+                    onRefresh={refreshRecords}
+                    onRecordClick={handleRecordClick}
+                />
+
+                {/* Runner Detail Panel */}
+                <RunnerDetailPanel
+                    runner={selectedRunner}
+                    onClose={handleClosePanel}
+                />
+            </div>
+
+            {/* Fixed Bottom Navigation */}
+            <div className="main-bottom-nav">
+                <div className="nav-item active">
+                    <div className="nav-icon">🏃</div>
+                    <span>run</span>
+                </div>
+                <div className="nav-item">
+                    <div className="nav-icon">📝</div>
+                    <span>스토리</span>
+                </div>
+                <div className="nav-item">
+                    <div className="nav-icon">👥</div>
+                    <span>커뮤니티</span>
+                </div>
+                <div className="nav-item">
+                    <div className="nav-icon">👤</div>
+                    <span>마이</span>
+                </div>
+            </div>
         </div>
     );
 }

@@ -1,0 +1,202 @@
+/* Main App Layout - runable.me style with fixed header/footer */
+
+.main-app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Fixed Header */
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: linear-gradient(135deg, #4318FF 0%, #5B2FFF 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+    box-shadow: 0 2px 8px rgba(67, 24, 255, 0.2);
+    z-index: 1000;
+}
+
+.main-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    font-style: italic;
+    letter-spacing: -0.5px;
+}
+
+.main-header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.header-icon-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Scrollable Content Area */
+.main-content {
+    flex: 1;
+    margin-top: 56px;
+    margin-bottom: 64px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Map Controls Overlay */
+.map-controls-overlay {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 100;
+}
+
+.map-control-btn {
+    background: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+}
+
+.map-control-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.map-control-btn.active {
+    background: linear-gradient(135deg, #4318FF 0%, #5B2FFF 100%);
+    color: white;
+}
+
+/* Fixed Bottom Navigation */
+.main-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0.5rem 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    color: #999;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0.5rem 1rem;
+    flex: 1;
+    max-width: 100px;
+}
+
+.nav-item:hover {
+    color: #4318FF;
+}
+
+.nav-item.active {
+    color: #4318FF;
+}
+
+.nav-icon {
+    font-size: 1.5rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .main-header {
+        height: 52px;
+        padding: 0 0.75rem;
+    }
+
+    .main-logo {
+        font-size: 1.25rem;
+    }
+
+    .header-icon-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1.1rem;
+    }
+
+    .main-content {
+        margin-top: 52px;
+        margin-bottom: 60px;
+    }
+
+    .main-bottom-nav {
+        height: 60px;
+    }
+
+    .map-controls-overlay {
+        top: 0.75rem;
+        right: 0.75rem;
+    }
+
+    .map-control-btn {
+        padding: 0.6rem 0.875rem;
+        font-size: 0.85rem;
+    }
+
+    .nav-item {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .nav-icon {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .map-control-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .nav-item {
+        font-size: 0.65rem;
+    }
+}
