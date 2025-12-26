@@ -34,6 +34,7 @@ function App() {
     const [userCrew, setUserCrew] = useState(null);
     const [showCreateCrewModal, setShowCreateCrewModal] = useState(false);
     const [showCrewDetailModal, setShowCrewDetailModal] = useState(false);
+    const [showRunnerGradeModal, setShowRunnerGradeModal] = useState(false);
 
     const [isAuthChecking, setIsAuthChecking] = useState(true); // 인증 체크 상태
 
@@ -363,21 +364,24 @@ function App() {
                 {/* Running Center Tab */}
                 {activeTab === 'running' && (
                     <div className="tab-content running-tab">
-                        {/* Map Controls Overlay */}
+                        {/* Map Controls Overlay - Right Side */}
                         <div className="map-controls-overlay">
                             <button
-                                onClick={() => setShowCreateCrewModal(true)}
-                                className="map-control-btn"
-                            >
-                                👥 크루 만들기
-                            </button>
-                            <button
                                 onClick={handleToggleLabels}
-                                className={`map-control-btn ${showLabels ? 'active' : ''}`}
+                                className={`map-control-icon-btn ${showLabels ? 'active' : ''}`}
+                                title={showLabels ? '지명 ON' : '지명 OFF'}
                             >
-                                📍 지명 {showLabels ? 'ON' : 'OFF'}
+                                📍
                             </button>
                         </div>
+
+                        {/* Runner Grade Button - Top Right */}
+                        <button
+                            onClick={() => setShowRunnerGradeModal(true)}
+                            className="runner-grade-btn"
+                        >
+                            🏅 러너등급
+                        </button>
 
                         {/* Map */}
                         <MapView
@@ -389,12 +393,6 @@ function App() {
                             onRefresh={handleRefresh}
                             onStartToggle={handleStartToggle}
                             showLabels={showLabels}
-                        />
-
-                        {/* 최근 기록 (좌측 하단) */}
-                        <RecentRecords
-                            onRefresh={refreshRecords}
-                            onRecordClick={handleRecordClick}
                         />
 
                         {/* Runner Detail Panel */}
@@ -461,6 +459,36 @@ function App() {
                     onClose={() => setShowCrewDetailModal(false)}
                     crew={userCrew}
                 />
+
+                {/* Runner Grade Modal */}
+                {showRunnerGradeModal && (
+                    <div className="modal-overlay" onClick={() => setShowRunnerGradeModal(false)}>
+                        <div className="runner-grade-modal" onClick={(e) => e.stopPropagation()}>
+                            <h2>🏅 러너 등급</h2>
+                            <div className="grade-list">
+                                <div className="grade-item">
+                                    <span className="grade-badge beginner">초급</span>
+                                    <span className="grade-count">{stats.BEGINNER || 0}명</span>
+                                </div>
+                                <div className="grade-item">
+                                    <span className="grade-badge advanced">고급</span>
+                                    <span className="grade-count">{stats.ADVANCED || 0}명</span>
+                                </div>
+                                <div className="grade-item">
+                                    <span className="grade-badge pro">프로</span>
+                                    <span className="grade-count">{stats.PRO || 0}명</span>
+                                </div>
+                                <div className="grade-item">
+                                    <span className="grade-badge elite">엘리트</span>
+                                    <span className="grade-count">{stats.ELITE || 0}명</span>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowRunnerGradeModal(false)} className="modal-close-btn">
+                                닫기
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Fixed Bottom Navigation */}
@@ -479,6 +507,15 @@ function App() {
                     <div className="nav-icon">🏃</div>
                     <span>런닝센터</span>
                 </div>
+
+                {/* Play Button */}
+                <div
+                    className="nav-item play-button"
+                    onClick={handleStartToggle}
+                >
+                    <div className="play-icon">▶️</div>
+                </div>
+
                 <div
                     className={`nav-item ${activeTab === 'crew' ? 'active' : ''}`}
                     onClick={() => setActiveTab('crew')}
