@@ -236,8 +236,22 @@ const LoginScreen = ({ onLogin }) => {
     };
 
     const handleGoogleLogin = () => {
-        // Directly navigate to Google OAuth endpoint without in‑app browser checks
-        window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/google`;
+        const authUrl = `${import.meta.env.VITE_API_URL}/oauth2/authorization/google`;
+        const ua = navigator.userAgent.toLowerCase();
+        const isKakao = ua.includes('kakao');
+        // Android Kakao in‑app browser → use intent to launch Chrome
+        if (isKakao && /android/.test(ua)) {
+            const intentUrl = `intent://${authUrl.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+            window.location.href = intentUrl;
+            return;
+        }
+        // iOS Kakao in‑app browser → direct Safari launch
+        if (isKakao && /iphone|ipad|ipod/.test(ua)) {
+            window.location.href = authUrl;
+            return;
+        }
+        // Fallback for normal browsers → open new tab
+        window.open(authUrl, '_blank', 'noopener,noreferrer');
     };
 
     // Render Step 1: Email Input
