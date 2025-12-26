@@ -28,6 +28,7 @@ function App() {
     const [sessionId, setSessionId] = useState(null);
     const [refreshRecords, setRefreshRecords] = useState(0); // 최근 기록 새로고침 트리거
     const [showLabels, setShowLabels] = useState(false); // 지명 표시 여부 (기본: OFF)
+    const [activeTab, setActiveTab] = useState('home'); // 'home', 'running', 'crew', 'myrun'
 
     // 크루 관련 상태
     const [userCrew, setUserCrew] = useState(null);
@@ -349,78 +350,148 @@ function App() {
 
             {/* Scrollable Content Area */}
             <div className="main-content">
-                {/* Map Controls Overlay */}
-                <div className="map-controls-overlay">
-                    <button
-                        onClick={() => setShowCreateCrewModal(true)}
-                        className="map-control-btn"
-                    >
-                        👥 크루 만들기
-                    </button>
-                    <button
-                        onClick={handleToggleLabels}
-                        className={`map-control-btn ${showLabels ? 'active' : ''}`}
-                    >
-                        📍 지명 {showLabels ? 'ON' : 'OFF'}
-                    </button>
-                </div>
+                {/* Home Tab */}
+                {activeTab === 'home' && (
+                    <div className="tab-content home-tab">
+                        <div className="welcome-section">
+                            <h1>Welcome to LLRun! 🏃</h1>
+                            <p>함께 달리는 즐거움을 경험하세요</p>
+                        </div>
+                    </div>
+                )}
 
-                {/* Create Crew Modal */}
+                {/* Running Center Tab */}
+                {activeTab === 'running' && (
+                    <div className="tab-content running-tab">
+                        {/* Map Controls Overlay */}
+                        <div className="map-controls-overlay">
+                            <button
+                                onClick={() => setShowCreateCrewModal(true)}
+                                className="map-control-btn"
+                            >
+                                👥 크루 만들기
+                            </button>
+                            <button
+                                onClick={handleToggleLabels}
+                                className={`map-control-btn ${showLabels ? 'active' : ''}`}
+                            >
+                                📍 지명 {showLabels ? 'ON' : 'OFF'}
+                            </button>
+                        </div>
+
+                        {/* Map */}
+                        <MapView
+                            runners={runners}
+                            stats={stats}
+                            selectedRunner={selectedRunner}
+                            isRunning={isRunning}
+                            onRunnerClick={handleRunnerClick}
+                            onRefresh={handleRefresh}
+                            onStartToggle={handleStartToggle}
+                            showLabels={showLabels}
+                        />
+
+                        {/* 최근 기록 (좌측 하단) */}
+                        <RecentRecords
+                            onRefresh={refreshRecords}
+                            onRecordClick={handleRecordClick}
+                        />
+
+                        {/* Runner Detail Panel */}
+                        <RunnerDetailPanel
+                            runner={selectedRunner}
+                            onClose={handleClosePanel}
+                        />
+                    </div>
+                )}
+
+                {/* Crew Tab */}
+                {activeTab === 'crew' && (
+                    <div className="tab-content crew-tab">
+                        <div className="crew-section">
+                            <h2>Crew</h2>
+                            {userCrew ? (
+                                <div className="crew-info">
+                                    <h3>{userCrew.name}</h3>
+                                    <p>{userCrew.description}</p>
+                                    <button
+                                        onClick={() => setShowCrewDetailModal(true)}
+                                        className="view-crew-btn"
+                                    >
+                                        크루 상세보기
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="no-crew">
+                                    <p>아직 크루가 없습니다</p>
+                                    <button
+                                        onClick={() => setShowCreateCrewModal(true)}
+                                        className="create-crew-btn"
+                                    >
+                                        크루 만들기
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* MyRun Tab */}
+                {activeTab === 'myrun' && (
+                    <div className="tab-content myrun-tab">
+                        <div className="myrun-section">
+                            <h2>My Running Records</h2>
+                            <RecentRecords
+                                onRefresh={refreshRecords}
+                                onRecordClick={handleRecordClick}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Modals */}
                 <CreateCrewModal
                     isOpen={showCreateCrewModal}
                     onClose={() => setShowCreateCrewModal(false)}
                     onCreate={handleCreateCrew}
                 />
 
-                {/* Crew Detail Modal */}
                 <CrewDetailModal
                     isOpen={showCrewDetailModal}
                     onClose={() => setShowCrewDetailModal(false)}
                     crew={userCrew}
                 />
-
-                {/* Map */}
-                <MapView
-                    runners={runners}
-                    stats={stats}
-                    selectedRunner={selectedRunner}
-                    isRunning={isRunning}
-                    onRunnerClick={handleRunnerClick}
-                    onRefresh={handleRefresh}
-                    onStartToggle={handleStartToggle}
-                    showLabels={showLabels}
-                />
-
-                {/* 최근 기록 (좌측 하단) */}
-                <RecentRecords
-                    onRefresh={refreshRecords}
-                    onRecordClick={handleRecordClick}
-                />
-
-                {/* Runner Detail Panel */}
-                <RunnerDetailPanel
-                    runner={selectedRunner}
-                    onClose={handleClosePanel}
-                />
             </div>
 
             {/* Fixed Bottom Navigation */}
             <div className="main-bottom-nav">
-                <div className="nav-item active">
+                <div
+                    className={`nav-item ${activeTab === 'home' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('home')}
+                >
+                    <div className="nav-icon">🏠</div>
+                    <span>홈</span>
+                </div>
+                <div
+                    className={`nav-item ${activeTab === 'running' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('running')}
+                >
                     <div className="nav-icon">🏃</div>
-                    <span>run</span>
+                    <span>러닝센터</span>
                 </div>
-                <div className="nav-item">
-                    <div className="nav-icon">📝</div>
-                    <span>스토리</span>
-                </div>
-                <div className="nav-item">
+                <div
+                    className={`nav-item ${activeTab === 'crew' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('crew')}
+                >
                     <div className="nav-icon">👥</div>
-                    <span>커뮤니티</span>
+                    <span>Crew</span>
                 </div>
-                <div className="nav-item">
-                    <div className="nav-icon">👤</div>
-                    <span>마이</span>
+                <div
+                    className={`nav-item ${activeTab === 'myrun' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('myrun')}
+                >
+                    <div className="nav-icon">📊</div>
+                    <span>MyRun</span>
                 </div>
             </div>
         </div>

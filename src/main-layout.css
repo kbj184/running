@@ -90,6 +90,108 @@
     /* Full height minus header and footer */
 }
 
+/* Tab Content */
+.tab-content {
+    width: 100%;
+    height: 100%;
+    padding: 2rem 1rem;
+}
+
+.running-tab {
+    padding: 0;
+    /* Map needs full space */
+}
+
+/* Home Tab */
+.welcome-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    text-align: center;
+}
+
+.welcome-section h1 {
+    font-size: 2rem;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-section p {
+    font-size: 1.1rem;
+    color: #666;
+}
+
+/* Crew Tab */
+.crew-section {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.crew-section h2 {
+    font-size: 1.5rem;
+    color: #1a1a1a;
+    margin-bottom: 1.5rem;
+}
+
+.crew-info,
+.no-crew {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.crew-info h3 {
+    font-size: 1.3rem;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.crew-info p {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.view-crew-btn,
+.create-crew-btn {
+    padding: 0.875rem 2rem;
+    background: linear-gradient(135deg, #4318FF 0%, #5B2FFF 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 12px rgba(67, 24, 255, 0.3);
+}
+
+.view-crew-btn:hover,
+.create-crew-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(67, 24, 255, 0.4);
+}
+
+.no-crew p {
+    color: #999;
+    margin-bottom: 1.5rem;
+}
+
+/* MyRun Tab */
+.myrun-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.myrun-section h2 {
+    font-size: 1.5rem;
+    color: #1a1a1a;
+    margin-bottom: 1.5rem;
+}
+
 /* Ensure MapView fills the content area */
 .main-content>div {
     width: 100%;
