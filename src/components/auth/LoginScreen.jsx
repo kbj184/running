@@ -236,20 +236,7 @@ const LoginScreen = ({ onLogin }) => {
     };
 
     const handleGoogleLogin = () => {
-        const userAgent = navigator.userAgent.toLowerCase();
-        // 인앱 브라우저 감지 (카카오, 네이버, 인스타그램, 페이스북, 라인)
-        const isInApp = userAgent.includes('kakao') ||
-            userAgent.includes('naver') ||
-            userAgent.includes('instagram') ||
-            userAgent.includes('fban') ||
-            userAgent.includes('fbav') ||
-            userAgent.includes('line');
-
-        if (isInApp) {
-            alert('구글 보안 정책상 인앱 브라우저(카카오톡, 인스타그램 등)에서는 구글 로그인을 이용할 수 없습니다.\n\n오른쪽 상단 메뉴의 [다른 브라우저로 열기]를 통해\nChrome 또는 Safari에서 다시 시도해 주세요.');
-            return;
-        }
-
+        // Directly navigate to Google OAuth endpoint without in‑app browser checks
         window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/google`;
     };
 
