@@ -471,22 +471,22 @@ function RunningScreen({ onStop, sessionId, user }) {
 
             <div className="running-stats-panel">
                 <div className="running-stat-card primary">
-                    <div className="stat-label">거리</div>
-                    <div className="stat-value-xl">{formatDistance(distance)}</div>
+                    <div className="stat-label">시간</div>
+                    <div className="stat-value-xl">{formatTime(duration)}</div>
                 </div>
                 <div className="running-stats-grid">
                     <div className="running-stat-card">
-                        <div className="stat-label">시간</div>
-                        <div className="stat-value-lg">{formatTime(duration)}</div>
+                        <div className="stat-label">거리</div>
+                        <div className="stat-value-lg">{formatDistance(distance)}</div>
                     </div>
                     <div className="running-stat-card">
                         <div className="stat-label">속도</div>
                         <div className="stat-value-lg" style={{ color: getSpeedColor(speed) }}>{speed.toFixed(1)} km/h</div>
                     </div>
                     <div className="running-stat-card">
-                        <div className="stat-label">페이스</div>
+                        <div className="stat-label">칼로리</div>
                         <div className="stat-value-lg">
-                            {pace > 0 && pace < 100 ? pace.toFixed(1) : '0.0'}
+                            {Math.floor(distance * 60)} kcal
                         </div>
                     </div>
                 </div>

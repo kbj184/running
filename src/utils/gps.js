@@ -46,9 +46,6 @@ export const formatTime = (seconds) => {
 
 // 거리 포맷팅
 export const formatDistance = (km) => {
-    if (km < 1) {
-        return `${(km * 1000).toFixed(0)}m`;
-    }
     return `${km.toFixed(2)}km`;
 };
 

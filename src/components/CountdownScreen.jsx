@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 function CountdownScreen({ onComplete }) {
-    const [count, setCount] = useState(5);
+    const [count, setCount] = useState(3);
 
     useEffect(() => {
         console.log('🎬 카운트다운 시작!');
@@ -28,37 +28,31 @@ function CountdownScreen({ onComplete }) {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: '#0f172a',
-            backgroundImage: 'url(/rudolph-background.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
+            backgroundColor: '#4318FF',
+            background: 'linear-gradient(135deg, #4318FF 0%, #5B2FFF 100%)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 9999
         }}>
-            {/* 반투명 오버레이 - 텍스트 가독성 향상 */}
+            {/* 반투명 오버레이 */}
             <div style={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
-                backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                backdropFilter: 'blur(2px)',
+                backgroundColor: 'rgba(0, 0, 0, 0.2)',
                 zIndex: 1
             }} />
 
             {/* 카운트다운 숫자 또는 GO */}
             <div style={{
-                fontSize: count > 0 ? '180px' : '120px',
+                fontSize: count > 0 ? '200px' : '140px',
                 fontWeight: '900',
-                color: count > 0 ? '#fbbf24' : '#22c55e',
-                textShadow: count > 0
-                    ? '0 0 60px rgba(251, 191, 36, 0.8), 0 0 100px rgba(239, 68, 68, 0.5)'
-                    : '0 0 60px rgba(34, 197, 94, 0.8)',
+                color: '#ffffff',
+                textShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
                 animation: 'pulse 0.5s ease-in-out',
                 userSelect: 'none',
                 zIndex: 2,
@@ -75,11 +69,11 @@ function CountdownScreen({ onComplete }) {
                     fontWeight: '700',
                     color: '#ffffff',
                     letterSpacing: '3px',
-                    textShadow: '0 0 20px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.5)',
+                    textShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
                     zIndex: 2,
                     position: 'relative'
                 }}>
-                    🎄 준비하세요... 🎅
+                    준비하세요...
                 </div>
             )}
 
@@ -89,7 +83,7 @@ function CountdownScreen({ onComplete }) {
                 width: '300px',
                 height: '300px',
                 borderRadius: '50%',
-                border: '4px solid rgba(251, 191, 36, 0.4)',
+                border: '4px solid rgba(255, 255, 255, 0.3)',
                 animation: 'expand 1s ease-out infinite',
                 zIndex: 2
             }} />
