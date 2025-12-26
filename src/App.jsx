@@ -93,7 +93,7 @@ function App() {
                         const myResponse = await api.request(`${import.meta.env.VITE_API_URL}/my`, {
                             method: 'GET',
                             headers: {
-                                'Authorization': accessToken,
+                                'Authorization': `Bearer ${accessToken}`,
                                 'Content-Type': 'application/json',
                             }
                         });
