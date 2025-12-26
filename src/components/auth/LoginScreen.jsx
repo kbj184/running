@@ -235,6 +235,24 @@ const LoginScreen = ({ onLogin }) => {
         return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}시 ${date.getMinutes()}분`;
     };
 
+    const handleGoogleLogin = () => {
+        const userAgent = navigator.userAgent.toLowerCase();
+        // 인앱 브라우저 감지 (카카오, 네이버, 인스타그램, 페이스북, 라인)
+        const isInApp = userAgent.includes('kakao') ||
+            userAgent.includes('naver') ||
+            userAgent.includes('instagram') ||
+            userAgent.includes('fban') ||
+            userAgent.includes('fbav') ||
+            userAgent.includes('line');
+
+        if (isInApp) {
+            alert('구글 보안 정책상 인앱 브라우저(카카오톡, 인스타그램 등)에서는 구글 로그인을 이용할 수 없습니다.\n\n오른쪽 상단 메뉴의 [다른 브라우저로 열기]를 통해\nChrome 또는 Safari에서 다시 시도해 주세요.');
+            return;
+        }
+
+        window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/google`;
+    };
+
     // Render Step 1: Email Input
     if (step === 1) {
         return (
@@ -290,7 +308,7 @@ const LoginScreen = ({ onLogin }) => {
                         </button>
                         <button
                             className="social-btn google"
-                            onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/google`}
+                            onClick={handleGoogleLogin}
                         >
                             <svg viewBox="0 0 24 24" width="20" height="20" className="social-icon">
                                 <path fill="#EA4335" d="M12 5.04c1.88 0 3.55.67 4.88 1.93l3.63-3.63C18.29 1.25 15.35 0 12 0 7.37 0 3.32 2.65 1.42 6.55l4.27 3.31C6.7 6.43 9.13 5.04 12 5.04z" />
