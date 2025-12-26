@@ -259,14 +259,21 @@ const LoginScreen = ({ onLogin }) => {
     if (step === 1) {
         return (
             <div className="auth-container">
+                {/* Header */}
+                <div className="auth-header">
+                    <div className="auth-logo">runable</div>
+                    <div className="auth-header-icons">
+                        <span>🔔</span>
+                        <span>👤</span>
+                    </div>
+                </div>
+
+                {/* Main Content */}
                 <div className="auth-card">
-                    <div className="auth-header">
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px', marginBottom: '0.5rem' }}>
-                            <img src="/logo.png" alt="Logo" style={{ width: '50px', height: '50px', objectFit: 'contain' }} />
-                            <h1 className="auth-title" style={{ margin: 0 }}>Let’s Link Run</h1>
-                        </div>
+                    <div className="auth-welcome">
+                        <h1 className="auth-title">Let's Link Run</h1>
                         <p className="auth-subtitle">
-                            We don’t run fast. We run together.
+                            We don't run fast. We run together.
                         </p>
                     </div>
 
@@ -274,7 +281,7 @@ const LoginScreen = ({ onLogin }) => {
                         <div className="input-group">
                             <input
                                 type="email"
-                                placeholder="이메일을 입력 하세요"
+                                placeholder="이메일을 입력하세요"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="auth-input"
@@ -321,59 +328,79 @@ const LoginScreen = ({ onLogin }) => {
                             <span>Google로 시작하기</span>
                         </button>
                     </div>
-
-                    {/* Signup Prompt Modal */}
-                    {showSignupPrompt && (
-                        <div className="terms-modal-overlay">
-                            <div className="terms-modal" style={{ height: 'auto', minHeight: 'auto', textAlign: 'center', padding: '2rem' }}>
-                                <h3 style={{ marginBottom: '0.5rem' }}>가입되지 않은 이메일입니다</h3>
-                                <p style={{ color: '#cbd5e1', marginBottom: '2rem' }}>회원가입을 진행하실 건가요?</p>
-                                <div style={{ display: 'flex', gap: '1rem' }}>
-                                    <button
-                                        onClick={handleSignupCancel}
-                                        style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: '1px solid #475569', background: 'transparent', color: 'white', cursor: 'pointer', fontWeight: '600' }}
-                                    >
-                                        취소
-                                    </button>
-                                    <button
-                                        onClick={handleSignupProceed}
-                                        style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: 'none', background: '#3b82f6', color: 'white', cursor: 'pointer', fontWeight: '600' }}
-                                    >
-                                        가입하기
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Social Login Provider Modal */}
-                    {socialProvider && (
-                        <div className="terms-modal-overlay">
-                            <div className="terms-modal" style={{ height: 'auto', minHeight: 'auto', textAlign: 'center', padding: '2rem' }}>
-                                <h3 style={{ marginBottom: '1rem', lineHeight: '1.4' }}>
-                                    {socialProvider === 'naver' ? '네이버' : 'Google'} 간편 로그인 회원입니다.
-                                </h3>
-                                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                    <button
-                                        onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/${socialProvider}`}
-                                        style={{
-                                            padding: '0.8rem 2rem',
-                                            borderRadius: '8px',
-                                            border: 'none',
-                                            background: socialProvider === 'naver' ? '#03C75A' : '#4285F4',
-                                            color: 'white',
-                                            cursor: 'pointer',
-                                            fontWeight: '600',
-                                            fontSize: '1rem'
-                                        }}
-                                    >
-                                        확인
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
+
+                {/* Bottom Navigation */}
+                <div className="auth-bottom-nav">
+                    <div className="nav-item active">
+                        <div className="nav-icon">🏃</div>
+                        <span>run</span>
+                    </div>
+                    <div className="nav-item">
+                        <div className="nav-icon">📝</div>
+                        <span>스토리</span>
+                    </div>
+                    <div className="nav-item">
+                        <div className="nav-icon">👥</div>
+                        <span>커뮤니티</span>
+                    </div>
+                    <div className="nav-item">
+                        <div className="nav-icon">👤</div>
+                        <span>마이</span>
+                    </div>
+                </div>
+
+                {/* Signup Prompt Modal */}
+                {showSignupPrompt && (
+                    <div className="terms-modal-overlay">
+                        <div className="terms-modal" style={{ height: 'auto', minHeight: 'auto', textAlign: 'center', padding: '2rem' }}>
+                            <h3 style={{ marginBottom: '0.5rem' }}>가입되지 않은 이메일입니다</h3>
+                            <p style={{ color: '#cbd5e1', marginBottom: '2rem' }}>회원가입을 진행하실 건가요?</p>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button
+                                    onClick={handleSignupCancel}
+                                    style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: '1px solid #475569', background: 'transparent', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+                                >
+                                    취소
+                                </button>
+                                <button
+                                    onClick={handleSignupProceed}
+                                    style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: 'none', background: '#3b82f6', color: 'white', cursor: 'pointer', fontWeight: '600' }}
+                                >
+                                    가입하기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Social Login Provider Modal */}
+                {socialProvider && (
+                    <div className="terms-modal-overlay">
+                        <div className="terms-modal" style={{ height: 'auto', minHeight: 'auto', textAlign: 'center', padding: '2rem' }}>
+                            <h3 style={{ marginBottom: '1rem', lineHeight: '1.4' }}>
+                                {socialProvider === 'naver' ? '네이버' : 'Google'} 간편 로그인 회원입니다.
+                            </h3>
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                <button
+                                    onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/${socialProvider}`}
+                                    style={{
+                                        padding: '0.8rem 2rem',
+                                        borderRadius: '8px',
+                                        border: 'none',
+                                        background: socialProvider === 'naver' ? '#03C75A' : '#4285F4',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        fontWeight: '600',
+                                        fontSize: '1rem'
+                                    }}
+                                >
+                                    확인
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
