@@ -576,65 +576,33 @@ function RunningScreen({ onStop, sessionId, user }) {
                 )}
             </div>
 
-            {testMode && (
-                <div style={{
-                    position: 'fixed', bottom: '100px', left: '50%', transform: 'translateX(-50%)',
-                    backgroundColor: 'rgba(102, 126, 234, 0.95)', color: 'white', padding: '16px 24px',
-                    borderRadius: '12px', fontSize: '14px', zIndex: 999
-                }}>
-                    🖱️ 맵을 클릭하여 위치 이동 (빠르게 클릭하면 가속!)
-                </div>
-            )}
-
             <button
                 className="mode-toggle-button"
                 onClick={() => setTestMode(!testMode)}
-                style={{
-                    position: 'fixed', top: '20px', right: '20px', padding: '12px 20px',
-                    backgroundColor: testMode ? '#667eea' : '#22c55e', color: 'white', border: 'none',
-                    borderRadius: '12px', zIndex: 1000
-                }}
+                style={{ backgroundColor: testMode ? '#667eea' : '#22c55e' }}
             >
-                {testMode ? '🖱️ 테스트 모드' : '📍 GPS 모드'}
+                {testMode ? '🖱️ 테스트' : '📍 GPS'}
             </button>
 
-            {!isWatering && (
-                <button className="stop-button" onClick={handleStop}>
-                    <div className="stop-button-inner"><span className="stop-icon">⏹️</span><span className="stop-text">종료</span></div>
-                </button>
-            )}
-
-            {!isWatering && (
-                <button
-                    className="water-button"
-                    onClick={handleWateringStart}
-                    style={{
-                        position: 'fixed', bottom: '30px', right: '140px', width: '80px', height: '80px',
-                        borderRadius: '50%', backgroundColor: '#3b82f6', color: 'white', border: 'none',
-                        fontSize: '32px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
-                        zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}
-                >
-                    💧
-                </button>
-            )}
-
-            {isWatering && (
-                <button
-                    className="water-end-button"
-                    onClick={handleWateringEnd}
-                    style={{
-                        position: 'fixed', bottom: '30px', right: '30px', width: '120px', height: '120px',
-                        borderRadius: '50%', backgroundColor: '#3b82f6', color: 'white', border: '4px solid white',
-                        fontSize: '16px', fontWeight: '700', cursor: 'pointer', zIndex: 1000,
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                        animation: 'pulse 2s infinite'
-                    }}
-                >
-                    <span style={{ fontSize: '32px' }}>💧</span>
-                    <span>급수 종료</span>
-                </button>
-            )}
+            <div className="running-footer-controls">
+                {!isWatering ? (
+                    <>
+                        <button className="running-control-btn water" onClick={handleWateringStart}>
+                            <span className="btn-icon">💧</span>
+                            <span className="btn-text">급수</span>
+                        </button>
+                        <button className="running-control-btn stop" onClick={handleStop}>
+                            <span className="btn-icon">⏹️</span>
+                            <span className="btn-text">종료</span>
+                        </button>
+                    </>
+                ) : (
+                    <button className="running-control-btn water-end" onClick={handleWateringEnd}>
+                        <span className="btn-icon" style={{ fontSize: '32px' }}>💧</span>
+                        <span className="btn-text" style={{ fontSize: '14px' }}>급수 종료</span>
+                    </button>
+                )}
+            </div>
 
             <style>{`
                 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
