@@ -64,6 +64,15 @@
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
+    width: 100%;
+    height: calc(100vh - 120px);
+    /* Full height minus header and footer */
+}
+
+/* Ensure MapView fills the content area */
+.main-content>div {
+    width: 100%;
+    height: 100%;
 }
 
 /* Map Controls Overlay */
