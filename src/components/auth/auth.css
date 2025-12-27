@@ -19,7 +19,7 @@
 
 .auth-subtitle {
     font-size: 1rem;
-    color: #ffffff;
+    color: #666666;
     margin: 0;
     line-height: 1.5;
 }
@@ -246,13 +246,13 @@
     justify-content: space-between;
     align-items: center;
     font-size: 1rem;
-    color: #ffffff;
+    color: #333333;
     font-weight: 500;
 }
 
 .term-item.all-agree {
     font-weight: 700;
-    color: white;
+    color: #1a1a1a;
     margin-bottom: 0.2rem;
     font-size: 1.05rem;
 }
@@ -281,14 +281,15 @@
     transform: translateY(-50%);
     height: 22px;
     width: 22px;
-    background-color: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(255, 255, 255, 0.5);
+    background-color: #f8f9fa;
+    border: 2px solid #d1d5db;
     border-radius: 6px;
     transition: all 0.2s;
 }
 
 .checkbox-label:hover input~.checkmark {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
 }
 
 .checkbox-label input:checked~.checkmark {
@@ -432,7 +433,7 @@
 }
 
 .nav-title {
-    color: #f8fafc;
+    color: #1a1a1a;
     font-weight: 600;
     font-size: 1.1rem;
 }
