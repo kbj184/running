@@ -475,7 +475,7 @@
 .info-title {
     font-size: 1rem;
     font-weight: 700;
-    color: white;
+    color: #1a1a1a;
     margin: 0 0 0.2rem 0;
 }
 
@@ -487,10 +487,11 @@
 }
 
 .info-label {
-    color: #94a3b8;
+    color: #6b7280;
+    font-weight: 500;
 }
 
 .info-value {
-    color: #f8fafc;
-    font-weight: 500;
+    color: #1a1a1a;
+    font-weight: 600;
 }
