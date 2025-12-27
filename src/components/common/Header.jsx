@@ -111,6 +111,32 @@ function Header({ totalRunners, proCount, eliteCount, advancedCount, showLabels,
                                 borderRadius: '25px',
                                 border: '1px solid rgba(255, 255, 255, 0.1)'
                             }}>
+                                {/* Crew Badge if joined */}
+                                {user.crewName && (
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        background: 'rgba(0,0,0,0.3)',
+                                        padding: '2px 8px 2px 4px',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        marginRight: '4px'
+                                    }}>
+                                        <span style={{ fontSize: '14px' }}>
+                                            {(() => {
+                                                try {
+                                                    const img = JSON.parse(user.crewImage);
+                                                    return img.emoji || '🏃'; // 이미지 URL은 너무 작아서 이모지로 대체하거나 처리 필요. 일단 이모지 우선
+                                                } catch {
+                                                    return '🏃';
+                                                }
+                                            })()}
+                                        </span>
+                                        <span style={{ color: '#ddd', fontWeight: '500' }}>{user.crewName}</span>
+                                    </div>
+                                )}
+
                                 <img
                                     src={user.nicknameImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
                                     alt="Profile"
