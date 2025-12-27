@@ -125,10 +125,17 @@ function Header({ totalRunners, proCount, eliteCount, advancedCount, showLabels,
                                     }}>
                                         <span style={{ fontSize: '14px' }}>
                                             {(() => {
+                                                if (!user.crewImage) return '🏃';
                                                 try {
                                                     const img = JSON.parse(user.crewImage);
-                                                    return img.emoji || '🏃'; // 이미지 URL은 너무 작아서 이모지로 대체하거나 처리 필요. 일단 이모지 우선
+                                                    if (img.url) {
+                                                        return <img src={img.url} alt="crew" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />;
+                                                    }
+                                                    return img.emoji || '🏃';
                                                 } catch {
+                                                    if (user.crewImage.startsWith('http')) {
+                                                        return <img src={user.crewImage} alt="crew" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />;
+                                                    }
                                                     return '🏃';
                                                 }
                                             })()}
