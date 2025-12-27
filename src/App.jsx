@@ -32,6 +32,7 @@ function App() {
 
     // 크루 관련 상태
     const [userCrew, setUserCrew] = useState(null);
+    const [allCrews, setAllCrews] = useState([]);
     const [showCreateCrewModal, setShowCreateCrewModal] = useState(false);
     const [showCrewDetailModal, setShowCrewDetailModal] = useState(false);
     const [showRunnerGradeModal, setShowRunnerGradeModal] = useState(false);
@@ -129,6 +130,31 @@ function App() {
 
         checkAuth();
     }, []);
+
+    // 크루 탭 활성화 시 크루 목록 로드
+    useEffect(() => {
+        if (activeTab === 'crew' && user) {
+            const fetchCrews = async () => {
+                try {
+                    const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/all`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const crews = await response.json();
+                        setAllCrews(crews);
+                    }
+                } catch (error) {
+                    console.error('크루 목록 로드 실패:', error);
+                }
+            };
+
+            fetchCrews();
+        }
+    }, [activeTab, user]);
 
     const handleLogin = (userData) => {
         console.log('✅ 로그인 성공:', userData);
