@@ -6,9 +6,64 @@ function NicknameRegistration({ user, onComplete }) {
     const [selectedImage, setSelectedImage] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'); // Default image
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadedImage, setUploadedImage] = useState(null);
 
     const avatarSeeds = ['Felix', 'Aneka', 'Buddy', 'Casper', 'Daisy', 'Gracie', 'Milo', 'Oliver'];
     const avatarUrls = avatarSeeds.map(seed => `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`);
+
+    // Cloudinary 설정 - 환경변수에서 가져오기
+    const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // 파일 크기 검증 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+            setError('이미지 크기는 5MB를 초과할 수 없습니다.');
+            return;
+        }
+
+        // 파일 타입 검증
+        if (!file.type.startsWith('image/')) {
+            setError('이미지 파일만 업로드 가능합니다.');
+            return;
+        }
+
+        setIsUploading(true);
+        setError('');
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+            const response = await fetch(
+                `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+                {
+                    method: 'POST',
+                    body: formData,
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('이미지 업로드에 실패했습니다.');
+            }
+
+            const data = await response.json();
+            const imageUrl = data.secure_url;
+
+            setUploadedImage(imageUrl);
+            setSelectedImage(imageUrl);
+        } catch (err) {
+            console.error('Upload error:', err);
+            setError('이미지 업로드 중 오류가 발생했습니다.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -59,6 +114,49 @@ function NicknameRegistration({ user, onComplete }) {
                 <form onSubmit={handleSubmit} style={styles.form}>
                     <div style={styles.section}>
                         <label style={styles.label}>프로필 이미지 선택</label>
+
+                        {/* 이미지 업로드 버튼 */}
+                        <div style={styles.uploadSection}>
+                            <input
+                                type="file"
+                                id="image-upload"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                style={styles.fileInput}
+                            />
+                            <label htmlFor="image-upload" style={styles.uploadButton}>
+                                {isUploading ? (
+                                    <>
+                                        <span style={styles.uploadIcon}>⏳</span>
+                                        업로드 중...
+                                    </>
+                                ) : (
+                                    <>
+                                        <span style={styles.uploadIcon}>📷</span>
+                                        내 이미지 업로드
+                                    </>
+                                )}
+                            </label>
+                        </div>
+
+                        {/* 업로드된 이미지 미리보기 */}
+                        {uploadedImage && (
+                            <div style={styles.uploadedImageContainer}>
+                                <img
+                                    src={uploadedImage}
+                                    alt="Uploaded profile"
+                                    style={{
+                                        ...styles.uploadedImage,
+                                        border: selectedImage === uploadedImage ? '3px solid #00f2fe' : '2px solid rgba(255, 255, 255, 0.2)',
+                                    }}
+                                    onClick={() => setSelectedImage(uploadedImage)}
+                                />
+                                <p style={styles.uploadedLabel}>업로드한 이미지</p>
+                            </div>
+                        )}
+
+                        {/* 기본 아바타 그리드 */}
+                        <p style={styles.dividerText}>또는 기본 아바타 선택</p>
                         <div style={styles.avatarGrid}>
                             {avatarUrls.map((url, index) => (
                                 <img
@@ -200,6 +298,59 @@ const styles = {
         fontSize: '0.85rem',
         marginTop: '8px',
         marginLeft: '5px',
+    },
+    uploadSection: {
+        marginBottom: '20px',
+    },
+    fileInput: {
+        display: 'none',
+    },
+    uploadButton: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        width: '100%',
+        padding: '16px 20px',
+        borderRadius: '15px',
+        border: '2px dashed rgba(0, 242, 254, 0.5)',
+        background: 'rgba(0, 242, 254, 0.1)',
+        color: '#00f2fe',
+        fontSize: '1rem',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    },
+    uploadIcon: {
+        fontSize: '1.5rem',
+    },
+    uploadedImageContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginTop: '20px',
+        marginBottom: '20px',
+    },
+    uploadedImage: {
+        width: '120px',
+        height: '120px',
+        borderRadius: '50%',
+        objectFit: 'cover',
+        cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: '0 10px 30px -5px rgba(0, 242, 254, 0.3)',
+    },
+    uploadedLabel: {
+        color: 'rgba(255, 255, 255, 0.6)',
+        fontSize: '0.85rem',
+        marginTop: '10px',
+    },
+    dividerText: {
+        color: 'rgba(255, 255, 255, 0.5)',
+        fontSize: '0.85rem',
+        textAlign: 'center',
+        margin: '20px 0 15px 0',
+        position: 'relative',
     }
 };
 
