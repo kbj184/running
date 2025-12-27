@@ -434,27 +434,109 @@ function App() {
                 {activeTab === 'crew' && (
                     <div className="tab-content crew-tab">
                         <div className="crew-section">
-                            <h2>Crew</h2>
-                            {userCrew ? (
-                                <div className="crew-info">
-                                    <h3>{userCrew.name}</h3>
-                                    <p>{userCrew.description}</p>
-                                    <button
-                                        onClick={() => setShowCrewDetailModal(true)}
-                                        className="view-crew-btn"
-                                    >
-                                        크루 상세보기
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="no-crew">
-                                    <p>아직 크루가 없습니다</p>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                <h2 style={{ margin: 0 }}>크루 목록</h2>
+                                {!userCrew && (
                                     <button
                                         onClick={() => setShowCreateCrewModal(true)}
-                                        className="create-crew-btn"
+                                        style={{
+                                            padding: '10px 20px',
+                                            backgroundColor: '#1a1a1a',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontWeight: '600',
+                                            cursor: 'pointer'
+                                        }}
                                     >
-                                        크루 만들기
+                                        + 크루 만들기
                                     </button>
+                                )}
+                            </div>
+
+                            {allCrews.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+                                    <p>아직 생성된 크루가 없습니다.</p>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    {allCrews.map((crew) => {
+                                        let crewImage;
+                                        try {
+                                            crewImage = JSON.parse(crew.imageUrl);
+                                        } catch {
+                                            crewImage = { url: crew.imageUrl };
+                                        }
+
+                                        return (
+                                            <div
+                                                key={crew.id}
+                                                onClick={() => {
+                                                    // 임시로 현재 보고 있는 크루로 설정 (상세 모달용)
+                                                    // 실제로는 별도의 selectedCrew state를 두는 게 좋지만 
+                                                    // 현재 구조상 userCrew를 재활용하거나 모달에 직접 전달해야 함.
+                                                    // 여기서는 모달이 userCrew를 prop으로 받으므로, 
+                                                    // 상세 보기를 위해 잠시 userCrew처럼 취급하거나 
+                                                    // CrewDetailModal에 selectedCrew prop을 추가해야 함.
+                                                    // 일단 userCrew와 별개로 '선택된 크루'를 표시하기 위해
+                                                    // CrewDetailModal을 수정할 필요가 있음.
+                                                    // 우선은 클릭 시 userCrew state를 덮어쓰지 않고 
+                                                    // 별도의 state 처리가 필요해 보임.
+                                                    // 하지만 일단 빠른 구현을 위해 userCrew와 구분 없이 
+                                                    // '상세보기 대상'으로 처리.
+                                                    setUserCrew({ ...crew, image: crewImage });
+                                                    setShowCrewDetailModal(true);
+                                                }}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '16px',
+                                                    padding: '16px',
+                                                    backgroundColor: '#fff',
+                                                    borderRadius: '12px',
+                                                    border: '1px solid #e0e0e0',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.transform = 'translateY(0)';
+                                                    e.currentTarget.style.boxShadow = 'none';
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        width: '60px',
+                                                        height: '60px',
+                                                        borderRadius: '12px',
+                                                        background: crewImage.bg || '#ddd',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        fontSize: '32px',
+                                                        flexShrink: 0,
+                                                        overflow: 'hidden'
+                                                    }}
+                                                >
+                                                    {crewImage.url ? (
+                                                        <img src={crewImage.url} alt={crew.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    ) : (
+                                                        crewImage.emoji
+                                                    )}
+                                                </div>
+                                                <div style={{ flex: 1 }}>
+                                                    <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>{crew.name}</h3>
+                                                    <p style={{ margin: 0, fontSize: '14px', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>
+                                                        {crew.description || '설명이 없습니다.'}
+                                                    </p>
+                                                </div>
+                                                <div style={{ fontSize: '24px', color: '#ccc' }}>›</div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
