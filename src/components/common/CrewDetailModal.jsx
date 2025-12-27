@@ -249,6 +249,22 @@ function CrewDetailModal({ isOpen, onClose, crew, user }) {
                             >
                                 {actionLoading ? '처리 중...' : (userRole === 'captain' ? '크루장' : '탈퇴하기')}
                             </button>
+                        ) : user.crewId ? (
+                            <button
+                                disabled
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #eee',
+                                    backgroundColor: '#f5f5f5',
+                                    color: '#999',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: 'not-allowed'
+                                }}
+                            >
+                                이미 다른 크루 가입됨
+                            </button>
                         ) : (
                             <button
                                 onClick={handleJoin}
