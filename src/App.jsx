@@ -58,76 +58,77 @@ function App() {
         return () => window.removeEventListener('token-refreshed', handleTokenRefresh);
     }, []);
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                // OAuth 콜백 처리: URL에서 OAuth 관련 파라미터 확인
-                const urlParams = new URLSearchParams(window.location.search);
-                const isOAuthCallback = urlParams.has('code') || window.location.pathname.includes('/oauth2/callback');
+    const checkAuth = async () => {
+        setIsAuthChecking(true);
+        try {
+            // OAuth 콜백 처리: URL에서 OAuth 관련 파라미터 확인
+            const urlParams = new URLSearchParams(window.location.search);
+            const isOAuthCallback = urlParams.has('code') || window.location.pathname.includes('/oauth2/callback');
 
-                if (isOAuthCallback) {
-                    console.log('🔐 OAuth 콜백 감지됨');
-                    // OAuth 콜백인 경우 URL 파라미터 제거 (깔끔한 URL 유지)
-                    window.history.replaceState({}, document.title, window.location.pathname);
+            if (isOAuthCallback) {
+                console.log('🔐 OAuth 콜백 감지됨');
+                // OAuth 콜백인 경우 URL 파라미터 제거 (깔끔한 URL 유지)
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            // 1. Refresh Token으로 Access Token 갱신 시도
+            console.log('🔄 토큰 갱신 시도...');
+            const refreshResponse = await fetch(`${import.meta.env.VITE_API_URL}/refresh/token`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include', // 쿠키 포함
+            });
+
+            if (refreshResponse.ok) {
+                let accessToken = refreshResponse.headers.get('Authorization');
+                if (accessToken && accessToken.startsWith('Bearer ')) {
+                    accessToken = accessToken.substring(7); // 'Bearer ' 제거
                 }
+                console.log('🔑 갱신된 Access Token:', accessToken);
 
-                // 1. 최초 접근 시 refresh token 호출 (부트스트랩 과정이므로 직접 호출)
-                console.log('🔄 자동 로그인 시도...');
-                const refreshResponse = await fetch(`${import.meta.env.VITE_API_URL}/refresh/token`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include', // 쿠키 포함
-                });
-
-                if (refreshResponse.ok) {
-                    let accessToken = refreshResponse.headers.get('Authorization');
-                    if (accessToken && accessToken.startsWith('Bearer ')) {
-                        accessToken = accessToken.substring(7); // 'Bearer ' 제거
-                    }
-                    console.log('🔑 갱신된 Access Token:', accessToken);
-
-                    if (accessToken) {
-                        // 2. 토큰으로 내 정보(my) 호출 - 공통 API 유틸 사용
-                        console.log('👤 내 정보(my) 호출 중...');
-                        const myResponse = await api.request(`${import.meta.env.VITE_API_URL}/my`, {
-                            method: 'GET',
-                            headers: {
-                                'Authorization': `Bearer ${accessToken}`,
-                                'Content-Type': 'application/json',
-                            }
-                        });
-
-                        if (myResponse.ok) {
-                            const userData = await myResponse.json();
-                            // my 호출 시 받은 데이터에 토큰도 포함해서 관리
-                            userData.accessToken = accessToken;
-
-                            console.log('✅ 자동 로그인 & 정보 조회 성공:', userData);
-                            setUser(userData);
-                            localStorage.setItem('running_user', JSON.stringify(userData));
-                        } else {
-                            console.log('❌ 내 정보 조회 실패:', myResponse.status);
-                            throw new Error('Failed to fetch user info');
+                if (accessToken) {
+                    // 2. 토큰으로 내 정보(my) 호출 - 공통 API 유틸 사용
+                    console.log('👤 내 정보(my) 호출 중...');
+                    const myResponse = await api.request(`${import.meta.env.VITE_API_URL}/my`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json',
                         }
+                    });
+
+                    if (myResponse.ok) {
+                        const userData = await myResponse.json();
+                        // my 호출 시 받은 데이터에 토큰도 포함해서 관리
+                        userData.accessToken = accessToken;
+
+                        console.log('✅ 자동 로그인 & 정보 조회 성공:', userData);
+                        setUser(userData);
+                        localStorage.setItem('running_user', JSON.stringify(userData));
                     } else {
-                        console.log('❌ Access Token이 헤더에 없습니다.');
-                        throw new Error('No access token');
+                        console.log('❌ 내 정보 조회 실패:', myResponse.status);
+                        throw new Error('Failed to fetch user info');
                     }
                 } else {
-                    console.log('❌ 리프레시 토큰 만료 또는 실패:', refreshResponse.status);
-                    throw new Error('Refresh token invalid');
+                    console.log('❌ Access Token이 헤더에 없습니다.');
+                    throw new Error('No access token');
                 }
-            } catch (error) {
-                console.error('❌ 인증 체크 실패:', error);
-                setUser(null);
-                localStorage.removeItem('running_user');
-            } finally {
-                setIsAuthChecking(false);
+            } else {
+                console.log('❌ 리프레시 토큰 만료 또는 실패:', refreshResponse.status);
+                throw new Error('Refresh token invalid');
             }
-        };
+        } catch (error) {
+            console.error('❌ 인증 체크 실패:', error);
+            setUser(null);
+            localStorage.removeItem('running_user');
+        } finally {
+            setIsAuthChecking(false);
+        }
+    };
 
+    useEffect(() => {
         checkAuth();
     }, []);
 
@@ -293,6 +294,7 @@ function App() {
             createdAt: new Date().toISOString()
         });
         fetchCrews(); // 리스트 갱신
+        checkAuth(); // 내 정보 갱신 (크루 정보 포함)
         setShowCreateCrewModal(false);
     };
 
@@ -576,6 +578,10 @@ function App() {
                     onClose={() => setShowCrewDetailModal(false)}
                     crew={userCrew}
                     user={user}
+                    onUpdateUser={() => {
+                        checkAuth();
+                        fetchCrews();
+                    }}
                 />
 
                 {/* Runner Grade Modal */}

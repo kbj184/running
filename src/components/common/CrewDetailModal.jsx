@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 
-function CrewDetailModal({ isOpen, onClose, crew, user }) {
+function CrewDetailModal({ isOpen, onClose, crew, user, onUpdateUser }) {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
@@ -52,6 +52,7 @@ function CrewDetailModal({ isOpen, onClose, crew, user }) {
             if (response.ok) {
                 // Refresh members
                 fetchMembers();
+                if (onUpdateUser) onUpdateUser();
             } else {
                 const error = await response.text();
                 alert('가입 실패: ' + error);
@@ -82,6 +83,7 @@ function CrewDetailModal({ isOpen, onClose, crew, user }) {
                 // Let's refresh first.
                 fetchMembers();
                 setUserRole(null);
+                if (onUpdateUser) onUpdateUser();
             } else {
                 const error = await response.text();
                 alert('탈퇴 실패: ' + error);
