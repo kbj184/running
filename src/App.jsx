@@ -131,27 +131,28 @@ function App() {
         checkAuth();
     }, []);
 
+    const fetchCrews = async () => {
+        if (!user) return;
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/all`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                const crews = await response.json();
+                setAllCrews(crews);
+            }
+        } catch (error) {
+            console.error('크루 목록 로드 실패:', error);
+        }
+    };
+
     // 크루 탭 활성화 시 크루 목록 로드
     useEffect(() => {
-        if (activeTab === 'crew' && user) {
-            const fetchCrews = async () => {
-                try {
-                    const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/all`, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
-                        }
-                    });
-
-                    if (response.ok) {
-                        const crews = await response.json();
-                        setAllCrews(crews);
-                    }
-                } catch (error) {
-                    console.error('크루 목록 로드 실패:', error);
-                }
-            };
-
+        if (activeTab === 'crew') {
             fetchCrews();
         }
     }, [activeTab, user]);
@@ -291,6 +292,7 @@ function App() {
             memberCount: 1, // 본인 포함 1명
             createdAt: new Date().toISOString()
         });
+        fetchCrews(); // 리스트 갱신
         setShowCreateCrewModal(false);
     };
 
@@ -528,7 +530,12 @@ function App() {
                                                     )}
                                                 </div>
                                                 <div style={{ flex: 1 }}>
-                                                    <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>{crew.name}</h3>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>{crew.name}</h3>
+                                                        <span style={{ fontSize: '12px', color: '#888', backgroundColor: '#f5f5f5', padding: '2px 6px', borderRadius: '4px' }}>
+                                                            {crew.memberCount || 0}명
+                                                        </span>
+                                                    </div>
                                                     <p style={{ margin: 0, fontSize: '14px', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>
                                                         {crew.description || '설명이 없습니다.'}
                                                     </p>
@@ -568,6 +575,7 @@ function App() {
                     isOpen={showCrewDetailModal}
                     onClose={() => setShowCrewDetailModal(false)}
                     crew={userCrew}
+                    user={user}
                 />
 
                 {/* Runner Grade Modal */}
