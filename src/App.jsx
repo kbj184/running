@@ -453,6 +453,7 @@ function App() {
                     isOpen={showCreateCrewModal}
                     onClose={() => setShowCreateCrewModal(false)}
                     onCreate={handleCreateCrew}
+                    user={user}
                 />
 
                 <CrewDetailModal
