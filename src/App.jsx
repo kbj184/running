@@ -339,8 +339,8 @@ function App() {
                 <div className="main-logo">llrun</div>
                 <div className="main-user-profile">
                     <div className="user-profile-image">
-                        {user.profileImage ? (
-                            <img src={user.profileImage} alt={user.nickname} />
+                        {user.nicknameImage ? (
+                            <img src={user.nicknameImage} alt={user.nickname} />
                         ) : (
                             <div className="default-profile-icon">👤</div>
                         )}
