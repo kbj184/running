@@ -1,15 +1,113 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { api } from '../../utils/api';
 
-function CrewDetailModal({ isOpen, onClose, crew }) {
+function CrewDetailModal({ isOpen, onClose, crew, user }) {
+    const [members, setMembers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [userRole, setUserRole] = useState(null); // 'captain', 'member', or null (not joined)
+
+    useEffect(() => {
+        if (isOpen && crew && user) {
+            fetchMembers();
+        }
+    }, [isOpen, crew, user]);
+
+    const fetchMembers = async () => {
+        if (!crew) return;
+        setLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setMembers(data);
+
+                // Determine user's role
+                const myMemberInfo = data.find(m => m.userId === user.id);
+                setUserRole(myMemberInfo ? myMemberInfo.role : null);
+            }
+        } catch (error) {
+            console.error('Failed to fetch members:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleJoin = async () => {
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/join`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                // Refresh members
+                fetchMembers();
+            } else {
+                const error = await response.text();
+                alert('가입 실패: ' + error);
+            }
+        } catch (error) {
+            console.error('Join error:', error);
+            alert('가입 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleLeave = async () => {
+        if (!window.confirm('정말 크루를 탈퇴하시겠습니까?')) return;
+
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/leave`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                // Refresh members or close modal?
+                // Probably better to refresh to show user is gone, or close if they want.
+                // Let's refresh first.
+                fetchMembers();
+                setUserRole(null);
+            } else {
+                const error = await response.text();
+                alert('탈퇴 실패: ' + error);
+            }
+        } catch (error) {
+            console.error('Leave error:', error);
+            alert('탈퇴 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     if (!isOpen || !crew) return null;
 
-    // 모의 멤버 데이터 (실제로는 DB나 상태에서 관리해야 함)
-    const members = [
-        { id: 'me', name: '나 (User)', role: crew.role, grade: 'pro', joinDate: crew.createdAt },
-        // 시각적 예시를 위한 가상 멤버들
-        { id: 'm1', name: 'Running Mate 1', role: 'member', grade: 'advanced', joinDate: new Date().toISOString() },
-        { id: 'm2', name: 'Pace Maker', role: 'member', grade: 'elite', joinDate: new Date().toISOString() },
-    ];
+    // determine bg and emoji from crew.image (which might be parsed or raw)
+    let crewImage = crew.image;
+    // If it's not an object with emoji/bg, try to parse it or use default
+    if (!crewImage || (!crewImage.emoji && !crewImage.url)) {
+        try {
+            crewImage = JSON.parse(crew.imageUrl);
+        } catch {
+            // Fallback if parsing fails or it's a raw URL string
+            crewImage = { url: crew.imageUrl || '', bg: '#ddd', emoji: '🏃' };
+        }
+    }
+
 
     return (
         <div className="modal-overlay" style={{
@@ -52,7 +150,7 @@ function CrewDetailModal({ isOpen, onClose, crew }) {
             }}>
                 {/* Header Section with Gradient */}
                 <div style={{
-                    background: crew.image.bg,
+                    background: crewImage.bg || '#333',
                     padding: '30px 24px',
                     color: 'white',
                     position: 'relative'
@@ -84,9 +182,14 @@ function CrewDetailModal({ isOpen, onClose, crew }) {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                            overflow: 'hidden'
                         }}>
-                            {crew.image.emoji}
+                            {crewImage.url ? (
+                                <img src={crewImage.url} alt={crew.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                                crewImage.emoji || '🏃'
+                            )}
                         </div>
                         <div>
                             <div style={{
@@ -110,83 +213,122 @@ function CrewDetailModal({ isOpen, onClose, crew }) {
                     padding: '20px 24px',
                     borderBottom: '1px solid #f0f0f0',
                     display: 'flex',
-                    gap: '40px'
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
                 }}>
-                    <div>
-                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>멤버</div>
-                        <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>{members.length}명</div>
-                    </div>
-                    <div>
-                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>개설일</div>
-                        <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>
-                            {new Date(crew.createdAt).toLocaleDateString()}
+                    <div style={{ display: 'flex', gap: '40px' }}>
+                        <div>
+                            <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>멤버</div>
+                            <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>{members.length}명</div>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>개설일</div>
+                            <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>
+                                {new Date(crew.createdAt).toLocaleDateString()}
+                            </div>
                         </div>
                     </div>
+
+                    {/* Action Button */}
                     <div>
-                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>내 역할</div>
-                        <div style={{
-                            fontSize: '14px',
-                            fontWeight: '700',
-                            color: '#1a1a1a',
-                            background: '#f0f0f0',
-                            padding: '4px 12px',
-                            borderRadius: '12px',
-                            display: 'inline-block',
-                            marginTop: '2px'
-                        }}>
-                            {crew.role === 'captain' ? '👑 크루장' : '멤버'}
-                        </div>
+                        {userRole ? (
+                            <button
+                                onClick={handleLeave}
+                                disabled={actionLoading || userRole === 'captain'}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #fee2e2',
+                                    backgroundColor: '#fff',
+                                    color: userRole === 'captain' ? '#ccc' : '#ef4444',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: userRole === 'captain' ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {actionLoading ? '처리 중...' : (userRole === 'captain' ? '크루장' : '탈퇴하기')}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleJoin}
+                                disabled={actionLoading}
+                                style={{
+                                    padding: '8px 24px',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    backgroundColor: '#1a1a1a',
+                                    color: 'white',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {actionLoading ? '가입 중...' : '가입하기'}
+                            </button>
+                        )}
                     </div>
                 </div>
 
                 {/* Members List */}
-                <div style={{ padding: '24px', overflowY: 'auto' }}>
+                <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
                     <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
                         멤버 목록 <span style={{ fontSize: '14px', color: '#666', fontWeight: 'normal' }}>({members.length})</span>
                     </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {members.map((member) => (
-                            <div key={member.id} className="member-item" style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                padding: '12px 16px',
-                                borderRadius: '12px',
-                                border: '1px solid #f0f0f0',
-                                transition: 'all 0.2s',
-                                cursor: 'pointer'
-                            }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{
-                                        width: '40px',
-                                        height: '40px',
-                                        borderRadius: '50%',
-                                        backgroundColor: member.grade === 'elite' ? '#ff6b81' : member.grade === 'pro' ? '#70a1ff' : '#2ed573',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '20px',
-                                        color: 'white',
-                                        border: '2px solid white',
-                                        boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-                                    }}>
-                                        {member.role === 'captain' ? '👑' : '🏃'}
-                                    </div>
-                                    <div>
-                                        <div style={{ fontWeight: '600', color: '#1a1a1a', fontSize: '15px' }}>{member.name}</div>
-                                        <div style={{ fontSize: '12px', color: '#888' }}>
-                                            {member.grade === 'elite' ? 'ELITE' : member.grade === 'pro' ? 'PRO' : 'ADVANCED'} Runner
+
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>로딩 중...</div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {members.map((member) => (
+                                <div key={member.userId} className="member-item" style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    padding: '12px 16px',
+                                    borderRadius: '12px',
+                                    border: '1px solid #f0f0f0',
+                                    transition: 'all 0.2s',
+                                    cursor: 'default'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '50%',
+                                            backgroundColor: '#f3f4f6',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            overflow: 'hidden'
+                                        }}>
+                                            {member.nicknameImage ? (
+                                                <img src={member.nicknameImage} alt={member.nickname} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <span style={{ fontSize: '20px' }}>🏃</span>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div style={{ fontWeight: '600', color: '#1a1a1a', fontSize: '15px' }}>
+                                                {member.nickname}
+                                                {member.userId === user.id && <span style={{ fontSize: '12px', color: '#666', marginLeft: '4px' }}>(나)</span>}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: '#888' }}>
+                                                Runner {/* 등급 정보는 현재 DB에 없으므로 일단 고정 */}
+                                            </div>
                                         </div>
                                     </div>
+                                    {member.role === 'captain' && (
+                                        <span style={{ fontSize: '11px', fontWeight: '600', color: '#fa8231', background: '#fff0e6', padding: '4px 8px', borderRadius: '8px' }}>
+                                            LEADER
+                                        </span>
+                                    )}
                                 </div>
-                                {member.role === 'captain' && (
-                                    <span style={{ fontSize: '11px', fontWeight: '600', color: '#fa8231', background: '#fff0e6', padding: '4px 8px', borderRadius: '8px' }}>
-                                        LEADER
-                                    </span>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
