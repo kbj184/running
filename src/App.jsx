@@ -368,6 +368,40 @@ function App() {
             <div className="main-header">
                 <div className="main-logo">llrun</div>
                 <div className="main-user-profile">
+                    {/* Crew Badge if joined */}
+                    {user.crewName && (
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            background: 'rgba(255,255,255,0.1)',
+                            padding: '4px 10px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            marginRight: '8px',
+                            border: '1px solid rgba(255,255,255,0.2)'
+                        }}>
+                            <span style={{ fontSize: '14px' }}>
+                                {(() => {
+                                    if (!user.crewImage) return '🏃';
+                                    try {
+                                        const img = JSON.parse(user.crewImage);
+                                        if (img.url) {
+                                            return <img src={img.url} alt="crew" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />;
+                                        }
+                                        return img.emoji || '🏃';
+                                    } catch {
+                                        if (user.crewImage.startsWith('http')) {
+                                            return <img src={user.crewImage} alt="crew" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />;
+                                        }
+                                        return '🏃';
+                                    }
+                                })()}
+                            </span>
+                            <span style={{ color: '#fff', fontWeight: '600' }}>{user.crewName}</span>
+                        </div>
+                    )}
+
                     <div className="user-profile-image">
                         {user.nicknameImage ? (
                             <img src={user.nicknameImage} alt={user.nickname} />
