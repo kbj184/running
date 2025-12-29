@@ -239,9 +239,16 @@ function App() {
         setScreenMode('running');
     };
 
-    const handleRunningStop = (result) => {
+    const handleRunningStop = async (result) => {
         setIsRunning(false);
         setRunningResult(result);
+
+        // 승급이 있으면 사용자 정보 새로고침
+        if (result.gradeUpgraded) {
+            console.log('🎉 Grade Upgraded! Refreshing user info...');
+            await checkAuth(); // 사용자 정보 새로고침
+        }
+
         setScreenMode('result');
     };
 

@@ -134,7 +134,7 @@ function RunningScreen({ onStop, sessionId, user }) {
         const data = dataRef.current;
         if (!user || !user.accessToken) {
             console.warn("⚠️ Sync skipped: User not logged in");
-            return;
+            return null;
         }
 
         try {
@@ -164,15 +164,25 @@ function RunningScreen({ onStop, sessionId, user }) {
             });
 
             if (response.ok) {
+                const result = await response.json();
                 lastSyncedTimeRef.current = Date.now();
                 console.log(`☁️ MariaDB Sync Success (${isFinal ? 'Final' : 'Auto'})`);
                 console.log(`   📊 Distance: ${data.distance.toFixed(2)}km, Elevation: ${data.currentElevation.toFixed(0)}m`);
                 console.log(`   ⛰️ Ascent: ${data.totalAscent.toFixed(0)}m, Descent: ${data.totalDescent.toFixed(0)}m`);
+
+                // 승급 정보 확인
+                if (result.gradeUpgraded) {
+                    console.log(`🎉 Grade Upgraded: ${result.newGrade}`);
+                }
+
+                return result;
             } else {
                 console.error("❌ Sync failed with status:", response.status);
+                return null;
             }
         } catch (err) {
             console.error("❌ Sync error:", err);
+            return null;
         }
     }, [sessionId, user]);
 
@@ -456,8 +466,8 @@ function RunningScreen({ onStop, sessionId, user }) {
         // IndexedDB 최종 저장
         await triggerSave(true);
 
-        // MariaDB 최종 동기화
-        await syncToBackend(true);
+        // MariaDB 최종 동기화 및 승급 정보 받기
+        const syncResult = await syncToBackend(true);
 
         if (watchIdRef.current) clearWatch(watchIdRef.current);
 
@@ -472,7 +482,12 @@ function RunningScreen({ onStop, sessionId, user }) {
             sessionId,
             currentElevation: data.currentElevation,
             totalAscent: data.totalAscent,
-            totalDescent: data.totalDescent
+            totalDescent: data.totalDescent,
+            // 승급 정보 추가
+            gradeUpgraded: syncResult?.gradeUpgraded || false,
+            newGrade: syncResult?.newGrade,
+            gradeLevel: syncResult?.gradeLevel,
+            gradeDescription: syncResult?.gradeDescription
         });
     };
 

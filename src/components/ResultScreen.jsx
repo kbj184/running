@@ -105,10 +105,35 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
 
     return (
         <div className="result-screen-container">
-            <header className="result-screen-header">
-                <h1>{mode === 'view' ? '기록 상세' : '수고하셨습니다!'}</h1>
+            <header className="result-header">
+                <h1 className="result-title">러닝 완료!</h1>
                 <button className="result-close-x" onClick={onSave}>✕</button>
             </header>
+
+            {/* 승급 축하 배너 */}
+            {result.gradeUpgraded && (
+                <div style={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    padding: '20px',
+                    margin: '0 20px 20px 20px',
+                    borderRadius: '16px',
+                    textAlign: 'center',
+                    color: '#fff',
+                    boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
+                    animation: 'slideDown 0.5s ease-out'
+                }}>
+                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>🎉</div>
+                    <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>
+                        등급 승급!
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: '800', marginBottom: '4px' }}>
+                        {result.newGrade}
+                    </div>
+                    <div style={{ fontSize: '13px', opacity: 0.9 }}>
+                        {result.gradeDescription}
+                    </div>
+                </div>
+            )}
 
             <section className="result-summary-section">
                 <div className="result-main-stats-row">
