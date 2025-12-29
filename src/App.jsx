@@ -39,6 +39,10 @@ function App() {
     const [showCrewDetailModal, setShowCrewDetailModal] = useState(false);
     const [showRunnerGradeModal, setShowRunnerGradeModal] = useState(false);
 
+    // 프로필 메뉴 상태
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [profileTab, setProfileTab] = useState('records'); // 'records', 'info', 'settings'
+
     const [isAuthChecking, setIsAuthChecking] = useState(true); // 인증 체크 상태
 
     useEffect(() => {
@@ -442,19 +446,120 @@ function App() {
                         );
                     })()}
 
-                    <div className="user-profile-image">
-                        {user.nicknameImage ? (
-                            <img src={user.nicknameImage} alt={user.nickname} />
-                        ) : (
-                            <div className="default-profile-icon">👤</div>
-                        )}
+                    <div
+                        className="user-profile-section"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            padding: '4px 8px',
+                            borderRadius: '8px',
+                            transition: 'all 0.2s'
+                        }}
+                        onClick={() => {
+                            setShowProfileMenu(!showProfileMenu);
+                            setProfileTab('records'); // 기본 탭으로 리셋
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                    >
+                        <div className="user-profile-image">
+                            {user.nicknameImage ? (
+                                <img src={user.nicknameImage} alt={user.nickname} />
+                            ) : (
+                                <div className="default-profile-icon">👤</div>
+                            )}
+                        </div>
+                        <span className="user-nickname">{user.nickname}</span>
                     </div>
-                    <span className="user-nickname">{user.nickname}</span>
                 </div>
             </div>
 
+            {/* Profile Sub-Header */}
+            {showProfileMenu && (
+                <div style={{
+                    position: 'fixed',
+                    top: '60px',
+                    left: 0,
+                    right: 0,
+                    backgroundColor: '#fff',
+                    borderBottom: '1px solid #e0e0e0',
+                    zIndex: 999,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        gap: '0',
+                        padding: '0 20px',
+                        maxWidth: '1200px',
+                        margin: '0 auto'
+                    }}>
+                        <button
+                            onClick={() => setProfileTab('records')}
+                            style={{
+                                flex: 1,
+                                padding: '16px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                borderBottom: profileTab === 'records' ? '3px solid #1a1a1a' : '3px solid transparent',
+                                color: profileTab === 'records' ? '#1a1a1a' : '#888',
+                                fontWeight: profileTab === 'records' ? '700' : '500',
+                                fontSize: '15px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            내 기록
+                        </button>
+                        <button
+                            onClick={() => setProfileTab('info')}
+                            style={{
+                                flex: 1,
+                                padding: '16px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                borderBottom: profileTab === 'info' ? '3px solid #1a1a1a' : '3px solid transparent',
+                                color: profileTab === 'info' ? '#1a1a1a' : '#888',
+                                fontWeight: profileTab === 'info' ? '700' : '500',
+                                fontSize: '15px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            내 정보
+                        </button>
+                        <button
+                            onClick={() => setProfileTab('settings')}
+                            style={{
+                                flex: 1,
+                                padding: '16px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                borderBottom: profileTab === 'settings' ? '3px solid #1a1a1a' : '3px solid transparent',
+                                color: profileTab === 'settings' ? '#1a1a1a' : '#888',
+                                fontWeight: profileTab === 'settings' ? '700' : '500',
+                                fontSize: '15px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '4px'
+                            }}
+                        >
+                            <span>⚙️</span>
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Scrollable Content Area */}
-            <div className="main-content">
+            <div className="main-content" style={{ marginTop: showProfileMenu ? '60px' : '0' }}>
                 {/* Home Tab */}
                 {activeTab === 'home' && (
                     <div className="tab-content home-tab">
@@ -462,6 +567,114 @@ function App() {
                             <h1>Welcome to LLRun! 🏃</h1>
                             <p>함께 달리는 즐거움을 경험하세요</p>
                         </div>
+                    </div>
+                )}
+
+                {/* Profile Menu Content */}
+                {showProfileMenu && (
+                    <div className="tab-content profile-tab" style={{ padding: '20px' }}>
+                        {profileTab === 'records' && (
+                            <div>
+                                <h2 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: '700' }}>내 기록</h2>
+                                <RecentRecords
+                                    onRefresh={refreshRecords}
+                                    onRecordClick={handleRecordClick}
+                                />
+                            </div>
+                        )}
+
+                        {profileTab === 'info' && (
+                            <div>
+                                <h2 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: '700' }}>내 정보</h2>
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '16px',
+                                    maxWidth: '600px'
+                                }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '16px',
+                                        padding: '20px',
+                                        backgroundColor: '#f9f9f9',
+                                        borderRadius: '12px'
+                                    }}>
+                                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+                                            {user.nicknameImage ? (
+                                                <img src={user.nicknameImage} alt={user.nickname} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <div style={{ width: '100%', height: '100%', backgroundColor: '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px' }}>👤</div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '24px', fontWeight: '700', marginBottom: '4px' }}>{user.nickname}</div>
+                                            <div style={{ fontSize: '14px', color: '#666' }}>{user.email}</div>
+                                        </div>
+                                    </div>
+
+                                    {user.runnerGrade && (() => {
+                                        const gradeInfo = getGradeInfo(user.runnerGrade);
+                                        return (
+                                            <div style={{
+                                                padding: '20px',
+                                                backgroundColor: '#f9f9f9',
+                                                borderRadius: '12px'
+                                            }}>
+                                                <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>러너 등급</div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ fontSize: '32px' }}>{gradeInfo.emoji}</span>
+                                                    <span style={{ fontSize: '20px', fontWeight: '700', color: gradeInfo.color }}>
+                                                        {gradeInfo.nameKo}
+                                                    </span>
+                                                    {gradeInfo.badge && (
+                                                        <span style={getBadgeStyle(gradeInfo.badge, gradeInfo.color)}>
+                                                            {gradeInfo.badge}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div style={{ fontSize: '13px', color: '#888', marginTop: '4px' }}>{gradeInfo.description}</div>
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {user.crewName && (
+                                        <div style={{
+                                            padding: '20px',
+                                            backgroundColor: '#f9f9f9',
+                                            borderRadius: '12px'
+                                        }}>
+                                            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>소속 크루</div>
+                                            <div style={{ fontSize: '18px', fontWeight: '700' }}>{user.crewName}</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {profileTab === 'settings' && (
+                            <div>
+                                <h2 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: '700' }}>설정</h2>
+                                <div style={{ maxWidth: '600px' }}>
+                                    <button
+                                        onClick={handleLogout}
+                                        style={{
+                                            width: '100%',
+                                            padding: '16px',
+                                            backgroundColor: '#ef4444',
+                                            color: '#fff',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '16px',
+                                            fontWeight: '600',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        로그아웃
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
