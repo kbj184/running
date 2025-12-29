@@ -60,8 +60,14 @@ function RunningScreen({ onStop, sessionId, user }) {
     const [map, setMap] = useState(null);
     const [currentPosition, setCurrentPosition] = useState(null);
 
-    // Route 데이터 구조: { lat, lng, speed, timestamp }
+    // Route 데이터 구조: { lat, lng, speed, timestamp, elevation }
     const [route, setRoute] = useState([]);
+
+    // 고도 관련 상태
+    const [currentElevation, setCurrentElevation] = useState(0); // 현재 고도 (m)
+    const [totalAscent, setTotalAscent] = useState(0); // 총 상승 (m)
+    const [totalDescent, setTotalDescent] = useState(0); // 총 하강 (m)
+    const [elevationService, setElevationService] = useState(null); // Google Elevation API
 
     // 1km 구간 기록 (Splits)
     const [splits, setSplits] = useState([]);
@@ -98,7 +104,11 @@ function RunningScreen({ onStop, sessionId, user }) {
         route: [],
         wateringSegments: [],
         splits: [],
-        isWatering: false
+        isWatering: false,
+        currentElevation: 0,
+        totalAscent: 0,
+        totalDescent: 0,
+        lastElevation: null
     });
 
     // 상태 동기화 (UI 렌더링용)
@@ -106,7 +116,18 @@ function RunningScreen({ onStop, sessionId, user }) {
         dataRef.current.wateringSegments = wateringSegments;
         dataRef.current.splits = splits;
         dataRef.current.isWatering = isWatering;
-    }, [wateringSegments, splits, isWatering]);
+        dataRef.current.currentElevation = currentElevation;
+        dataRef.current.totalAscent = totalAscent;
+        dataRef.current.totalDescent = totalDescent;
+    }, [wateringSegments, splits, isWatering, currentElevation, totalAscent, totalDescent]);
+
+    // Google Elevation Service 초기화
+    useEffect(() => {
+        if (isLoaded && window.google && window.google.maps) {
+            setElevationService(new window.google.maps.ElevationService());
+            console.log('🗻 Elevation Service initialized');
+        }
+    }, [isLoaded]);
 
     // MariaDB 동기화 함수
     const syncToBackend = useCallback(async (isFinal = false) => {
@@ -202,8 +223,43 @@ function RunningScreen({ onStop, sessionId, user }) {
         }
     }, [testMode]);
 
+    // Google Elevation API로 고도 조회 (1km마다 보정용)
+    const getElevationFromAPI = useCallback(async (lat, lng) => {
+        if (!elevationService) return null;
+
+        return new Promise((resolve) => {
+            elevationService.getElevationForLocations({
+                locations: [{ lat, lng }]
+            }, (results, status) => {
+                if (status === 'OK' && results[0]) {
+                    console.log(`🗻 API Elevation: ${results[0].elevation.toFixed(1)}m`);
+                    resolve(results[0].elevation);
+                } else {
+                    console.warn('⚠️ Elevation API failed:', status);
+                    resolve(null);
+                }
+            });
+        });
+    }, [elevationService]);
+
+    // 고도 변화 계산 및 상승/하강 누적
+    const updateElevationGain = (prevElevation, currentElevation) => {
+        if (prevElevation === null || currentElevation === null) return;
+
+        const diff = currentElevation - prevElevation;
+        const threshold = 1; // 1m 이상 변화만 인정 (노이즈 필터링)
+
+        if (diff > threshold) {
+            setTotalAscent(prev => prev + diff);
+            dataRef.current.totalAscent += diff;
+        } else if (diff < -threshold) {
+            setTotalDescent(prev => prev + Math.abs(diff));
+            dataRef.current.totalDescent += Math.abs(diff);
+        }
+    };
+
     // 위치 업데이트 및 Split 체크 공통 로직
-    const handleLocationUpdate = (newPos, currentDuration) => {
+    const handleLocationUpdate = async (newPos, currentDuration, gpsAltitude = null) => {
         const prevData = dataRef.current;
 
         setCurrentPosition(newPos);
@@ -213,10 +269,30 @@ function RunningScreen({ onStop, sessionId, user }) {
         let newSpeed = prevData.speed;
         let newPace = prevData.pace;
 
+        // 고도 처리: GPS altitude를 기본으로 사용
+        let elevation = gpsAltitude;
+
+        // GPS 고도가 없거나 null이면 이전 값 유지
+        if (elevation === null || elevation === undefined) {
+            elevation = dataRef.current.lastElevation || 0;
+        }
+
+        // 고도 업데이트
+        setCurrentElevation(elevation);
+        dataRef.current.currentElevation = elevation;
+
+        // 고도 변화 계산 (이전 고도가 있을 때만)
+        if (dataRef.current.lastElevation !== null) {
+            updateElevationGain(dataRef.current.lastElevation, elevation);
+        }
+
+        dataRef.current.lastElevation = elevation;
+
         const newPoint = {
             lat: newPos.lat,
             lng: newPos.lng,
             speed: newSpeed,
+            elevation: elevation,
             timestamp: Date.now()
         };
 
@@ -244,17 +320,31 @@ function RunningScreen({ onStop, sessionId, user }) {
                     const prevSplitsDuration = prevData.splits.reduce((acc, curr) => acc + curr.duration, 0);
                     const currentSplitDuration = currentDuration - prevSplitsDuration;
 
+                    // 1km 지점에서 Google Elevation API로 고도 보정
+                    if (elevationService) {
+                        const apiElevation = await getElevationFromAPI(newPos.lat, newPos.lng);
+                        if (apiElevation !== null) {
+                            elevation = apiElevation;
+                            setCurrentElevation(elevation);
+                            dataRef.current.currentElevation = elevation;
+                            dataRef.current.lastElevation = elevation;
+                            newPoint.elevation = elevation;
+                            console.log(`🗻 Elevation corrected at ${currentKm}km: ${elevation.toFixed(1)}m`);
+                        }
+                    }
+
                     const newSplit = {
                         km: currentKm,
                         duration: currentSplitDuration > 0 ? currentSplitDuration : 1,
                         pace: currentSplitDuration / 60,
                         totalDistance: newDistance,
-                        totalTime: currentDuration
+                        totalTime: currentDuration,
+                        elevation: elevation // Split에 고도 정보 추가
                     };
 
                     setSplits(prev => [...prev, newSplit]);
                     lastSplitDistanceRef.current = currentKm;
-                    console.log(`🚩 ${currentKm}km Split recorded!`);
+                    console.log(`🚩 ${currentKm}km Split recorded! Elevation: ${elevation.toFixed(1)}m`);
                 }
 
                 // 10m 이상 이동 시 즉시 저장 체크
@@ -296,7 +386,9 @@ function RunningScreen({ onStop, sessionId, user }) {
         if (!testMode) return;
         const newPos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
         const currentDuration = (Date.now() - startTimeRef.current) / 1000;
-        handleLocationUpdate(newPos, currentDuration);
+        // 테스트 모드에서는 임의의 고도 생성 (50-200m 사이)
+        const testAltitude = 50 + Math.random() * 150;
+        handleLocationUpdate(newPos, currentDuration, testAltitude);
     };
 
     useEffect(() => {
@@ -305,7 +397,8 @@ function RunningScreen({ onStop, sessionId, user }) {
                 (position) => {
                     const newPos = { lat: position.latitude, lng: position.longitude };
                     const currentDuration = (Date.now() - startTimeRef.current) / 1000;
-                    handleLocationUpdate(newPos, currentDuration);
+                    // GPS에서 받은 altitude 전달
+                    handleLocationUpdate(newPos, currentDuration, position.altitude);
                 },
                 (err) => {
                     console.error('GPS Error:', err);
@@ -374,7 +467,10 @@ function RunningScreen({ onStop, sessionId, user }) {
             route: data.route,
             wateringSegments,
             splits,
-            sessionId
+            sessionId,
+            currentElevation: data.currentElevation,
+            totalAscent: data.totalAscent,
+            totalDescent: data.totalDescent
         });
     };
 
@@ -487,6 +583,28 @@ function RunningScreen({ onStop, sessionId, user }) {
                         <div className="stat-label">칼로리</div>
                         <div className="stat-value-lg">
                             {Math.floor(distance * 60)} kcal
+                        </div>
+                    </div>
+                </div>
+
+                {/* 고도 정보 */}
+                <div className="running-stats-grid" style={{ marginTop: '8px' }}>
+                    <div className="running-stat-card">
+                        <div className="stat-label">고도</div>
+                        <div className="stat-value-lg" style={{ color: '#667eea' }}>
+                            {currentElevation.toFixed(0)}m
+                        </div>
+                    </div>
+                    <div className="running-stat-card">
+                        <div className="stat-label">상승</div>
+                        <div className="stat-value-lg" style={{ color: '#22c55e' }}>
+                            ↗ {totalAscent.toFixed(0)}m
+                        </div>
+                    </div>
+                    <div className="running-stat-card">
+                        <div className="stat-label">하강</div>
+                        <div className="stat-value-lg" style={{ color: '#ef4444' }}>
+                            ↘ {totalDescent.toFixed(0)}m
                         </div>
                     </div>
                 </div>

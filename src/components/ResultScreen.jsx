@@ -37,7 +37,18 @@ const getSpeedColor = (speedKmh) => {
 };
 
 function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
-    const { distance, duration, speed, pace, route, wateringSegments = [], splits = [] } = result;
+    const {
+        distance,
+        duration,
+        speed,
+        pace,
+        route,
+        wateringSegments = [],
+        splits = [],
+        currentElevation = 0,
+        totalAscent = 0,
+        totalDescent = 0
+    } = result;
 
     const { isLoaded, loadError } = useJsApiLoader({
         id: 'google-map-script',
@@ -125,6 +136,24 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                         <div className="result-secondary-value">{avgPace > 0 && avgPace < 100 ? avgPace.toFixed(1) : '0.0'} <small>min/km</small></div>
                     </div>
                 </div>
+
+                {/* 고도 정보 */}
+                {(totalAscent > 0 || totalDescent > 0) && (
+                    <div className="result-secondary-stats-grid" style={{ marginTop: '12px' }}>
+                        <div className="result-secondary-item">
+                            <div className="result-secondary-label">Elevation</div>
+                            <div className="result-secondary-value" style={{ color: '#667eea' }}>{currentElevation.toFixed(0)} <small>m</small></div>
+                        </div>
+                        <div className="result-secondary-item">
+                            <div className="result-secondary-label">↗ Ascent</div>
+                            <div className="result-secondary-value" style={{ color: '#22c55e' }}>{totalAscent.toFixed(0)} <small>m</small></div>
+                        </div>
+                        <div className="result-secondary-item">
+                            <div className="result-secondary-label">↘ Descent</div>
+                            <div className="result-secondary-value" style={{ color: '#ef4444' }}>{totalDescent.toFixed(0)} <small>m</small></div>
+                        </div>
+                    </div>
+                )}
             </section>
 
             <section className="result-card-section">
@@ -186,6 +215,11 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                 <div className="split-km-badge">{split.km} km</div>
                                 <div className="split-time-value">{formatTime(split.duration)}</div>
                                 <div className="split-pace-value">{split.pace.toFixed(2)} min/km</div>
+                                {split.elevation !== undefined && (
+                                    <div className="split-elevation-value" style={{ color: '#667eea', fontSize: '12px' }}>
+                                        🗻 {split.elevation.toFixed(0)}m
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
