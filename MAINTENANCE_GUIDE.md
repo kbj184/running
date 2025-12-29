@@ -10,14 +10,25 @@
 1. **AWS Amplify Console 접속**
 2. 해당 앱 선택 -> 사이드바의 **Rewrites and redirects** 메뉴 클릭
 3. **Manage rewrites and redirects** 클릭
-4. **Add rule** 클릭하여 아래 규칙 추가 (최상단으로 이동):
-   - **Source address**: `/<*>` (모든 경로)
-   - **Target address**: `/maintenance.html` (우리가 만든 파일)
-   - **Type**: `200 (Rewrite)`
-5. **Save** 클릭
-   - 즉시 적용되며, 모든 접속자가 점검 페이지를 보게 됩니다.
+4. **기존 규칙(`/<*>` -> `/index.html`)을 삭제하거나 비활성화**합니다.
+5. **Add rule** 클릭하여 아래 2개 규칙을 순서대로 추가합니다 (최상단부터 1, 2순위):
 
-*(점검 종료 시: 해당 규칙을 삭제하거나 Disable 처리하세요)*
+   **[1순위] 점검 페이지 파일 보호**
+   - **Source address**: `/maintenance.html`
+   - **Target address**: `/maintenance.html`
+   - **Type**: `200 (Rewrite)`
+
+   **[2순위] 모든 접속 차단**
+   - **Source address**: `/<*>`
+   - **Target address**: `/maintenance.html`
+   - **Type**: `200 (Rewrite)`
+
+   *(주의: 302 Redirect를 쓰면 캐시 문제로 점검 종료 후에도 접속이 안 될 수 있으므로 200 Rewrite 권장)*
+
+6. **Save** 클릭
+   - 1~2분 내로 적용되며, 모든 접속자가 점검 페이지를 보게 됩니다.
+
+*(점검 종료 시: 위 2개 규칙을 삭제하고, 원래 있던 `index.html` 규칙을 다시 활성화하세요)*
 
 ---
 
