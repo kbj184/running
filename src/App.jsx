@@ -32,6 +32,7 @@ function App() {
 
     // 크루 관련 상태
     const [userCrew, setUserCrew] = useState(null);
+    const [selectedCrew, setSelectedCrew] = useState(null); // 상세 보기용 크루
     const [allCrews, setAllCrews] = useState([]);
     const [showCreateCrewModal, setShowCreateCrewModal] = useState(false);
     const [showCrewDetailModal, setShowCrewDetailModal] = useState(false);
@@ -474,7 +475,7 @@ function App() {
                         <div className="crew-section">
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                                 <h2 style={{ margin: 0 }}>크루 목록</h2>
-                                {!userCrew && (
+                                {!user.crewId && (
                                     <button
                                         onClick={() => setShowCreateCrewModal(true)}
                                         style={{
@@ -510,19 +511,8 @@ function App() {
                                             <div
                                                 key={crew.id}
                                                 onClick={() => {
-                                                    // 임시로 현재 보고 있는 크루로 설정 (상세 모달용)
-                                                    // 실제로는 별도의 selectedCrew state를 두는 게 좋지만 
-                                                    // 현재 구조상 userCrew를 재활용하거나 모달에 직접 전달해야 함.
-                                                    // 여기서는 모달이 userCrew를 prop으로 받으므로, 
-                                                    // 상세 보기를 위해 잠시 userCrew처럼 취급하거나 
-                                                    // CrewDetailModal에 selectedCrew prop을 추가해야 함.
-                                                    // 일단 userCrew와 별개로 '선택된 크루'를 표시하기 위해
-                                                    // CrewDetailModal을 수정할 필요가 있음.
-                                                    // 우선은 클릭 시 userCrew state를 덮어쓰지 않고 
-                                                    // 별도의 state 처리가 필요해 보임.
-                                                    // 하지만 일단 빠른 구현을 위해 userCrew와 구분 없이 
-                                                    // '상세보기 대상'으로 처리.
-                                                    setUserCrew({ ...crew, image: crewImage });
+                                                    // 선택된 크루를 별도 state에 저장
+                                                    setSelectedCrew({ ...crew, image: crewImage });
                                                     setShowCrewDetailModal(true);
                                                 }}
                                                 style={{
@@ -609,8 +599,11 @@ function App() {
 
                 <CrewDetailModal
                     isOpen={showCrewDetailModal}
-                    onClose={() => setShowCrewDetailModal(false)}
-                    crew={userCrew}
+                    onClose={() => {
+                        setShowCrewDetailModal(false);
+                        setSelectedCrew(null);
+                    }}
+                    crew={selectedCrew}
                     user={user}
                     onUpdateUser={() => {
                         checkAuth();
