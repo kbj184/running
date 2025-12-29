@@ -106,34 +106,34 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
     return (
         <div className="result-screen-container">
             <header className="result-screen-header">
-                <h1>{mode === 'view' ? 'Record Detail' : 'Well Done!'}</h1>
+                <h1>{mode === 'view' ? '기록 상세' : '수고하셨습니다!'}</h1>
                 <button className="result-close-x" onClick={onSave}>✕</button>
             </header>
 
             <section className="result-summary-section">
                 <div className="result-main-stats-row">
                     <div className="result-main-stat-item">
-                        <div className="result-stat-label">TIME</div>
+                        <div className="result-stat-label">시간</div>
                         <div className="result-stat-value-huge">{formatTime(duration)}</div>
                     </div>
                     <div className="result-main-stat-item center">
-                        <div className="result-stat-label">DISTANCE</div>
+                        <div className="result-stat-label">거리</div>
                         <div className="result-stat-value-huge">{formatDistance(distance)}</div>
                     </div>
                 </div>
 
                 <div className="result-secondary-stats-grid">
                     <div className="result-secondary-item">
-                        <div className="result-secondary-label">Avg Speed</div>
+                        <div className="result-secondary-label">평균 속도</div>
                         <div className="result-secondary-value">{avgSpeed.toFixed(1)} <small>km/h</small></div>
                     </div>
                     <div className="result-secondary-item">
-                        <div className="result-secondary-label">Calories</div>
+                        <div className="result-secondary-label">칼로리</div>
                         <div className="result-secondary-value">{calories} <small>kcal</small></div>
                     </div>
                     <div className="result-secondary-item">
-                        <div className="result-secondary-label">Avg Pace</div>
-                        <div className="result-secondary-value">{avgPace > 0 && avgPace < 100 ? avgPace.toFixed(1) : '0.0'} <small>min/km</small></div>
+                        <div className="result-secondary-label">평균 페이스</div>
+                        <div className="result-secondary-value">{avgPace > 0 && avgPace < 100 ? avgPace.toFixed(1) : '0.0'} <small>분/km</small></div>
                     </div>
                 </div>
 
@@ -141,15 +141,15 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                 {(totalAscent > 0 || totalDescent > 0) && (
                     <div className="result-secondary-stats-grid" style={{ marginTop: '12px' }}>
                         <div className="result-secondary-item">
-                            <div className="result-secondary-label">Elevation</div>
+                            <div className="result-secondary-label">현재 고도</div>
                             <div className="result-secondary-value" style={{ color: '#667eea' }}>{currentElevation.toFixed(0)} <small>m</small></div>
                         </div>
                         <div className="result-secondary-item">
-                            <div className="result-secondary-label">↗ Ascent</div>
+                            <div className="result-secondary-label">↗ 상승</div>
                             <div className="result-secondary-value" style={{ color: '#22c55e' }}>{totalAscent.toFixed(0)} <small>m</small></div>
                         </div>
                         <div className="result-secondary-item">
-                            <div className="result-secondary-label">↘ Descent</div>
+                            <div className="result-secondary-label">↘ 하강</div>
                             <div className="result-secondary-value" style={{ color: '#ef4444' }}>{totalDescent.toFixed(0)} <small>m</small></div>
                         </div>
                     </div>
@@ -158,12 +158,12 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
 
             <section className="result-card-section">
                 <div className="result-section-title-simple">
-                    <span>🗺️</span> Running Path
+                    <span>🗺️</span> 러닝 경로
                 </div>
                 <div className="result-map-card">
-                    {loadError ? <div>Error mapping</div> :
-                        !isLoaded ? <div>Loading...</div> :
-                            !route || route.length === 0 ? <div>No path</div> : (
+                    {loadError ? <div>지도 오류</div> :
+                        !isLoaded ? <div>로딩 중...</div> :
+                            !route || route.length === 0 ? <div>경로 없음</div> : (
                                 <GoogleMap
                                     mapContainerStyle={containerStyle}
                                     center={center}
@@ -207,14 +207,14 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
             {splits && splits.length > 0 && (
                 <section className="result-card-section">
                     <div className="result-section-title-simple">
-                        <span>🚩</span> Splits (1km)
+                        <span>🚩</span> 구간 기록 (1km)
                     </div>
                     <div className="splits-list">
                         {splits.map((split, idx) => (
                             <div className="split-row-item" key={idx}>
                                 <div className="split-km-badge">{split.km} km</div>
                                 <div className="split-time-value">{formatTime(split.duration)}</div>
-                                <div className="split-pace-value">{split.pace.toFixed(2)} min/km</div>
+                                <div className="split-pace-value">{split.pace.toFixed(2)} 분/km</div>
                                 {split.elevation !== undefined && (
                                     <div className="split-elevation-value" style={{ color: '#667eea', fontSize: '12px' }}>
                                         🗻 {split.elevation.toFixed(0)}m
@@ -228,10 +228,10 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
 
             <div className="result-footer-actions">
                 <button className="result-btn result-btn-delete" onClick={onDelete}>
-                    <span>🗑️</span> Delete
+                    <span>🗑️</span> 삭제
                 </button>
                 <button className="result-btn result-btn-save" onClick={onSave}>
-                    {mode === 'view' ? 'Back Home' : 'Save Record'}
+                    {mode === 'view' ? '홈으로' : '기록 저장'}
                 </button>
             </div>
         </div>
