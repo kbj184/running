@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './running-styles.css';
 import './main-layout.css';
 import { RUNNER_GRADES } from './constants/runnerGrades';
+import { getGradeInfo, getGradeBadgeStyle } from './constants/runnerGradeInfo';
 import { generateRunners } from './utils/runnerUtils';
 import Header from './components/common/Header';
 import MapView from './components/map/MapView';
@@ -402,6 +403,17 @@ function App() {
                             <span style={{ color: '#fff', fontWeight: '600' }}>{user.crewName}</span>
                         </div>
                     )}
+
+                    {/* Runner Grade Badge */}
+                    {user.runnerGrade && (() => {
+                        const gradeInfo = getGradeInfo(user.runnerGrade);
+                        return (
+                            <div style={getGradeBadgeStyle(user.runnerGrade)}>
+                                <span>{gradeInfo.emoji}</span>
+                                <span>{gradeInfo.nameKo}</span>
+                            </div>
+                        );
+                    })()}
 
                     <div className="user-profile-image">
                         {user.nicknameImage ? (
