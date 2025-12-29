@@ -2,59 +2,67 @@
 export const RUNNER_GRADE_INFO = {
     BEGINNER: {
         name: 'Beginner',
-        nameKo: '초보자',
+        nameKo: 'Beginner',
         emoji: '🥉',
         color: '#94a3b8',
-        description: '5km 미만'
+        description: '5km 미만',
+        badge: null
     },
     RUNNER_5K: {
         name: '5K Runner',
-        nameKo: '5K 러너',
+        nameKo: '5K',
         emoji: '🏃',
         color: '#10b981',
-        description: '10km 미만 & 1시간 이내'
+        description: '10km 미만 & 1시간 이내',
+        badge: 'R'
     },
     RUNNER_10K: {
         name: '10K Runner',
-        nameKo: '10K 러너',
+        nameKo: '10K',
         emoji: '🏃‍♂️',
         color: '#3b82f6',
-        description: '21km 미만 & 1시간 30분 이내'
+        description: '21km 미만 & 1시간 30분 이내',
+        badge: 'R'
     },
     HALF_MARATHONER: {
         name: 'Half Marathoner',
-        nameKo: '하프 마라토너',
+        nameKo: 'Half',
         emoji: '🎽',
         color: '#8b5cf6',
-        description: '42km 미만 & 2시간 30분 이내'
+        description: '42km 미만 & 2시간 30분 이내',
+        badge: 'M'
     },
     FULL_MARATHONER: {
         name: 'Full Marathoner',
-        nameKo: '풀 마라토너',
+        nameKo: 'Full',
         emoji: '🏅',
         color: '#f59e0b',
-        description: '42km 이상 & 5시간 30분 이내'
+        description: '42km 이상 & 5시간 30분 이내',
+        badge: 'M'
     },
     SUB3_MARATHONER: {
         name: 'Sub-3 Marathoner',
-        nameKo: 'Sub-3 마라토너',
+        nameKo: 'Sub3',
         emoji: '⚡',
         color: '#ef4444',
-        description: '42km 이상 & 3시간 이내'
+        description: '42km 이상 & 3시간 이내',
+        badge: 'M'
     },
     ELITE_MARATHONER: {
         name: 'Elite Marathoner',
-        nameKo: '엘리트 마라토너',
+        nameKo: 'Elite',
         emoji: '👑',
         color: '#dc2626',
-        description: '42km 이상 & 2시간 30분 이내'
+        description: '42km 이상 & 2시간 30분 이내',
+        badge: 'M'
     },
     LEGEND_MARATHONER: {
         name: 'Legend Marathoner',
-        nameKo: '전설의 러너',
+        nameKo: 'Legend',
         emoji: '🌟',
         color: '#fbbf24',
-        description: '관리자 승급'
+        description: '관리자 승급',
+        badge: 'M'
     }
 };
 
@@ -77,5 +85,18 @@ export const getGradeBadgeStyle = (gradeKey) => {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '4px'
+    };
+};
+
+// R/M 뱃지 스타일
+export const getBadgeStyle = (badge, color) => {
+    return {
+        backgroundColor: color,
+        color: '#fff',
+        padding: '2px 6px',
+        borderRadius: '6px',
+        fontSize: '10px',
+        fontWeight: '700',
+        marginLeft: '2px'
     };
 };
