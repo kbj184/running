@@ -131,10 +131,6 @@ function RunningScreen({ onStop, sessionId, user }) {
 
     // MariaDB 동기화 함수
     const syncToBackend = useCallback(async (isFinal = false) => {
-        // TODO: 백엔드 /api/running/sync 엔드포인트 구현 후 활성화
-        console.log('⏸️ Backend sync disabled (endpoint not ready)');
-        return;
-
         const data = dataRef.current;
         if (!user || !user.accessToken) {
             console.warn("⚠️ Sync skipped: User not logged in");
@@ -143,11 +139,15 @@ function RunningScreen({ onStop, sessionId, user }) {
 
         try {
             const body = {
+                userId: user.id,
                 sessionId,
                 distance: data.distance,
                 duration: data.duration,
                 speed: data.speed,
                 pace: data.pace,
+                currentElevation: data.currentElevation,
+                totalAscent: data.totalAscent,
+                totalDescent: data.totalDescent,
                 route: JSON.stringify(data.route),
                 wateringSegments: JSON.stringify(data.wateringSegments),
                 splits: JSON.stringify(data.splits),
@@ -158,7 +158,7 @@ function RunningScreen({ onStop, sessionId, user }) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': user.accessToken
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
                 },
                 body: JSON.stringify(body)
             });
@@ -166,6 +166,8 @@ function RunningScreen({ onStop, sessionId, user }) {
             if (response.ok) {
                 lastSyncedTimeRef.current = Date.now();
                 console.log(`☁️ MariaDB Sync Success (${isFinal ? 'Final' : 'Auto'})`);
+                console.log(`   📊 Distance: ${data.distance.toFixed(2)}km, Elevation: ${data.currentElevation.toFixed(0)}m`);
+                console.log(`   ⛰️ Ascent: ${data.totalAscent.toFixed(0)}m, Descent: ${data.totalDescent.toFixed(0)}m`);
             } else {
                 console.error("❌ Sync failed with status:", response.status);
             }
