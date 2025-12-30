@@ -1,6 +1,6 @@
 import { GoogleMap, MarkerF, PolylineF, useJsApiLoader } from '@react-google-maps/api';
 import { formatTime, formatDistance } from '../utils/gps';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './result-screen.css';
 
 const containerStyle = {
@@ -57,8 +57,37 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         language: 'ko'
     });
 
+    // 지도 인스턴스 저장
+    const [map, setMap] = useState(null);
+
     // 승급 메시지 표시 여부 상태
     const [showGradeUpgrade, setShowGradeUpgrade] = useState(false);
+
+    // 지도 로드 콜백
+    const onLoad = useCallback((map) => {
+        setMap(map);
+    }, []);
+
+    // 지도 언마운트 콜백
+    const onUnmount = useCallback(() => {
+        setMap(null);
+    }, []);
+
+    // 경로에 맞게 지도 확대/축소 자동 조정
+    useEffect(() => {
+        if (map && route && route.length > 0 && window.google) {
+            const bounds = new window.google.maps.LatLngBounds();
+            route.forEach(point => {
+                bounds.extend({ lat: point.lat, lng: point.lng });
+            });
+            map.fitBounds(bounds, {
+                top: 50,
+                right: 50,
+                bottom: 50,
+                left: 50
+            });
+        }
+    }, [map, route]);
 
     // 승급 메시지 최초 1회만 표시 체크
     useEffect(() => {
@@ -219,6 +248,8 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                     center={center}
                                     zoom={15}
                                     options={mapOptions}
+                                    onLoad={onLoad}
+                                    onUnmount={onUnmount}
                                 >
                                     {mapSegments.map((segment, idx) => (
                                         <PolylineF
