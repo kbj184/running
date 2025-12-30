@@ -14,7 +14,7 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 56px;
+    height: var(--header-height);
     background: linear-gradient(135deg, #4318FF 0%, #5B2FFF 100%);
     display: flex;
     justify-content: space-between;

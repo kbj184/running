@@ -4,7 +4,7 @@ function ProfileSubHeader({ profileTab, onTabChange }) {
     return (
         <div style={{
             position: 'fixed',
-            top: '60px',
+            top: 'var(--header-height)',
             left: 0,
             right: 0,
             backgroundColor: '#fff',
