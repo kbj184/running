@@ -125,7 +125,7 @@ export const generateRouteThumbImage = (route) => {
     return generateRouteThumbnail(route, {
         width: 300,
         height: 240,
-        color: '0x2D1B69',  // 진한 보라색
-        weight: 4  // 더 두껋게
+        color: '0x39ff14',  // 진한 형광색 (Neon Green)
+        weight: 4
     });
 };

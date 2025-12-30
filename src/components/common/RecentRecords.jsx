@@ -4,8 +4,8 @@ import { formatDistance, formatTime } from '../../utils/gps';
 import { generateRouteThumbImage } from '../../utils/mapThumbnail';
 
 const thumbnailMapStyle = {
-    width: '150px',
-    height: '120px',
+    width: '120px',
+    height: '100px',
     borderRadius: '8px'
 };
 
@@ -125,11 +125,13 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: '12px',
-                padding: '20px',
-                margin: '0 10px',
+                padding: '20px 0',
+                margin: '0',
                 backgroundColor: '#f9f9f9',
-                borderRadius: '16px',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                // borderRadius: '16px', // 꽉 차게 보이려면 라운드 제거 혹은 유지? 이미지상 박스가 보여야 하니 유지하되 margin만 0?
+                // 요청: "좌우로 최대한 확장". margin 0이면 화면 끝에 붙음.
+                // borderRadius를 유지하면 끝이 둥글게 됨. 일단 유지.
+                borderBottom: '1px solid #eee' // 구분선 추가
             }}>
                 <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 거리</div>
@@ -154,7 +156,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
             {/* 최근 활동 섹션 */}
             <div style={{ padding: '0' }}>
                 <h3 style={{
-                    margin: '16px 0 12px 10px',
+                    margin: '24px 0 12px 0',
                     fontSize: '18px',
                     fontWeight: '700',
                     color: '#ffffff'
@@ -165,8 +167,8 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '12px',
-                    padding: '0 10px'
+                    gap: '0', // 아이템 간 간격 없애고 구분선으로 처리? 아니면 gap 유지? 리스트 느낌이니 gap 없애고 borderBottom 추천
+                    padding: '0'
                 }}>
                     {records.map(record => (
                         <div
@@ -175,12 +177,11 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                             style={{
                                 display: 'flex',
                                 gap: '12px',
-                                padding: '16px 24px',
+                                padding: '16px 0',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
                                 backgroundColor: '#fff',
-                                borderRadius: '12px',
-                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                                borderBottom: '1px solid #f0f0f0'
                             }}
                             onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f9f9f9'}
                             onMouseLeave={e => e.currentTarget.style.backgroundColor = '#fff'}
@@ -193,10 +194,11 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                                 {/* 상단: 날짜 + 시간 */}
                                 <div style={{
                                     display: 'flex',
-                                    justifyContent: 'flex-end',
+                                    justifyContent: 'flex-start',
                                     alignItems: 'center',
                                     fontSize: '11px',
-                                    color: '#999'
+                                    color: '#999',
+                                    marginBottom: '4px'
                                 }}>
                                     <span>
                                         {new Date(record.timestamp).toLocaleDateString()} {new Date(record.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })}
@@ -219,7 +221,13 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                                     fontSize: '12px',
                                     color: '#999'
                                 }}>
-                                    <span>{formatTime(record.duration).replace(':', '시 ')}분</span>
+                                    <span>
+                                        {(() => {
+                                            const h = Math.floor(record.duration / 3600);
+                                            const m = Math.floor((record.duration % 3600) / 60);
+                                            return h > 0 ? `${h}시 ${m}분` : `${m}분`;
+                                        })()}
+                                    </span>
                                     <span>{record.pace.toFixed(1)} min/km</span>
                                     <span>{Math.floor(record.distance * 60)} kcal</span>
                                 </div>
