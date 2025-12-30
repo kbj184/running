@@ -8,6 +8,8 @@ function NicknameRegistration({ user, onComplete }) {
     const [error, setError] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [uploadedImage, setUploadedImage] = useState(null);
+    const [nicknameStatus, setNicknameStatus] = useState(''); // 'checking', 'available', 'unavailable'
+    const [nicknameMessage, setNicknameMessage] = useState('');
 
     const avatarSeeds = ['Felix', 'Aneka', 'Buddy', 'Casper', 'Daisy', 'Gracie', 'Milo', 'Oliver'];
     const avatarUrls = avatarSeeds.map(seed => `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`);
@@ -15,6 +17,82 @@ function NicknameRegistration({ user, onComplete }) {
     // Cloudinary 설정 - 환경변수에서 가져오기
     const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+    // 닉네임 유효성 검사
+    const validateNicknameFormat = (value) => {
+        if (!value || value.trim().length === 0) {
+            return { valid: false, message: '닉네임을 입력해주세요.' };
+        }
+        if (value.length < 2) {
+            return { valid: false, message: '닉네임은 최소 2자 이상이어야 합니다.' };
+        }
+        if (value.length > 10) {
+            return { valid: false, message: '닉네임은 최대 10자까지 가능합니다.' };
+        }
+        if (!/^[가-힣a-zA-Z0-9]+$/.test(value)) {
+            return { valid: false, message: '한글, 영문, 숫자만 사용 가능합니다.' };
+        }
+        const bannedWords = ['관리자', '운영자', 'admin', 'root', 'system'];
+        const lowerValue = value.toLowerCase();
+        for (const banned of bannedWords) {
+            if (lowerValue.includes(banned)) {
+                return { valid: false, message: '사용할 수 없는 닉네임입니다.' };
+            }
+        }
+        return { valid: true, message: '' };
+    };
+
+    // 닉네임 중복 체크
+    const checkNicknameDuplicate = async (value) => {
+        try {
+            setNicknameStatus('checking');
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/user/check-nickname?nickname=${encodeURIComponent(value)}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                const isAvailable = await response.json();
+                if (isAvailable) {
+                    setNicknameStatus('available');
+                    setNicknameMessage('사용 가능한 닉네임입니다.');
+                } else {
+                    setNicknameStatus('unavailable');
+                    setNicknameMessage('이미 사용 중인 닉네임입니다.');
+                }
+            }
+        } catch (err) {
+            console.error('Nickname check error:', err);
+            setNicknameStatus('');
+            setNicknameMessage('');
+        }
+    };
+
+    // 닉네임 변경 핸들러
+    const handleNicknameChange = (e) => {
+        const value = e.target.value;
+        setNickname(value);
+        setError('');
+        setNicknameStatus('');
+        setNicknameMessage('');
+
+        // 형식 검증
+        const validation = validateNicknameFormat(value);
+        if (!validation.valid) {
+            setNicknameMessage(validation.message);
+            setNicknameStatus('unavailable');
+            return;
+        }
+
+        // 중복 체크 (디바운스)
+        const timeoutId = setTimeout(() => {
+            checkNicknameDuplicate(value);
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    };
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -67,8 +145,16 @@ function NicknameRegistration({ user, onComplete }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!nickname.trim()) {
-            setError('닉네임을 입력해주세요.');
+
+        // 최종 검증
+        const validation = validateNicknameFormat(nickname);
+        if (!validation.valid) {
+            setError(validation.message);
+            return;
+        }
+
+        if (nicknameStatus !== 'available') {
+            setError('사용 가능한 닉네임을 입력해주세요.');
             return;
         }
 
@@ -95,11 +181,11 @@ function NicknameRegistration({ user, onComplete }) {
                 const errorText = await response.text();
                 console.error('Profile update failed with status:', response.status);
                 console.error('Error response body:', errorText);
-                setError(`프로필 등록에 실패했습니다. (Error: ${response.status})`);
+                setError(errorText || `프로필 등록에 실패했습니다. (Error: ${response.status})`);
             }
         } catch (err) {
             console.error('Profile update catch error:', err);
-            setError('네트워크 오류가 발생했습니다. 개발자 도구 로그를 확인해 주세요.');
+            setError(err.message || '네트워크 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);
         }
@@ -176,15 +262,49 @@ function NicknameRegistration({ user, onComplete }) {
 
                     <div style={styles.section}>
                         <label htmlFor="nickname" style={styles.label}>닉네임</label>
-                        <input
-                            id="nickname"
-                            type="text"
-                            value={nickname}
-                            onChange={(e) => setNickname(e.target.value)}
-                            placeholder="멋진 닉네임을 입력하세요"
-                            style={styles.input}
-                            maxLength={10}
-                        />
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                id="nickname"
+                                type="text"
+                                value={nickname}
+                                onChange={handleNicknameChange}
+                                placeholder="멋진 닉네임을 입력하세요"
+                                style={{
+                                    ...styles.input,
+                                    borderColor: nicknameStatus === 'available' ? '#00f2fe' :
+                                        nicknameStatus === 'unavailable' ? '#ff4d4d' :
+                                            'rgba(255, 255, 255, 0.1)'
+                                }}
+                                maxLength={10}
+                            />
+                            {nicknameStatus === 'checking' && (
+                                <div style={styles.statusMessage}>
+                                    <span style={{ color: '#ffa500' }}>⏳ 확인 중...</span>
+                                </div>
+                            )}
+                            {nicknameStatus === 'available' && (
+                                <div style={styles.statusMessage}>
+                                    <span style={{ color: '#00f2fe' }}>✓ {nicknameMessage}</span>
+                                </div>
+                            )}
+                            {nicknameStatus === 'unavailable' && nicknameMessage && (
+                                <div style={styles.statusMessage}>
+                                    <span style={{ color: '#ff4d4d' }}>✗ {nicknameMessage}</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 제한사항 안내 */}
+                        <div style={styles.guideBox}>
+                            <div style={styles.guideTitle}>📌 닉네임 규칙</div>
+                            <ul style={styles.guideList}>
+                                <li>2~10자 이내</li>
+                                <li>한글, 영문, 숫자만 사용 가능</li>
+                                <li>특수문자 및 공백 사용 불가</li>
+                                <li>중복된 닉네임 사용 불가</li>
+                            </ul>
+                        </div>
+
                         {error && <p style={styles.error}>{error}</p>}
                     </div>
 
@@ -351,6 +471,31 @@ const styles = {
         textAlign: 'center',
         margin: '20px 0 15px 0',
         position: 'relative',
+    },
+    statusMessage: {
+        fontSize: '0.85rem',
+        marginTop: '8px',
+        marginLeft: '5px',
+    },
+    guideBox: {
+        marginTop: '12px',
+        padding: '12px 16px',
+        background: 'rgba(0, 242, 254, 0.05)',
+        borderRadius: '12px',
+        border: '1px solid rgba(0, 242, 254, 0.2)',
+    },
+    guideTitle: {
+        color: '#00f2fe',
+        fontSize: '0.85rem',
+        fontWeight: '600',
+        marginBottom: '8px',
+    },
+    guideList: {
+        margin: 0,
+        paddingLeft: '20px',
+        color: 'rgba(255, 255, 255, 0.7)',
+        fontSize: '0.8rem',
+        lineHeight: '1.8',
     }
 };
 
