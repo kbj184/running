@@ -11,6 +11,7 @@ import {
 } from '../utils/gps';
 import { saveRunningData } from '../utils/db';
 import { api } from '../utils/api';
+import { generateRouteThumbImage } from '../utils/mapThumbnail';
 import './running-compact.css';
 
 const containerStyle = {
@@ -463,6 +464,10 @@ function RunningScreen({ onStop, sessionId, user }) {
         setIsTracking(false);
         const data = dataRef.current;
 
+        // 썸네일 생성
+        const thumbnailUrl = generateRouteThumbImage(data.route);
+        console.log('🖼️ 썸네일 생성:', thumbnailUrl);
+
         // IndexedDB 최종 저장
         await triggerSave(true);
 
@@ -477,6 +482,7 @@ function RunningScreen({ onStop, sessionId, user }) {
             speed: data.speed,
             pace: data.pace,
             route: data.route,
+            thumbnail: thumbnailUrl, // 썸네일 URL 추가
             wateringSegments,
             splits,
             sessionId,

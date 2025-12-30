@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { GoogleMap, PolylineF, useJsApiLoader } from '@react-google-maps/api';
 import { getRecentSessions } from '../../utils/db';
 import { formatDistance, formatTime } from '../../utils/gps';
+import { generateRouteThumbImage } from '../../utils/mapThumbnail';
 
 const thumbnailMapStyle = {
     width: '100px',
@@ -9,52 +9,11 @@ const thumbnailMapStyle = {
     borderRadius: '8px'
 };
 
-const mapOptions = {
-    disableDefaultUI: true,
-    zoomControl: false,
-    streetViewControl: false,
-    mapTypeControl: false,
-    fullscreenControl: false,
-    clickableIcons: false,
-    gestureHandling: 'none',
-    styles: [
-        {
-            featureType: "poi",
-            stylers: [{ visibility: "off" }],
-        },
-        {
-            featureType: "transit",
-            elementType: "labels.icon",
-            stylers: [{ visibility: "off" }],
-        },
-        {
-            featureType: "all",
-            elementType: "labels.text",
-            stylers: [{ visibility: "off" }],
-        },
-    ],
-};
+function RouteThumbnail({ route, thumbnail }) {
+    // 썸네일 URL이 있으면 사용, 없으면 route로 생성
+    const thumbnailUrl = thumbnail || (route && route.length > 0 ? generateRouteThumbImage(route) : null);
 
-function RouteThumbnail({ route }) {
-    const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-        language: 'ko'
-    });
-
-    const [map, setMap] = useState(null);
-
-    useEffect(() => {
-        if (map && route && route.length > 0 && window.google) {
-            const bounds = new window.google.maps.LatLngBounds();
-            route.forEach(point => {
-                bounds.extend({ lat: point.lat, lng: point.lng });
-            });
-            map.fitBounds(bounds);
-        }
-    }, [map, route]);
-
-    if (!isLoaded || !route || route.length === 0) {
+    if (!thumbnailUrl) {
         return (
             <div style={{
                 ...thumbnailMapStyle,
@@ -70,28 +29,31 @@ function RouteThumbnail({ route }) {
         );
     }
 
-    const center = route[Math.floor(route.length / 2)];
-
     return (
-        <div style={{ ...thumbnailMapStyle, overflow: 'hidden' }}>
-            <GoogleMap
-                mapContainerStyle={thumbnailMapStyle}
-                center={center}
-                zoom={14}
-                options={mapOptions}
-                onLoad={setMap}
-                onUnmount={() => setMap(null)}
-            >
-                <PolylineF
-                    path={route}
-                    options={{
-                        strokeColor: '#4318FF',
-                        strokeOpacity: 0.9,
-                        strokeWeight: 3,
-                    }}
-                />
-            </GoogleMap>
-        </div>
+        <img
+            src={thumbnailUrl}
+            alt="경로 썸네일"
+            style={{
+                ...thumbnailMapStyle,
+                objectFit: 'cover',
+                display: 'block'
+            }}
+            onError={(e) => {
+                e.target.style.display = 'none';
+                const fallback = document.createElement('div');
+                Object.assign(fallback.style, {
+                    ...thumbnailMapStyle,
+                    background: '#f0f0f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#999',
+                    fontSize: '12px'
+                });
+                fallback.textContent = '🗺️';
+                e.target.parentElement.appendChild(fallback);
+            }}
+        />
     );
 }
 
@@ -210,7 +172,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                             onMouseLeave={e => e.currentTarget.style.backgroundColor = '#fff'}
                         >
                             {/* 썸네일 지도 */}
-                            <RouteThumbnail route={record.route} />
+                            <RouteThumbnail route={record.route} thumbnail={record.thumbnail} />
 
                             {/* 기록 정보 */}
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
