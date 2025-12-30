@@ -35,22 +35,55 @@ export const generateRouteThumbnail = (route, options = {}) => {
         .map(p => `${p.lat},${p.lng}`)
         .join('|');
 
-    // 시작점과 끝점 마커
+    // 시작점과 끝점
     const startPoint = route[0];
     const endPoint = route[route.length - 1];
+
+    // 경로의 bounds 계산 (경로 전체가 보이도록)
+    let minLat = route[0].lat;
+    let maxLat = route[0].lat;
+    let minLng = route[0].lng;
+    let maxLng = route[0].lng;
+
+    route.forEach(point => {
+        minLat = Math.min(minLat, point.lat);
+        maxLat = Math.max(maxLat, point.lat);
+        minLng = Math.min(minLng, point.lng);
+        maxLng = Math.max(maxLng, point.lng);
+    });
+
+    // 중심점 계산
+    const centerLat = (minLat + maxLat) / 2;
+    const centerLng = (minLng + maxLng) / 2;
+
+    // 여유 공간 추가 (10% 패딩)
+    const latPadding = (maxLat - minLat) * 0.15;
+    const lngPadding = (maxLng - minLng) * 0.15;
+
+    // visible 파라미터로 경로 전체가 보이도록 설정
+    const visiblePoints = [
+        `${minLat - latPadding},${minLng - lngPadding}`,
+        `${maxLat + latPadding},${maxLng + lngPadding}`
+    ].join('|');
 
     // Static Maps API URL 생성
     const baseUrl = 'https://maps.googleapis.com/maps/api/staticmap';
     const params = new URLSearchParams({
         size: `${width}x${height}`,
         maptype: maptype,
+        center: `${centerLat},${centerLng}`,
         key: apiKey,
-        // 스타일: POI 숨기기, 라벨 최소화
+        // 모든 라벨과 텍스트 숨기기
         style: [
-            'feature:poi|visibility:off',
-            'feature:transit|element:labels.icon|visibility:off'
+            'feature:all|element:labels|visibility:off',           // 모든 라벨 숨기기
+            'feature:poi|visibility:off',                          // POI 숨기기
+            'feature:transit|visibility:off',                      // 대중교통 숨기기
+            'feature:administrative|element:labels|visibility:off' // 행정구역 라벨 숨기기
         ].join('&style=')
     });
+
+    // visible 파라미터로 경로 전체가 보이도록 설정
+    params.append('visible', visiblePoints);
 
     // 경로 path 추가
     params.append('path', `color:${color}|weight:${weight}|${pathPoints}`);
