@@ -157,7 +157,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                     margin: '24px 0 16px 20px',
                     fontSize: '18px',
                     fontWeight: '700',
-                    color: '#1a1a1a'
+                    color: '#ffffff'
                 }}>
                     최근활동
                 </h3>
@@ -166,7 +166,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '12px',
-                    padding: '0 20px'
+                    padding: '0 10px'
                 }}>
                     {records.map(record => (
                         <div
@@ -175,7 +175,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                             style={{
                                 display: 'flex',
                                 gap: '12px',
-                                padding: '16px',
+                                padding: '16px 24px',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
                                 backgroundColor: '#fff',
@@ -189,30 +189,33 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                             <RouteThumbnail route={record.route} thumbnail={record.thumbnail} />
 
                             {/* 기록 정보 */}
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {/* 상단: 키로미터(왼쪽) + 시간(오른쪽) */}
                                 <div style={{
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center'
                                 }}>
-                                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#1a1a1a' }}>
+                                    <span style={{ fontSize: '20px', fontWeight: '700', color: '#4318FF' }}>
                                         {formatDistance(record.distance)}
                                     </span>
-                                    <span style={{ fontSize: '12px', color: '#999' }}>
-                                        {new Date(record.timestamp).toLocaleDateString()}
+                                    <span style={{ fontSize: '13px', color: '#666', fontWeight: '600' }}>
+                                        {formatTime(record.duration).replace(':', '시 ')}분
                                     </span>
                                 </div>
+
+                                {/* 하단: 페이스 + 칼로리 */}
                                 <div style={{
                                     display: 'flex',
-                                    gap: '12px',
-                                    fontSize: '13px',
-                                    color: '#666'
+                                    gap: '16px',
+                                    fontSize: '12px',
+                                    color: '#999'
                                 }}>
-                                    <span>⏱️ {formatTime(record.duration)}</span>
-                                    <span>⚡ {record.pace.toFixed(1)} min/km</span>
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#999' }}>
-                                    🔥 {Math.floor(record.distance * 60)} kcal
+                                    <span>{record.pace.toFixed(1)} min/km</span>
+                                    <span>{Math.floor(record.distance * 60)} kcal</span>
+                                    <span style={{ marginLeft: 'auto' }}>
+                                        {new Date(record.timestamp).toLocaleDateString()}
+                                    </span>
                                 </div>
                             </div>
                         </div>
