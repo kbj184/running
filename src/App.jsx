@@ -400,20 +400,29 @@ function App() {
     // Main App Screen
     return (
         <div className="main-app-container">
-            {/* Fixed Header */}
-            <MainHeader
-                user={user}
-                onProfileClick={handleProfileClick}
-                onGradeClick={() => setShowRunnerGradeModal(true)}
-            />
-
-            {/* Profile Sub-Header */}
-            {showProfileMenu && (
-                <ProfileSubHeader
-                    profileTab={profileTab}
-                    onTabChange={handleProfileTabChange}
+            {/* Fixed Header Container (MainHeader + optional ProfileSubHeader) */}
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+                display: 'flex',
+                flexDirection: 'column'
+            }}>
+                <MainHeader
+                    user={user}
+                    onProfileClick={handleProfileClick}
+                    onGradeClick={() => setShowRunnerGradeModal(true)}
                 />
-            )}
+
+                {showProfileMenu && (
+                    <ProfileSubHeader
+                        profileTab={profileTab}
+                        onTabChange={handleProfileTabChange}
+                    />
+                )}
+            </div>
 
             {/* Scrollable Content Area */}
             <div className="main-content" style={{ marginTop: showProfileMenu ? 'calc(var(--header-height) + 60px)' : 'var(--header-height)' }}>

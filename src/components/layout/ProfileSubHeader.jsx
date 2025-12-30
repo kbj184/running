@@ -3,13 +3,12 @@ import React from 'react';
 function ProfileSubHeader({ profileTab, onTabChange }) {
     return (
         <div style={{
-            position: 'fixed',
-            top: 'calc(var(--header-height) - 1px)',
-            left: 0,
-            right: 0,
+            position: 'relative',
+            width: '100%',
             backgroundColor: '#fff',
             borderBottom: '1px solid #e0e0e0',
             zIndex: 999,
+            // boxShadow는 MainHeader와 겹치므로 상황에 따라 조정, 일단 유지
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
             <div style={{
