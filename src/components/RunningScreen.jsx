@@ -204,7 +204,10 @@ function RunningScreen({ onStop, sessionId, user }) {
                     wateringSegments: data.wateringSegments,
                     isWatering: data.isWatering,
                     isComplete: isFinal,
-                    splits: data.splits
+                    splits: data.splits,
+                    currentElevation: data.currentElevation,
+                    totalAscent: data.totalAscent,
+                    totalDescent: data.totalDescent
                 });
                 lastSavedDistanceRef.current = data.distance;
                 lastSavedTimeRef.current = Date.now();
