@@ -1,5 +1,6 @@
 import { GoogleMap, MarkerF, PolylineF, useJsApiLoader } from '@react-google-maps/api';
 import { formatTime, formatDistance } from '../utils/gps';
+import { useState, useEffect } from 'react';
 import './result-screen.css';
 
 const containerStyle = {
@@ -56,6 +57,30 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         language: 'ko'
     });
 
+    // 승급 메시지 표시 여부 상태
+    const [showGradeUpgrade, setShowGradeUpgrade] = useState(false);
+
+    // 승급 메시지 최초 1회만 표시 체크
+    useEffect(() => {
+        if (result.gradeUpgraded && result.newGrade) {
+            const gradeHistoryKey = 'grade_upgrade_history';
+            const gradeHistory = JSON.parse(localStorage.getItem(gradeHistoryKey) || '[]');
+
+            // 이미 이 등급에 도달한 적이 있는지 확인
+            const alreadyAchieved = gradeHistory.includes(result.newGrade);
+
+            if (!alreadyAchieved) {
+                // 최초 달성이면 표시하고 기록에 추가
+                setShowGradeUpgrade(true);
+                gradeHistory.push(result.newGrade);
+                localStorage.setItem(gradeHistoryKey, JSON.stringify(gradeHistory));
+                console.log(`🎉 New Grade Achievement: ${result.newGrade}`);
+            } else {
+                console.log(`✓ Grade ${result.newGrade} already achieved before`);
+            }
+        }
+    }, [result.gradeUpgraded, result.newGrade]);
+
     const avgSpeed = speed || 0;
     const avgPace = pace || 0;
     const calories = Math.floor(distance * 60);
@@ -110,8 +135,8 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                 <button className="result-close-x" onClick={onSave}>✕</button>
             </header>
 
-            {/* 승급 축하 배너 */}
-            {result.gradeUpgraded && (
+            {/* 승급 축하 배너 - 최초 1회만 표시 */}
+            {showGradeUpgrade && (
                 <div style={{
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     padding: '20px',
