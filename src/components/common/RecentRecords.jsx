@@ -10,8 +10,8 @@ const thumbnailMapStyle = {
 };
 
 function RouteThumbnail({ route, thumbnail }) {
-    // 썸네일 URL이 있으면 사용, 없으면 route로 생성
-    const thumbnailUrl = thumbnail || (route && route.length > 0 ? generateRouteThumbImage(route) : null);
+    // 저장된 썸네일보다 새로운 스타일(Dark Mode) 적용을 위해 항상 generateRouteThumbImage 사용
+    const thumbnailUrl = (route && route.length > 0) ? generateRouteThumbImage(route) : thumbnail;
 
     if (!thumbnailUrl) {
         return (
