@@ -72,26 +72,32 @@ export const generateRouteThumbnail = (route, options = {}) => {
         size: `${width}x${height}`,
         maptype: maptype,
         center: `${centerLat},${centerLng}`,
-        key: apiKey,
-        // 모든 라벨과 텍스트 숨기기
-        style: [
-            'feature:all|element:geometry|color:0x212121',         // 아주 어두운 회색 (Dark Mode)
-            'feature:all|element:labels.text.stroke|visibility:off',
-            'feature:all|element:labels.text.fill|visibility:off',
-            'feature:all|element:labels|visibility:off',           // 모든 라벨 숨기기
-            'feature:road|element:geometry|color:0x383838',        // 도로를 약간 밝게 (경로 구분을 위해)
-            'feature:road|element:geometry.stroke|color:0x212121',
-            'feature:water|element:geometry|color:0x000000',       // 물은 검정색
+        key: apiKey
+    });
 
-            'feature:poi|visibility:off',                          // POI 숨기기
-            'feature:transit|visibility:off',                      // 대중교통 숨기기
-            'feature:transit.line|visibility:off',                 // 대중교통 노선 숨기기
-            'feature:transit.station|visibility:off',              // 대중교통 역 숨기기
-            'feature:transit.station.rail|visibility:off',         // 지하철역 숨기기
-            'feature:administrative|element:labels|visibility:off', // 행정구역 라벨 숨기기
-            'feature:administrative.land_parcel|visibility:off',   // 워터마크 숨기기
-            'feature:administrative.neighborhood|visibility:off'   // 추가 워터마크 숨기기
-        ].join('&style=')
+    // Dark Mode 스타일 정의
+    const styles = [
+        'feature:all|element:geometry|color:0x212121',         // 아주 어두운 회색 (Dark Mode)
+        'feature:all|element:labels.text.stroke|visibility:off',
+        'feature:all|element:labels.text.fill|visibility:off',
+        'feature:all|element:labels|visibility:off',           // 모든 라벨 숨기기
+        'feature:road|element:geometry|color:0x383838',        // 도로를 약간 밝게
+        'feature:road|element:geometry.stroke|color:0x212121',
+        'feature:water|element:geometry|color:0x000000',       // 물은 검정색
+
+        'feature:poi|visibility:off',                          // POI 숨기기
+        'feature:transit|visibility:off',                      // 대중교통 숨기기
+        'feature:transit.line|visibility:off',                 // 대중교통 노선 숨기기
+        'feature:transit.station|visibility:off',              // 대중교통 역 숨기기
+        'feature:transit.station.rail|visibility:off',         // 지하철역 숨기기
+        'feature:administrative|element:labels|visibility:off', // 행정구역 라벨 숨기기
+        'feature:administrative.land_parcel|visibility:off',   // 워터마크 숨기기
+        'feature:administrative.neighborhood|visibility:off'   // 추가 워터마크 숨기기
+    ];
+
+    // 스타일 파라미터 추가
+    styles.forEach(style => {
+        params.append('style', style);
     });
 
     // visible 파라미터로 경로 전체가 보이도록 설정
