@@ -128,10 +128,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                 padding: '20px 0',
                 margin: '0',
                 backgroundColor: '#f9f9f9',
-                // borderRadius: '16px', // 꽉 차게 보이려면 라운드 제거 혹은 유지? 이미지상 박스가 보여야 하니 유지하되 margin만 0?
-                // 요청: "좌우로 최대한 확장". margin 0이면 화면 끝에 붙음.
-                // borderRadius를 유지하면 끝이 둥글게 됨. 일단 유지.
-                borderBottom: '1px solid #eee' // 구분선 추가
+                borderBottom: '1px solid #eee'
             }}>
                 <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 거리</div>
@@ -156,7 +153,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
             {/* 최근 활동 섹션 */}
             <div style={{ padding: '0' }}>
                 <h3 style={{
-                    margin: '24px 0 12px 0',
+                    margin: '24px 0 12px 10px',
                     fontSize: '18px',
                     fontWeight: '700',
                     color: '#ffffff'
@@ -167,8 +164,8 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '0', // 아이템 간 간격 없애고 구분선으로 처리? 아니면 gap 유지? 리스트 느낌이니 gap 없애고 borderBottom 추천
-                    padding: '0'
+                    gap: '12px',
+                    padding: '0 10px'
                 }}>
                     {records.map(record => (
                         <div
@@ -177,28 +174,30 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                             style={{
                                 display: 'flex',
                                 gap: '12px',
-                                padding: '16px 0',
+                                padding: '16px',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
                                 backgroundColor: '#fff',
-                                borderBottom: '1px solid #f0f0f0'
+                                borderRadius: '16px',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                                border: '1px solid #f0f0f0'
                             }}
-                            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f9f9f9'}
-                            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#fff'}
+                            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
                         >
                             {/* 썸네일 지도 */}
                             <RouteThumbnail route={record.route} thumbnail={record.thumbnail} />
 
                             {/* 기록 정보 */}
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                {/* 상단: 날짜 + 시간 */}
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {/* 상단: 날짜 + 시간 (좌측 정렬) */}
                                 <div style={{
                                     display: 'flex',
                                     justifyContent: 'flex-start',
                                     alignItems: 'center',
-                                    fontSize: '11px',
-                                    color: '#999',
-                                    marginBottom: '4px'
+                                    fontSize: '13px',
+                                    color: '#666',
+                                    fontWeight: '500'
                                 }}>
                                     <span>
                                         {new Date(record.timestamp).toLocaleDateString()} {new Date(record.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })}
@@ -207,9 +206,10 @@ function RecentRecords({ onRefresh, onRecordClick }) {
 
                                 {/* 중간: 키로미터 */}
                                 <div style={{
-                                    fontSize: '20px',
-                                    fontWeight: '700',
-                                    color: '#4318FF'
+                                    fontSize: '24px',
+                                    fontWeight: '800',
+                                    color: '#4318FF',
+                                    lineHeight: '1.2'
                                 }}>
                                     {formatDistance(record.distance)}
                                 </div>
@@ -217,15 +217,18 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                                 {/* 하단: 러닝시간 + 분당 킬로미터 + 칼로리 */}
                                 <div style={{
                                     display: 'flex',
+                                    flexWrap: 'wrap',
                                     gap: '12px',
-                                    fontSize: '12px',
-                                    color: '#999'
+                                    fontSize: '14px',
+                                    color: '#444',
+                                    fontWeight: '500'
                                 }}>
-                                    <span>
+                                    <span style={{ color: '#1a1a1a', fontWeight: '600' }}>
                                         {(() => {
-                                            const h = Math.floor(record.duration / 3600);
-                                            const m = Math.floor((record.duration % 3600) / 60);
-                                            return h > 0 ? `${h}시 ${m}분` : `${m}분`;
+                                            const totalSeconds = Math.floor(record.duration);
+                                            const minutes = Math.floor(totalSeconds / 60);
+                                            const seconds = totalSeconds % 60;
+                                            return `${minutes}분 ${seconds}초`;
                                         })()}
                                     </span>
                                     <span>{record.pace.toFixed(1)} min/km</span>
