@@ -40,11 +40,11 @@ function RouteThumbnail({ route, thumbnail }) {
                 alt="경로 썸네일"
                 style={{
                     width: '100%',
-                    height: '110%',
+                    height: '120%',
                     objectFit: 'cover',
                     display: 'block',
                     position: 'relative',
-                    top: '-5%'
+                    top: '-10%'
                 }}
                 onError={(e) => {
                     e.target.style.display = 'none';
@@ -126,8 +126,10 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: '12px',
                 padding: '20px',
+                margin: '20px 20px 0 20px',
                 backgroundColor: '#f9f9f9',
-                borderBottom: '1px solid #e0e0e0'
+                borderRadius: '16px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
             }}>
                 <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 거리</div>
@@ -152,7 +154,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
             {/* 최근 활동 섹션 */}
             <div style={{ padding: '0' }}>
                 <h3 style={{
-                    margin: '0 0 16px 20px',
+                    margin: '24px 0 16px 20px',
                     fontSize: '18px',
                     fontWeight: '700',
                     color: '#1a1a1a'
@@ -162,7 +164,9 @@ function RecentRecords({ onRefresh, onRecordClick }) {
 
                 <div style={{
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
+                    gap: '12px',
+                    padding: '0 20px'
                 }}>
                     {records.map(record => (
                         <div
@@ -171,11 +175,12 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                             style={{
                                 display: 'flex',
                                 gap: '12px',
-                                padding: '16px 20px',
-                                borderBottom: '1px solid #f0f0f0',
+                                padding: '16px',
                                 cursor: 'pointer',
-                                transition: 'background-color 0.2s',
-                                backgroundColor: '#fff'
+                                transition: 'all 0.2s',
+                                backgroundColor: '#fff',
+                                borderRadius: '12px',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
                             }}
                             onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f9f9f9'}
                             onMouseLeave={e => e.currentTarget.style.backgroundColor = '#fff'}

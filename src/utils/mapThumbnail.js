@@ -79,21 +79,22 @@ export const generateRouteThumbnail = (route, options = {}) => {
             'feature:poi|visibility:off',                          // POI 숨기기
             'feature:transit|visibility:off',                      // 대중교통 숨기기
             'feature:administrative|element:labels|visibility:off', // 행정구역 라벨 숨기기
-            'feature:administrative.land_parcel|visibility:off'    // 워터마크 숨기기
+            'feature:administrative.land_parcel|visibility:off',   // 워터마크 숨기기
+            'feature:administrative.neighborhood|visibility:off'   // 추가 워터마크 숨기기
         ].join('&style=')
     });
 
     // visible 파라미터로 경로 전체가 보이도록 설정
     params.append('visible', visiblePoints);
 
-    // 경로 path 추가
+    // 경로 path 추가 - 두껋고 진한 색상
     params.append('path', `color:${color}|weight:${weight}|${pathPoints}`);
 
     // 시작점 마커 (빨간색)
     params.append('markers', `color:red|size:mid|${startPoint.lat},${startPoint.lng}`);
 
-    // 끝점 마커 (골인 깃발) - 체크무늬 깃발 이모지 사용
-    params.append('markers', `icon:https://maps.google.com/mapfiles/kml/paddle/go.png|${endPoint.lat},${endPoint.lng}`);
+    // 끝점 마커 (파란색 원형)
+    params.append('markers', `color:blue|size:mid|${endPoint.lat},${endPoint.lng}`);
 
     return `${baseUrl}?${params.toString()}`;
 };
@@ -107,8 +108,8 @@ export const generateRouteMapImage = (route) => {
     return generateRouteThumbnail(route, {
         width: 640,
         height: 400,
-        color: '0x4318FF',
-        weight: 4
+        color: '0x2D1B69',  // 진한 보라색
+        weight: 5
     });
 };
 
@@ -121,7 +122,7 @@ export const generateRouteThumbImage = (route) => {
     return generateRouteThumbnail(route, {
         width: 300,
         height: 240,
-        color: '0x4318FF',
-        weight: 3
+        color: '0x2D1B69',  // 진한 보라색
+        weight: 4  // 더 두껋게
     });
 };
