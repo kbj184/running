@@ -126,7 +126,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: '12px',
                 padding: '20px',
-                margin: '20px 20px 0 20px',
+                margin: '0 10px',
                 backgroundColor: '#f9f9f9',
                 borderRadius: '16px',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
@@ -154,7 +154,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
             {/* 최근 활동 섹션 */}
             <div style={{ padding: '0' }}>
                 <h3 style={{
-                    margin: '24px 0 16px 20px',
+                    margin: '16px 0 12px 10px',
                     fontSize: '18px',
                     fontWeight: '700',
                     color: '#ffffff'
@@ -189,38 +189,47 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                             <RouteThumbnail route={record.route} thumbnail={record.thumbnail} />
 
                             {/* 기록 정보 */}
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {/* 상단: 키로미터(왼쪽) + 시간(오른쪽) */}
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                {/* 상단: 날짜 + 시간 */}
                                 <div style={{
                                     display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center'
+                                    justifyContent: 'flex-end',
+                                    alignItems: 'center',
+                                    fontSize: '11px',
+                                    color: '#999'
                                 }}>
-                                    <span style={{ fontSize: '20px', fontWeight: '700', color: '#4318FF' }}>
-                                        {formatDistance(record.distance)}
-                                    </span>
-                                    <span style={{ fontSize: '13px', color: '#666', fontWeight: '600' }}>
-                                        {formatTime(record.duration).replace(':', '시 ')}분
+                                    <span>
+                                        {new Date(record.timestamp).toLocaleDateString()} {new Date(record.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })}
                                     </span>
                                 </div>
 
-                                {/* 하단: 페이스 + 칼로리 */}
+                                {/* 중간: 키로미터 */}
+                                <div style={{
+                                    fontSize: '20px',
+                                    fontWeight: '700',
+                                    color: '#4318FF'
+                                }}>
+                                    {formatDistance(record.distance)}
+                                </div>
+
+                                {/* 하단: 러닝시간 + 분당 킬로미터 + 칼로리 */}
                                 <div style={{
                                     display: 'flex',
-                                    gap: '16px',
+                                    gap: '12px',
                                     fontSize: '12px',
                                     color: '#999'
                                 }}>
+                                    <span>{formatTime(record.duration).replace(':', '시 ')}분</span>
                                     <span>{record.pace.toFixed(1)} min/km</span>
                                     <span>{Math.floor(record.distance * 60)} kcal</span>
-                                    <span style={{ marginLeft: 'auto' }}>
-                                        {new Date(record.timestamp).toLocaleDateString()}
-                                    </span>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
+
+                {/* 하단 여백 */}
+                <div style={{ height: '20px' }}></div>
             </div>
         </div>
     );
