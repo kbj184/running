@@ -25,23 +25,20 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
     // 승급 메시지 최초 1회만 표시 체크
     useEffect(() => {
         if (result.gradeUpgraded && result.newGrade) {
-            const gradeHistoryKey = 'grade_upgrade_history';
-            const gradeHistory = JSON.parse(localStorage.getItem(gradeHistoryKey) || '[]');
+            // 세션 ID를 키로 사용하여 이미 표시했는지 확인
+            const sessionKey = `grade_shown_${result.sessionId || Date.now()}`;
+            const alreadyShown = sessionStorage.getItem(sessionKey);
 
-            // 이미 이 등급에 도달한 적이 있는지 확인
-            const alreadyAchieved = gradeHistory.includes(result.newGrade);
-
-            if (!alreadyAchieved) {
-                // 최초 달성이면 표시하고 기록에 추가
+            if (!alreadyShown) {
+                // 이번 세션에서 처음 보는 것이면 표시
                 setShowGradeUpgrade(true);
-                gradeHistory.push(result.newGrade);
-                localStorage.setItem(gradeHistoryKey, JSON.stringify(gradeHistory));
+                sessionStorage.setItem(sessionKey, 'true');
                 console.log(`🎉 New Grade Achievement: ${result.newGrade}`);
             } else {
-                console.log(`✓ Grade ${result.newGrade} already achieved before`);
+                console.log(`✓ Grade upgrade message already shown for this session`);
             }
         }
-    }, [result.gradeUpgraded, result.newGrade]);
+    }, []); // 빈 배열로 마운트 시 한 번만 실행
 
     const avgSpeed = speed || 0;
     const avgPace = pace || 0;
