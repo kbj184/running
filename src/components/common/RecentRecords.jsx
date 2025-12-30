@@ -4,8 +4,8 @@ import { formatDistance, formatTime } from '../../utils/gps';
 import { generateRouteThumbImage } from '../../utils/mapThumbnail';
 
 const thumbnailMapStyle = {
-    width: '100px',
-    height: '80px',
+    width: '150px',
+    height: '120px',
     borderRadius: '8px'
 };
 

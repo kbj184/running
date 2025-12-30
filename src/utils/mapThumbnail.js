@@ -119,8 +119,8 @@ export const generateRouteMapImage = (route) => {
  */
 export const generateRouteThumbImage = (route) => {
     return generateRouteThumbnail(route, {
-        width: 200,
-        height: 160,
+        width: 300,
+        height: 240,
         color: '0x4318FF',
         weight: 3
     });
