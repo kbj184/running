@@ -50,15 +50,18 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
     // 지도 이미지 URL 생성 (썸네일이 없으면 route로 생성)
     const mapImageUrl = thumbnail || (route && route.length > 0 ? generateRouteMapImage(route) : null);
 
-    // 날짜/시간 포맷팅
+    // 날짜/시간 포맷팅 - 2025년12월30일 10:36~10:36 형식
     const runDate = timestamp ? new Date(timestamp) : new Date();
-    const dateStr = `${runDate.getFullYear()}.${String(runDate.getMonth() + 1).padStart(2, '0')}.${String(runDate.getDate()).padStart(2, '0')}`;
+    const year = runDate.getFullYear();
+    const month = runDate.getMonth() + 1;
+    const day = runDate.getDate();
 
     // 시작 시간과 종료 시간 계산
     const endTime = runDate;
     const startTime = new Date(endTime.getTime() - duration * 1000);
     const startTimeStr = `${String(startTime.getHours()).padStart(2, '0')}:${String(startTime.getMinutes()).padStart(2, '0')}`;
     const endTimeStr = `${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`;
+    const dateTimeStr = `${year}년${month}월${day}일 ${startTimeStr}~${endTimeStr}`;
 
     return (
         <div className="result-screen-container">
