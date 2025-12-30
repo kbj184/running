@@ -78,6 +78,9 @@ export const generateRouteThumbnail = (route, options = {}) => {
             'feature:all|element:labels|visibility:off',           // 모든 라벨 숨기기
             'feature:poi|visibility:off',                          // POI 숨기기
             'feature:transit|visibility:off',                      // 대중교통 숨기기
+            'feature:transit.line|visibility:off',                 // 대중교통 노선 숨기기
+            'feature:transit.station|visibility:off',              // 대중교통 역 숨기기
+            'feature:transit.station.rail|visibility:off',         // 지하철역 숨기기
             'feature:administrative|element:labels|visibility:off', // 행정구역 라벨 숨기기
             'feature:administrative.land_parcel|visibility:off',   // 워터마크 숨기기
             'feature:administrative.neighborhood|visibility:off'   // 추가 워터마크 숨기기
