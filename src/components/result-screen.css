@@ -54,6 +54,47 @@
     cursor: pointer;
     font-size: 18px;
     color: #64748b;
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    z-index: 10;
+}
+
+/* 고정 헤더 */
+.result-header-fixed {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.result-datetime {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    text-align: right;
+}
+
+/* 거리 섹션 */
+.result-distance-section {
+    background: white;
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.result-distance-value {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #4318FF;
+    line-height: 1;
 }
 
 .result-summary-section {

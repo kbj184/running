@@ -62,17 +62,11 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
 
     return (
         <div className="result-screen-container">
-            <header className="result-header">
+            {/* 고정 헤더 - X 버튼과 날짜/시간 */}
+            <header className="result-header-fixed">
                 <button className="result-close-x" onClick={onSave}>✕</button>
-                <div style={{
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#333',
-                    marginTop: '12px',
-                    textAlign: 'left',
-                    paddingLeft: '20px'
-                }}>
-                    {dateStr} {startTimeStr}~{endTimeStr}
+                <div className="result-datetime">
+                    {dateTimeStr}
                 </div>
             </header>
 
@@ -101,14 +95,9 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                 </div>
             )}
 
-            {/* 거리만 표기 */}
-            <section className="result-summary-section">
-                <div className="result-main-stats-row">
-                    <div className="result-main-stat-item center" style={{ width: '100%' }}>
-                        <div className="result-stat-label">거리</div>
-                        <div className="result-stat-value-huge">{formatDistance(distance)}</div>
-                    </div>
-                </div>
+            {/* 거리 표시 - 라벨 없이 숫자만 */}
+            <section className="result-distance-section">
+                <div className="result-distance-value">{formatDistance(distance)}</div>
             </section>
 
             {/* 지도만 표기 */}
@@ -218,7 +207,7 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                     <span>🗑️</span> 삭제
                 </button>
                 <button className="result-btn result-btn-save" onClick={onSave}>
-                    {mode === 'view' ? '홈으로' : '기록 저장'}
+                    기록 저장
                 </button>
             </div>
         </div>
