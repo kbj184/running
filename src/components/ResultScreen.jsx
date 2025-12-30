@@ -15,7 +15,8 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         splits = [],
         currentElevation = 0,
         totalAscent = 0,
-        totalDescent = 0
+        totalDescent = 0,
+        timestamp // 타임스탬프 추가
     } = result;
 
     // 승급 메시지 표시 여부 상태
@@ -49,11 +50,30 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
     // 지도 이미지 URL 생성 (썸네일이 없으면 route로 생성)
     const mapImageUrl = thumbnail || (route && route.length > 0 ? generateRouteMapImage(route) : null);
 
+    // 날짜/시간 포맷팅
+    const runDate = timestamp ? new Date(timestamp) : new Date();
+    const dateStr = `${runDate.getFullYear()}.${String(runDate.getMonth() + 1).padStart(2, '0')}.${String(runDate.getDate()).padStart(2, '0')}`;
+
+    // 시작 시간과 종료 시간 계산
+    const endTime = runDate;
+    const startTime = new Date(endTime.getTime() - duration * 1000);
+    const startTimeStr = `${String(startTime.getHours()).padStart(2, '0')}:${String(startTime.getMinutes()).padStart(2, '0')}`;
+    const endTimeStr = `${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`;
+
     return (
         <div className="result-screen-container">
             <header className="result-header">
-                <h1 className="result-title">러닝 완료!</h1>
                 <button className="result-close-x" onClick={onSave}>✕</button>
+                <div style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#333',
+                    marginTop: '12px',
+                    textAlign: 'left',
+                    paddingLeft: '20px'
+                }}>
+                    {dateStr} {startTimeStr}~{endTimeStr}
+                </div>
             </header>
 
             {/* 승급 축하 배너 - 최초 1회만 표시 */}
@@ -81,56 +101,18 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                 </div>
             )}
 
+            {/* 거리만 표기 */}
             <section className="result-summary-section">
                 <div className="result-main-stats-row">
-                    <div className="result-main-stat-item">
-                        <div className="result-stat-label">시간</div>
-                        <div className="result-stat-value-huge">{formatTime(duration)}</div>
-                    </div>
-                    <div className="result-main-stat-item center">
+                    <div className="result-main-stat-item center" style={{ width: '100%' }}>
                         <div className="result-stat-label">거리</div>
                         <div className="result-stat-value-huge">{formatDistance(distance)}</div>
                     </div>
                 </div>
-
-                <div className="result-secondary-stats-grid">
-                    <div className="result-secondary-item">
-                        <div className="result-secondary-label">평균 속도</div>
-                        <div className="result-secondary-value">{avgSpeed.toFixed(1)} <small>km/h</small></div>
-                    </div>
-                    <div className="result-secondary-item">
-                        <div className="result-secondary-label">칼로리</div>
-                        <div className="result-secondary-value">{calories} <small>kcal</small></div>
-                    </div>
-                    <div className="result-secondary-item">
-                        <div className="result-secondary-label">평균 페이스</div>
-                        <div className="result-secondary-value">{avgPace > 0 && avgPace < 100 ? avgPace.toFixed(1) : '0.0'} <small>분/km</small></div>
-                    </div>
-                </div>
-
-                {/* 고도 정보 */}
-                {(totalAscent > 0 || totalDescent > 0) && (
-                    <div className="result-secondary-stats-grid" style={{ marginTop: '12px' }}>
-                        <div className="result-secondary-item">
-                            <div className="result-secondary-label">현재 고도</div>
-                            <div className="result-secondary-value" style={{ color: '#667eea' }}>{currentElevation.toFixed(0)} <small>m</small></div>
-                        </div>
-                        <div className="result-secondary-item">
-                            <div className="result-secondary-label">↗ 상승</div>
-                            <div className="result-secondary-value" style={{ color: '#22c55e' }}>{totalAscent.toFixed(0)} <small>m</small></div>
-                        </div>
-                        <div className="result-secondary-item">
-                            <div className="result-secondary-label">↘ 하강</div>
-                            <div className="result-secondary-value" style={{ color: '#ef4444' }}>{totalDescent.toFixed(0)} <small>m</small></div>
-                        </div>
-                    </div>
-                )}
             </section>
 
+            {/* 지도만 표기 */}
             <section className="result-card-section">
-                <div className="result-section-title-simple">
-                    <span>🗺️</span> 러닝 경로
-                </div>
                 <div className="result-map-card">
                     {!mapImageUrl ? (
                         <div style={{
@@ -164,6 +146,47 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                 e.target.parentElement.appendChild(errorDiv);
                             }}
                         />
+                    )}
+                </div>
+            </section>
+
+            {/* 런닝 데이터 표기 */}
+            <section className="result-summary-section">
+                <div className="result-section-title-simple" style={{ marginBottom: '16px', paddingLeft: '20px' }}>
+                    <span>📊</span> 런닝 데이터
+                </div>
+
+                <div className="result-secondary-stats-grid">
+                    <div className="result-secondary-item">
+                        <div className="result-secondary-label">시간</div>
+                        <div className="result-secondary-value">{formatTime(duration)}</div>
+                    </div>
+                    <div className="result-secondary-item">
+                        <div className="result-secondary-label">평균 속도</div>
+                        <div className="result-secondary-value">{avgSpeed.toFixed(1)} <small>km/h</small></div>
+                    </div>
+                    <div className="result-secondary-item">
+                        <div className="result-secondary-label">평균 페이스</div>
+                        <div className="result-secondary-value">{avgPace > 0 && avgPace < 100 ? avgPace.toFixed(1) : '0.0'} <small>분/km</small></div>
+                    </div>
+                </div>
+
+                <div className="result-secondary-stats-grid" style={{ marginTop: '12px' }}>
+                    <div className="result-secondary-item">
+                        <div className="result-secondary-label">칼로리</div>
+                        <div className="result-secondary-value">{calories} <small>kcal</small></div>
+                    </div>
+                    {(totalAscent > 0 || totalDescent > 0) && (
+                        <>
+                            <div className="result-secondary-item">
+                                <div className="result-secondary-label">↗ 상승</div>
+                                <div className="result-secondary-value" style={{ color: '#22c55e' }}>{totalAscent.toFixed(0)} <small>m</small></div>
+                            </div>
+                            <div className="result-secondary-item">
+                                <div className="result-secondary-label">↘ 하강</div>
+                                <div className="result-secondary-value" style={{ color: '#ef4444' }}>{totalDescent.toFixed(0)} <small>m</small></div>
+                            </div>
+                        </>
                     )}
                 </div>
             </section>

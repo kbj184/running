@@ -78,7 +78,8 @@ export const generateRouteThumbnail = (route, options = {}) => {
             'feature:all|element:labels|visibility:off',           // 모든 라벨 숨기기
             'feature:poi|visibility:off',                          // POI 숨기기
             'feature:transit|visibility:off',                      // 대중교통 숨기기
-            'feature:administrative|element:labels|visibility:off' // 행정구역 라벨 숨기기
+            'feature:administrative|element:labels|visibility:off', // 행정구역 라벨 숨기기
+            'feature:administrative.land_parcel|visibility:off'    // 워터마크 숨기기
         ].join('&style=')
     });
 
@@ -88,11 +89,11 @@ export const generateRouteThumbnail = (route, options = {}) => {
     // 경로 path 추가
     params.append('path', `color:${color}|weight:${weight}|${pathPoints}`);
 
-    // 시작점 마커 (초록색)
-    params.append('markers', `color:green|size:small|${startPoint.lat},${startPoint.lng}`);
+    // 시작점 마커 (빨간색)
+    params.append('markers', `color:red|size:mid|${startPoint.lat},${startPoint.lng}`);
 
-    // 끝점 마커 (파란색)
-    params.append('markers', `color:blue|size:small|${endPoint.lat},${endPoint.lng}`);
+    // 끝점 마커 (골인 깃발) - 체크무늬 깃발 이모지 사용
+    params.append('markers', `icon:https://maps.google.com/mapfiles/kml/paddle/go.png|${endPoint.lat},${endPoint.lng}`);
 
     return `${baseUrl}?${params.toString()}`;
 };
