@@ -458,8 +458,10 @@ function App() {
                             transition: 'all 0.2s'
                         }}
                         onClick={() => {
-                            setShowProfileMenu(!showProfileMenu);
-                            setProfileTab('records'); // 기본 탭으로 리셋
+                            if (!showProfileMenu) {
+                                setShowProfileMenu(true);
+                                setProfileTab('records'); // 기본 탭으로 리셋
+                            }
                         }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
@@ -969,14 +971,20 @@ function App() {
             <div className="main-bottom-nav">
                 <div
                     className={`nav-item ${activeTab === 'home' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('home')}
+                    onClick={() => {
+                        setActiveTab('home');
+                        setShowProfileMenu(false);
+                    }}
                 >
                     <div className="nav-icon">🏠</div>
                     <span>홈</span>
                 </div>
                 <div
                     className={`nav-item ${activeTab === 'running' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('running')}
+                    onClick={() => {
+                        setActiveTab('running');
+                        setShowProfileMenu(false);
+                    }}
                 >
                     <div className="nav-icon">🏃</div>
                     <span>런닝센터</span>
@@ -992,14 +1000,20 @@ function App() {
 
                 <div
                     className={`nav-item ${activeTab === 'crew' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('crew')}
+                    onClick={() => {
+                        setActiveTab('crew');
+                        setShowProfileMenu(false);
+                    }}
                 >
                     <div className="nav-icon">👥</div>
                     <span>Crew</span>
                 </div>
                 <div
                     className={`nav-item ${activeTab === 'myrun' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('myrun')}
+                    onClick={() => {
+                        setActiveTab('myrun');
+                        setShowProfileMenu(false);
+                    }}
                 >
                     <div className="nav-icon">📊</div>
                     <span>MyRun</span>
