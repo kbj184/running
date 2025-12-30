@@ -164,8 +164,8 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '12px',
-                    padding: '0 10px'
+                    gap: '12px',      // 목록 사이 여백
+                    padding: '0'      // 좌우 여백 제거 (화면 끝까지 확장)
                 }}>
                     {records.map(record => (
                         <div
