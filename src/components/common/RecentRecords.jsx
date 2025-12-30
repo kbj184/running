@@ -30,30 +30,39 @@ function RouteThumbnail({ route, thumbnail }) {
     }
 
     return (
-        <img
-            src={thumbnailUrl}
-            alt="경로 썸네일"
-            style={{
-                ...thumbnailMapStyle,
-                objectFit: 'cover',
-                display: 'block'
-            }}
-            onError={(e) => {
-                e.target.style.display = 'none';
-                const fallback = document.createElement('div');
-                Object.assign(fallback.style, {
-                    ...thumbnailMapStyle,
-                    background: '#f0f0f0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#999',
-                    fontSize: '12px'
-                });
-                fallback.textContent = '🗺️';
-                e.target.parentElement.appendChild(fallback);
-            }}
-        />
+        <div style={{
+            ...thumbnailMapStyle,
+            overflow: 'hidden',
+            position: 'relative'
+        }}>
+            <img
+                src={thumbnailUrl}
+                alt="경로 썸네일"
+                style={{
+                    width: '100%',
+                    height: '110%',
+                    objectFit: 'cover',
+                    display: 'block',
+                    position: 'relative',
+                    top: '-5%'
+                }}
+                onError={(e) => {
+                    e.target.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    Object.assign(fallback.style, {
+                        ...thumbnailMapStyle,
+                        background: '#f0f0f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#999',
+                        fontSize: '12px'
+                    });
+                    fallback.textContent = '🗺️';
+                    e.target.parentElement.appendChild(fallback);
+                }}
+            />
+        </div>
     );
 }
 
@@ -141,14 +150,14 @@ function RecentRecords({ onRefresh, onRecordClick }) {
             </div>
 
             {/* 최근 활동 섹션 */}
-            <div style={{ padding: '20px 0' }}>
+            <div style={{ padding: '0' }}>
                 <h3 style={{
                     margin: '0 0 16px 20px',
                     fontSize: '18px',
                     fontWeight: '700',
                     color: '#1a1a1a'
                 }}>
-                    📅 최근 활동
+                    최근활동
                 </h3>
 
                 <div style={{
