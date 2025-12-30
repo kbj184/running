@@ -4,7 +4,7 @@ import { formatDistance, formatTime } from '../../utils/gps';
 import { generateRouteThumbImage } from '../../utils/mapThumbnail';
 
 const thumbnailMapStyle = {
-    width: '120px',
+    width: '110px',
     height: '100px',
     borderRadius: '8px'
 };
@@ -71,7 +71,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
     const [stats, setStats] = useState({
         totalDistance: 0,
         totalDuration: 0,
-        avgSpeed: 0
+        avgPace: 0
     });
 
     useEffect(() => {
@@ -89,12 +89,13 @@ function RecentRecords({ onRefresh, onRecordClick }) {
             if (recent.length > 0) {
                 const totalDistance = recent.reduce((sum, r) => sum + r.distance, 0);
                 const totalDuration = recent.reduce((sum, r) => sum + r.duration, 0);
-                const avgSpeed = totalDuration > 0 ? (totalDistance / (totalDuration / 3600)) : 0;
+                // avgPace = Total Minutes / Total KM
+                const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
 
                 setStats({
                     totalDistance,
                     totalDuration,
-                    avgSpeed
+                    avgPace
                 });
             }
 
@@ -125,10 +126,12 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: '12px',
-                padding: '20px 0',
-                margin: '0',
-                backgroundColor: '#f9f9f9',
-                borderBottom: '1px solid #eee'
+                padding: '20px',
+                margin: '10px 10px 0 10px',
+                backgroundColor: '#fff',
+                borderRadius: '16px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                border: '1px solid #f0f0f0'
             }}>
                 <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 거리</div>
@@ -143,9 +146,9 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                     </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>평균 속도</div>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>평균 페이스</div>
                     <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>
-                        {stats.avgSpeed.toFixed(1)} <span style={{ fontSize: '12px', fontWeight: '500' }}>km/h</span>
+                        {stats.avgPace.toFixed(1)} <span style={{ fontSize: '12px', fontWeight: '500' }}>min/km</span>
                     </div>
                 </div>
             </div>
@@ -186,7 +189,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                             onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
                         >
                             {/* 썸네일 지도 (오버레이 없이 깔끔) */}
-                            <div style={{ width: '120px', height: '100px', flexShrink: 0 }}>
+                            <div style={{ width: '110px', height: '100px', flexShrink: 0 }}>
                                 <RouteThumbnail route={record.route} thumbnail={record.thumbnail} />
                             </div>
 
@@ -223,7 +226,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                                     display: 'flex',
                                     flexWrap: 'wrap',
                                     gap: '12px',
-                                    fontSize: '14px',
+                                    fontSize: '11px',
                                     color: '#444',
                                     fontWeight: '500'
                                 }}>
