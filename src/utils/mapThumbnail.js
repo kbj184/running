@@ -75,7 +75,14 @@ export const generateRouteThumbnail = (route, options = {}) => {
         key: apiKey,
         // 모든 라벨과 텍스트 숨기기
         style: [
+            'feature:all|element:geometry|color:0x212121',         // 아주 어두운 회색 (Dark Mode)
+            'feature:all|element:labels.text.stroke|visibility:off',
+            'feature:all|element:labels.text.fill|visibility:off',
             'feature:all|element:labels|visibility:off',           // 모든 라벨 숨기기
+            'feature:road|element:geometry|color:0x383838',        // 도로를 약간 밝게 (경로 구분을 위해)
+            'feature:road|element:geometry.stroke|color:0x212121',
+            'feature:water|element:geometry|color:0x000000',       // 물은 검정색
+
             'feature:poi|visibility:off',                          // POI 숨기기
             'feature:transit|visibility:off',                      // 대중교통 숨기기
             'feature:transit.line|visibility:off',                 // 대중교통 노선 숨기기
