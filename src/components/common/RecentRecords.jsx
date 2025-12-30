@@ -164,8 +164,8 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '12px',      // 목록 사이 여백
-                    padding: '0'      // 좌우 여백 제거 (화면 끝까지 확장)
+                    gap: '12px',
+                    padding: '0'
                 }}>
                     {records.map(record => (
                         <div
@@ -173,7 +173,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                             onClick={() => onRecordClick(record)}
                             style={{
                                 display: 'flex',
-                                gap: '12px',
+                                gap: '16px',
                                 padding: '16px',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
@@ -185,61 +185,77 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                             onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
                             onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
                         >
-                            {/* 썸네일 지도 */}
-                            <RouteThumbnail route={record.route} thumbnail={record.thumbnail} />
+                            {/* 썸네일 지도 & 이동거리 오버레이 */}
+                            <div style={{ position: 'relative', width: '120px', height: '100px', flexShrink: 0 }}>
+                                <RouteThumbnail route={record.route} thumbnail={record.thumbnail} />
+                                {/* 어두운 오버레이 */}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: 0, left: 0, right: 0, bottom: 0,
+                                    backgroundColor: 'rgba(0,0,0,0.3)',
+                                    borderRadius: '8px',
+                                    pointerEvents: 'none'
+                                }}></div>
+                                {/* 이동 거리 텍스트 */}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '50%', left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    fontSize: '20px',
+                                    fontWeight: '800',
+                                    color: '#fff',
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                                    width: '100%',
+                                    textAlign: 'center',
+                                    zIndex: 10
+                                }}>
+                                    {formatDistance(record.distance)}
+                                </div>
+                            </div>
 
                             {/* 기록 정보 */}
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {/* 상단: 날짜 + 시간 (좌측 정렬) */}
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '8px' }}>
+                                {/* 상단: 날짜 + 시간 */}
                                 <div style={{
                                     display: 'flex',
                                     justifyContent: 'flex-start',
                                     alignItems: 'center',
-                                    fontSize: '13px',
-                                    color: '#666',
-                                    fontWeight: '500'
+                                    fontSize: '14px',
+                                    color: '#555',
+                                    fontWeight: '600'
                                 }}>
                                     <span>
-                                        {new Date(record.timestamp).toLocaleDateString()} {new Date(record.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                        {new Date(record.timestamp).toLocaleDateString()}
+                                        <span style={{ margin: '0 8px', color: '#ddd' }}>|</span>
+                                        {new Date(record.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })}
                                     </span>
                                 </div>
 
-                                {/* 중간: 키로미터 */}
-                                <div style={{
-                                    fontSize: '24px',
-                                    fontWeight: '800',
-                                    color: '#4318FF',
-                                    lineHeight: '1.2'
-                                }}>
-                                    {formatDistance(record.distance)}
-                                </div>
-
-                                {/* 하단: 러닝시간 + 분당 킬로미터 + 칼로리 */}
+                                {/* 하단: 러닝시간 (크게) + 페이스/칼로리 */}
                                 <div style={{
                                     display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: '12px',
-                                    fontSize: '14px',
-                                    color: '#444',
-                                    fontWeight: '500'
+                                    flexDirection: 'column',
+                                    gap: '6px'
                                 }}>
-                                    <span style={{ color: '#1a1a1a', fontWeight: '600' }}>
+                                    <div style={{ fontSize: '18px', fontWeight: '800', color: '#1a1a1a' }}>
                                         {(() => {
                                             const totalSeconds = Math.floor(record.duration);
                                             const minutes = Math.floor(totalSeconds / 60);
                                             const seconds = totalSeconds % 60;
                                             return `${minutes}분 ${seconds}초`;
                                         })()}
-                                    </span>
-                                    <span>{record.pace.toFixed(1)} min/km</span>
-                                    <span>{Math.floor(record.distance * 60)} kcal</span>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', fontWeight: '500' }}>
+                                        <span>{record.pace.toFixed(1)} min/km</span>
+                                        <span style={{ color: '#eee' }}>|</span>
+                                        <span>{Math.floor(record.distance * 60)} kcal</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* 하단 여백 */}
                 <div style={{ height: '20px' }}></div>
             </div>
         </div>
