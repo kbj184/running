@@ -416,7 +416,7 @@ function App() {
             )}
 
             {/* Scrollable Content Area */}
-            <div className="main-content" style={{ marginTop: showProfileMenu ? '60px' : '0' }}>
+            <div className="main-content" style={{ marginTop: showProfileMenu ? 'calc(var(--header-height) + 60px)' : 'var(--header-height)' }}>
                 {/* Home Tab */}
                 {activeTab === 'home' && !showProfileMenu && <HomeTab />}
 

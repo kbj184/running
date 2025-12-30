@@ -80,7 +80,7 @@
 /* Scrollable Content Area */
 .main-content {
     flex: 1;
-    margin-top: 56px;
+    margin-top: var(--header-height);
     margin-bottom: 64px;
     overflow-y: auto;
     overflow-x: hidden;
