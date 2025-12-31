@@ -27,16 +27,19 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
         setMap(null);
     }, []);
 
-    const processGeocodeResult = (result) => {
+    const processGeocodeResult = (result, providedPos = null) => {
         const addressComponents = result.address_components;
+        const lat = providedPos ? (typeof providedPos.lat === 'function' ? providedPos.lat() : providedPos.lat) : result.geometry.location.lat();
+        const lng = providedPos ? (typeof providedPos.lng === 'function' ? providedPos.lng() : providedPos.lng) : result.geometry.location.lng();
+
         let locationData = {
             mainCountryCode: '',
             mainCountryName: '',
             adminLevel1: '',
             adminLevel2: '',
             adminLevel3: '', // Clear this explicitly
-            latitude: result.geometry.location.lat(),
-            longitude: result.geometry.location.lng()
+            latitude: lat,
+            longitude: lng
         };
 
         // 우선순위와 접미사(시, 군, 구)로 분류하여 adminLevel2(구 단위)까지 추출
@@ -70,7 +73,7 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
 
         setSelectedAddress(result.formatted_address);
         setExtractedGu(locationData.adminLevel2);
-        setMarkerPos({ lat: locationData.latitude, lng: locationData.longitude });
+        setMarkerPos({ lat, lng });
 
         return locationData;
     };
@@ -83,7 +86,7 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             const geocoder = new window.google.maps.Geocoder();
             const response = await geocoder.geocode({ location: newPos });
             if (response.results && response.results[0]) {
-                processGeocodeResult(response.results[0]);
+                processGeocodeResult(response.results[0], newPos);
             }
         } catch (error) {
             console.error('Map click geocoding error:', error);
