@@ -27,42 +27,6 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
         setMap(null);
     }, []);
 
-    const extractDongName = (addressComponents) => {
-        let dong = '';
-        // '동', '읍', '면'으로 끝나는 요소 찾기
-        const dongTypes = [
-            'sublocality_level_2',
-            'sublocality_level_1',
-            'administrative_area_level_3',
-            'neighborhood',
-            'political'
-        ];
-
-        // 1. 명시적인 타입에서 찾기
-        for (const type of dongTypes) {
-            const component = addressComponents.find(c => c.types.includes(type));
-            if (component) {
-                const name = component.long_name;
-                if (name.endsWith('동') || name.endsWith('읍') || name.endsWith('면') || name.endsWith('가')) {
-                    dong = name;
-                    break;
-                }
-            }
-        }
-
-        // 2. 만약 못 찾았다면, sublocality_level_1 이나 administrative_area_level_3에서 강제로 가져옴
-        if (!dong) {
-            const backup = addressComponents.find(c =>
-                c.types.includes('sublocality_level_2') ||
-                c.types.includes('sublocality_level_1') ||
-                c.types.includes('administrative_area_level_3')
-            );
-            if (backup) dong = backup.long_name;
-        }
-
-        return dong;
-    };
-
     const processGeocodeResult = (result) => {
         const addressComponents = result.address_components;
         let locationData = {
@@ -75,23 +39,46 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             longitude: result.geometry.location.lng()
         };
 
+        // 우선순위와 접미사(시, 군, 구, 동, 읍, 면)로 정확하게 분류
         addressComponents.forEach(component => {
             const types = component.types;
+            const name = component.long_name;
+
             if (types.includes('country')) {
                 locationData.mainCountryCode = component.short_name;
-                locationData.mainCountryName = component.long_name;
+                locationData.mainCountryName = name;
             } else if (types.includes('administrative_area_level_1')) {
-                locationData.adminLevel1 = component.long_name;
-            } else if (types.includes('administrative_area_level_2') || types.includes('locality')) {
-                // Locality와 admin_level_2 중 하나를 adminLevel2로 사용
-                if (!locationData.adminLevel2) {
-                    locationData.adminLevel2 = component.long_name;
+                locationData.adminLevel1 = name;
+            } else if (types.includes('locality') || types.includes('administrative_area_level_2')) {
+                // 시/군/구 (수원시, 용인시 등 기본 시 단위)
+                if (!locationData.adminLevel2 || name.endsWith('구') || name.endsWith('시')) {
+                    locationData.adminLevel2 = name;
+                }
+            } else if (types.includes('sublocality_level_1')) {
+                // 구 단위 (강남구, 팔달구 등) 또는 큰 동(동레벨이 sublocality_level_1인 경우도 있음)
+                if (name.endsWith('구') || (name.endsWith('시') && !locationData.adminLevel2)) {
+                    locationData.adminLevel2 = name;
+                } else if (name.endsWith('동') || name.endsWith('읍') || name.endsWith('면')) {
+                    locationData.adminLevel3 = name;
+                }
+            } else if (types.includes('sublocality_level_2') || types.includes('administrative_area_level_3') || types.includes('neighborhood') || types.includes('political')) {
+                // 동/읍/면/리
+                if (name.endsWith('동') || name.endsWith('읍') || name.endsWith('면') || name.endsWith('리') || name.endsWith('가')) {
+                    locationData.adminLevel3 = name;
                 }
             }
         });
 
-        // '동' 단위 추출
-        locationData.adminLevel3 = extractDongName(addressComponents);
+        // 후속 보정: 타입 기반으로 못 잡은 경우를 위해 접미사로 한 번 더 체크
+        if (!locationData.adminLevel2) {
+            const guComp = addressComponents.find(c => c.long_name.endsWith('구') || (c.long_name.endsWith('시') && !c.types.includes('administrative_area_level_1')));
+            if (guComp) locationData.adminLevel2 = guComp.long_name;
+        }
+
+        if (!locationData.adminLevel3) {
+            const dongComp = addressComponents.find(c => c.long_name.endsWith('동') || c.long_name.endsWith('읍') || c.long_name.endsWith('면'));
+            if (dongComp) locationData.adminLevel3 = dongComp.long_name;
+        }
 
         setSelectedAddress(result.formatted_address);
         setExtractedDong(locationData.adminLevel3);
