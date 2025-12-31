@@ -129,9 +129,12 @@ export const generateRouteThumbnail = (route, options = {}) => {
 
     // 급수 마커 추가 (물방울 커스텀 아이콘)
     if (wateringSegments && wateringSegments.length > 0) {
-        // 배포된 앱의 base URL (Amplify 또는 로컬)
-        const baseUrl = window.location.origin;
-        const iconUrl = `${baseUrl}/water-marker.png`;
+        // Static Maps API는 절대 URL이 필요함
+        const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:';
+        const host = typeof window !== 'undefined' ? window.location.host : 'llrun.shop';
+        const iconUrl = `${protocol}//${host}/water-marker.png`;
+
+        console.log(`💧 Water marker icon URL: ${iconUrl}`);
 
         wateringSegments.forEach(segment => {
             if (segment.start < route.length) {

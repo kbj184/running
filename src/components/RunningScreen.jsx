@@ -443,23 +443,35 @@ function RunningScreen({ onStop, sessionId, user }) {
 
     const handleWateringStart = () => {
         setIsWatering(true);
-        // 현재 위치 인덱스 사용 (route.length - 1)
-        // route가 비어있으면 0, 아니면 마지막 인덱스
-        const currentIndex = route.length > 0 ? route.length - 1 : 0;
+        // dataRef에서 직접 현재 route 길이를 가져와서 즉시 기록
+        const currentRoute = dataRef.current.route;
+        const currentIndex = currentRoute.length > 0 ? currentRoute.length - 1 : 0;
         setWateringStartIndex(currentIndex);
-        console.log(`💧 급수 시작: 인덱스 ${currentIndex}`);
+        dataRef.current.isWatering = true;
+        console.log(`💧 급수 시작: 인덱스 ${currentIndex}, 총 포인트: ${currentRoute.length}`);
     };
 
     const handleWateringEnd = () => {
         setIsWatering(false);
+        dataRef.current.isWatering = false;
+
         if (wateringStartIndex !== null) {
-            // 현재 위치 인덱스 사용
-            const currentIndex = route.length > 0 ? route.length - 1 : 0;
-            setWateringSegments(prev => [...prev, {
+            // dataRef에서 직접 현재 route 길이를 가져옴
+            const currentRoute = dataRef.current.route;
+            const currentIndex = currentRoute.length > 0 ? currentRoute.length - 1 : 0;
+
+            const newSegment = {
                 start: wateringStartIndex,
                 end: currentIndex
-            }]);
-            console.log(`💧 급수 종료: ${wateringStartIndex} ~ ${currentIndex}`);
+            };
+
+            setWateringSegments(prev => {
+                const updated = [...prev, newSegment];
+                dataRef.current.wateringSegments = updated;
+                return updated;
+            });
+
+            console.log(`💧 급수 종료: ${wateringStartIndex} ~ ${currentIndex}, 총 포인트: ${currentRoute.length}`);
             setWateringStartIndex(null);
         }
     };
