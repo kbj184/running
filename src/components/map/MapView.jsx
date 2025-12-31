@@ -23,7 +23,8 @@ function MapView({
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-        language: 'ko'
+        language: 'ko',
+        libraries: ['places']
     });
 
     const [map, setMap] = useState(null);
