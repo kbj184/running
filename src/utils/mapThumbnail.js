@@ -127,12 +127,16 @@ export const generateRouteThumbnail = (route, options = {}) => {
     // 끝점 마커 (파란색 원형)
     params.append('markers', `color:blue|size:mid|${endPoint.lat},${endPoint.lng}`);
 
-    // 급수 마커 추가 (초록색)
+    // 급수 마커 추가 (물방울 커스텀 아이콘)
     if (wateringSegments && wateringSegments.length > 0) {
+        // 배포된 앱의 base URL (Amplify 또는 로컬)
+        const baseUrl = window.location.origin;
+        const iconUrl = `${baseUrl}/water-marker.png`;
+
         wateringSegments.forEach(segment => {
             if (segment.start < route.length) {
                 const waterPoint = route[segment.start];
-                params.append('markers', `color:green|size:small|${waterPoint.lat},${waterPoint.lng}`);
+                params.append('markers', `icon:${iconUrl}|${waterPoint.lat},${waterPoint.lng}`);
             }
         });
     }
