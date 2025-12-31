@@ -136,7 +136,7 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             const response = await geocoder.geocode({ location: markerPos });
 
             if (response.results && response.results.length > 0) {
-                const locationData = processGeocodeResult(response.results[0]);
+                const locationData = getLocationData(response.results[0], markerPos);
                 console.log('📍 Final Extracted Location (Gu):', locationData);
                 onSelect(locationData);
             } else {
