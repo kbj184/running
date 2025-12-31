@@ -93,13 +93,21 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
             });
 
             if (response.ok) {
-                const sessions = await response.json();
+                let sessions = await response.json();
+                console.log('📋 서버 응답 데이터:', sessions);
+
+                // 배열이 아니면 빈 배열로 처리
+                if (!Array.isArray(sessions)) {
+                    console.warn('⚠️ 서버 응답이 배열이 아닙니다:', typeof sessions);
+                    sessions = [];
+                }
+
                 console.log('📋 서버에서 가져온 기록 수:', sessions.length);
 
                 // 통계 계산
                 if (sessions.length > 0) {
-                    const totalDistance = sessions.reduce((sum, r) => sum + r.distance, 0);
-                    const totalDuration = sessions.reduce((sum, r) => sum + r.duration, 0);
+                    const totalDistance = sessions.reduce((sum, r) => sum + (r.distance || 0), 0);
+                    const totalDuration = sessions.reduce((sum, r) => sum + (r.duration || 0), 0);
                     const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
 
                     setStats({
