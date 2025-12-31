@@ -206,9 +206,11 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                 <button className="result-btn result-btn-delete" onClick={onDelete}>
                     <span>🗑️</span> 삭제
                 </button>
-                <button className="result-btn result-btn-save" onClick={onSave}>
-                    기록 저장
-                </button>
+                {mode === 'finish' && (
+                    <button className="result-btn result-btn-save" onClick={onSave}>
+                        기록 저장
+                    </button>
+                )}
             </div>
         </div>
     );

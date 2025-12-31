@@ -56,9 +56,9 @@ export const generateRouteThumbnail = (route, options = {}) => {
     const centerLat = (minLat + maxLat) / 2;
     const centerLng = (minLng + maxLng) / 2;
 
-    // 여유 공간 추가 (10% 패딩)
-    const latPadding = (maxLat - minLat) * 0.15;
-    const lngPadding = (maxLng - minLng) * 0.15;
+    // 여유 공간 추가 (25% 패딩으로 증가하여 경로가 잘리지 않도록)
+    const latPadding = (maxLat - minLat) * 0.25;
+    const lngPadding = (maxLng - minLng) * 0.25;
 
     // visible 파라미터로 경로 전체가 보이도록 설정
     const visiblePoints = [
@@ -75,22 +75,10 @@ export const generateRouteThumbnail = (route, options = {}) => {
         key: apiKey
     });
 
-    // Dark Mode 스타일 정의
+    // 일반 지도 스타일 (라벨 최소화)
     const styles = [
-        'feature:all|element:geometry|color:0x212121',         // 아주 어두운 회색 (Dark Mode)
-        'feature:all|element:labels.text.stroke|visibility:off',
-        'feature:all|element:labels.text.fill|visibility:off',
-        'feature:all|element:labels|visibility:off',           // 모든 라벨 숨기기
-        'feature:road|element:geometry|color:0x383838',        // 도로를 약간 밝게
-        'feature:road|element:geometry.stroke|color:0x212121',
-        'feature:water|element:geometry|color:0x000000',       // 물은 검정색
-
         'feature:poi|visibility:off',                          // POI 숨기기
         'feature:transit|visibility:off',                      // 대중교통 숨기기
-        'feature:transit.line|visibility:off',                 // 대중교통 노선 숨기기
-        'feature:transit.station|visibility:off',              // 대중교통 역 숨기기
-        'feature:transit.station.rail|visibility:off',         // 지하철역 숨기기
-        'feature:administrative|element:labels|visibility:off', // 행정구역 라벨 숨기기
         'feature:administrative.land_parcel|visibility:off',   // 워터마크 숨기기
         'feature:administrative.neighborhood|visibility:off'   // 추가 워터마크 숨기기
     ];
