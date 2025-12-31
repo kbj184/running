@@ -10,7 +10,8 @@ const containerStyle = {
     height: '100%'
 };
 
-const LIBRARIES = ['places'];
+const LIBRARIES = ['places', 'marker'];
+const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
 function MapView({
     runners,
@@ -33,6 +34,7 @@ function MapView({
 
     // showLabels에 따라 동적으로 mapOptions 생성
     const mapOptions = {
+        mapId: MAP_ID,
         disableDefaultUI: true, // 기본 UI 제거 (브라우저 기본 위치 팝업 방지용)
         zoomControl: true,
         streetViewControl: false,
@@ -80,6 +82,7 @@ function MapView({
                 <MapController map={map} selectedRunner={selectedRunner} />
 
                 <RunnerMarkers
+                    map={map}
                     runners={runners}
                     selectedRunner={selectedRunner}
                     onRunnerClick={onRunnerClick}
