@@ -17,6 +17,7 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
     const [selectedAddress, setSelectedAddress] = useState('');
     const [extractedGu, setExtractedGu] = useState('');
     const [isGeocoding, setIsGeocoding] = useState(false);
+    const [isLocating, setIsLocating] = useState(false);
     const autocompleteRef = useRef(null);
 
     const onLoad = useCallback(function callback(mapInstance) {
@@ -124,6 +125,59 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
         }
     };
 
+    const moveToCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            alert('브라우저가 위치 정보를 지원하지 않습니다.');
+            return;
+        }
+
+        setIsLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const newPos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                if (map) {
+                    map.panTo(newPos);
+                    map.setZoom(15);
+                }
+
+                // 현재 위치로 마커 설정 및 자치구 추출 시도
+                try {
+                    const geocoder = new window.google.maps.Geocoder();
+                    const response = await geocoder.geocode({ location: newPos });
+                    if (response.results && response.results[0]) {
+                        const locationData = getLocationData(response.results[0], newPos);
+
+                        // 구 정보가 있는 경우에만 상태 업데이트
+                        if (locationData.adminLevel2) {
+                            setMarkerPos({ lat: locationData.latitude, lng: locationData.longitude });
+                            setSelectedAddress(locationData.formattedAddress);
+                            setExtractedGu(locationData.adminLevel2);
+                        } else {
+                            // 구 정보가 없더라도 일단 마커는 찍어줌
+                            setMarkerPos(newPos);
+                            setSelectedAddress(response.results[0].formatted_address);
+                            setExtractedGu('');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Current location geocoding error:', error);
+                } finally {
+                    setIsLocating(false);
+                }
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                alert('위치 정보를 가져올 수 없습니다. 권한 설정을 확인해주세요.');
+                setIsLocating(false);
+            },
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        );
+    };
+
     const handleConfirm = async () => {
         if (!markerPos) {
             alert('주 활동 지역을 검색하거나 지도에서 클릭하여 지정해주세요.');
@@ -204,6 +258,20 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
                     }}
                 >
                     {markerPos && <Marker position={markerPos} />}
+
+                    {/* Floating My Location Button */}
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            moveToCurrentLocation();
+                        }}
+                        style={styles.myLocationBtn}
+                        disabled={isLocating}
+                        title="내 위치로 이동"
+                    >
+                        {isLocating ? '...' : '🎯'}
+                    </button>
                 </GoogleMap>
             </div>
 
@@ -392,6 +460,27 @@ const styles = {
         animation: 'spin 1s linear infinite',
         marginBottom: '15px',
     },
+    myLocationBtn: {
+        position: 'absolute',
+        right: '16px',
+        bottom: '16px',
+        width: '44px',
+        height: '44px',
+        borderRadius: '12px',
+        backgroundColor: '#fff',
+        border: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1.2rem',
+        cursor: 'pointer',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+        zIndex: 10,
+        transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        '&:active': {
+            transform: 'scale(0.95)',
+        }
+    }
 };
 
 export default LocationSelection;
