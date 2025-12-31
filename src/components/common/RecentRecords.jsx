@@ -127,7 +127,7 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: '12px',
                 padding: '20px',
-                margin: '10px 10px 0 10px',
+                margin: '0 10px 0 10px',
                 backgroundColor: '#fff',
                 borderRadius: '16px',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
@@ -135,19 +135,19 @@ function RecentRecords({ onRefresh, onRecordClick }) {
             }}>
                 <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 거리</div>
-                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>
+                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
                         {formatDistance(stats.totalDistance)}
                     </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 시간</div>
-                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>
+                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
                         {formatTime(stats.totalDuration)}
                     </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>평균 페이스</div>
-                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>
+                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
                         {stats.avgPace.toFixed(1)} <span style={{ fontSize: '12px', fontWeight: '500' }}>min/km</span>
                     </div>
                 </div>
@@ -205,9 +205,15 @@ function RecentRecords({ onRefresh, onRecordClick }) {
                                     fontWeight: '500'
                                 }}>
                                     <span>
-                                        {new Date(record.timestamp).toLocaleDateString()}
-                                        <span style={{ margin: '0 8px', color: '#eee' }}>|</span>
-                                        {new Date(record.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                        {(() => {
+                                            const date = new Date(record.timestamp);
+                                            const year = date.getFullYear();
+                                            const month = date.getMonth() + 1;
+                                            const day = date.getDate();
+                                            const hours = String(date.getHours()).padStart(2, '0');
+                                            const minutes = String(date.getMinutes()).padStart(2, '0');
+                                            return `${year}년${month}월${day}일 ${hours}:${minutes}`;
+                                        })()}
                                     </span>
                                 </div>
 
