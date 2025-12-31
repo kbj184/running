@@ -27,7 +27,7 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
         setMap(null);
     }, []);
 
-    const processGeocodeResult = (result, providedPos = null) => {
+    const getLocationData = (result, providedPos = null) => {
         const addressComponents = result.address_components;
         const lat = providedPos ? (typeof providedPos.lat === 'function' ? providedPos.lat() : providedPos.lat) : result.geometry.location.lat();
         const lng = providedPos ? (typeof providedPos.lng === 'function' ? providedPos.lng() : providedPos.lng) : result.geometry.location.lng();
@@ -37,12 +37,12 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             mainCountryName: '',
             adminLevel1: '',
             adminLevel2: '',
-            adminLevel3: '', // Clear this explicitly
+            adminLevel3: '',
             latitude: lat,
-            longitude: lng
+            longitude: lng,
+            formattedAddress: result.formatted_address
         };
 
-        // 우선순위와 접미사(시, 군, 구)로 분류하여 adminLevel2(구 단위)까지 추출
         addressComponents.forEach(component => {
             const types = component.types;
             const name = component.long_name;
@@ -53,40 +53,43 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             } else if (types.includes('administrative_area_level_1')) {
                 locationData.adminLevel1 = name;
             } else if (types.includes('locality') || types.includes('administrative_area_level_2')) {
-                // 시/군/구 (수원시, 용인시 등 기본 시 단위)
                 if (!locationData.adminLevel2 || name.endsWith('구') || name.endsWith('시')) {
                     locationData.adminLevel2 = name;
                 }
             } else if (types.includes('sublocality_level_1')) {
-                // 구 단위 (강남구, 팔달구 등)
                 if (name.endsWith('구') || (name.endsWith('시') && !locationData.adminLevel2)) {
                     locationData.adminLevel2 = name;
                 }
             }
         });
 
-        // 후속 보정: 타입 기반으로 못 잡은 경우를 위해 접미사로 한 번 더 체크
         if (!locationData.adminLevel2) {
             const guComp = addressComponents.find(c => c.long_name.endsWith('구') || (c.long_name.endsWith('시') && !c.types.includes('administrative_area_level_1')));
             if (guComp) locationData.adminLevel2 = guComp.long_name;
         }
-
-        setSelectedAddress(result.formatted_address);
-        setExtractedGu(locationData.adminLevel2);
-        setMarkerPos({ lat, lng });
 
         return locationData;
     };
 
     const handleMapClick = async (e) => {
         const newPos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-        setMarkerPos(newPos);
 
         try {
             const geocoder = new window.google.maps.Geocoder();
             const response = await geocoder.geocode({ location: newPos });
+
             if (response.results && response.results[0]) {
-                processGeocodeResult(response.results[0], newPos);
+                const locationData = getLocationData(response.results[0], newPos);
+
+                // '구' 정보가 없는 지역은 무시
+                if (!locationData.adminLevel2) {
+                    alert('유효한 구/지역 정보가 없는 위치입니다. 다른 곳을 선택해주세요.');
+                    return;
+                }
+
+                setMarkerPos({ lat: locationData.latitude, lng: locationData.longitude });
+                setSelectedAddress(locationData.formattedAddress);
+                setExtractedGu(locationData.adminLevel2);
             }
         } catch (error) {
             console.error('Map click geocoding error:', error);
@@ -97,12 +100,21 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
         if (autocompleteRef.current !== null) {
             const place = autocompleteRef.current.getPlace();
             if (place.geometry && place.geometry.location) {
+                const locationData = getLocationData(place);
+
+                if (!locationData.adminLevel2) {
+                    alert('검색된 지역에 유효한 구 정보가 없습니다.');
+                    return;
+                }
+
                 const newPos = {
-                    lat: place.geometry.location.lat(),
-                    lng: place.geometry.location.lng()
+                    lat: locationData.latitude,
+                    lng: locationData.longitude
                 };
 
-                processGeocodeResult(place);
+                setMarkerPos(newPos);
+                setSelectedAddress(locationData.formattedAddress);
+                setExtractedGu(locationData.adminLevel2);
 
                 if (map) {
                     map.panTo(newPos);
