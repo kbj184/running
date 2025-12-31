@@ -10,6 +10,7 @@ function ProfileMenu({ profileTab, user, refreshRecords, onRecordClick, onLogout
                 <MyRecordsTab
                     refreshRecords={refreshRecords}
                     onRecordClick={onRecordClick}
+                    user={user}
                 />
             )}
 

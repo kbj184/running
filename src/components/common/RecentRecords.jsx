@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { getRecentSessions } from '../../utils/db';
 import { formatDistance, formatTime } from '../../utils/gps';
 import { generateRouteThumbImage } from '../../utils/mapThumbnail';
+import { api } from '../../utils/api';
 
 const thumbnailMapStyle = {
     width: '110px',
@@ -66,42 +66,59 @@ function RouteThumbnail({ route, thumbnail }) {
     );
 }
 
-function RecentRecords({ onRefresh, onRecordClick }) {
+function RecentRecords({ onRefresh, onRecordClick, user }) {
     const [records, setRecords] = useState([]);
     const [stats, setStats] = useState({
         totalDistance: 0,
         totalDuration: 0,
         avgPace: 0
     });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        loadRecords();
-    }, [onRefresh]);
+        if (user && user.id) {
+            loadRecords();
+        }
+    }, [onRefresh, user]);
 
     const loadRecords = async () => {
-        console.log('📋 최근 기록 로딩 시작...');
+        console.log('📋 서버에서 기록 로딩 시작... User ID:', user?.id);
+        setLoading(true);
         try {
-            // 모든 기록 가져오기
-            const recent = await getRecentSessions(100);
-            console.log('📋 가져온 기록 수:', recent.length);
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/sessions/completed?userId=${user.id}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
 
-            // 통계 계산
-            if (recent.length > 0) {
-                const totalDistance = recent.reduce((sum, r) => sum + r.distance, 0);
-                const totalDuration = recent.reduce((sum, r) => sum + r.duration, 0);
-                // avgPace = Total Minutes / Total KM
-                const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
+            if (response.ok) {
+                const sessions = await response.json();
+                console.log('📋 서버에서 가져온 기록 수:', sessions.length);
 
-                setStats({
-                    totalDistance,
-                    totalDuration,
-                    avgPace
-                });
+                // 통계 계산
+                if (sessions.length > 0) {
+                    const totalDistance = sessions.reduce((sum, r) => sum + r.distance, 0);
+                    const totalDuration = sessions.reduce((sum, r) => sum + r.duration, 0);
+                    const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
+
+                    setStats({
+                        totalDistance,
+                        totalDuration,
+                        avgPace
+                    });
+                }
+
+                setRecords(sessions);
+            } else {
+                console.error('❌ 기록 로딩 실패:', response.status);
+                setRecords([]);
             }
-
-            setRecords(recent);
         } catch (err) {
             console.error('❌ 기록 로딩 실패:', err);
+            setRecords([]);
+        } finally {
+            setLoading(false);
         }
     };
 

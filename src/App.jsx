@@ -471,6 +471,7 @@ function App() {
                     <MyRunTab
                         refreshRecords={refreshRecords}
                         onRecordClick={handleRecordClick}
+                        user={user}
                     />
                 )}
 
