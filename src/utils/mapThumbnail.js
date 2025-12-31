@@ -1,7 +1,7 @@
 /**
  * Google Static Maps API를 사용하여 경로 썸네일 URL 생성
  * @param {Array} route - 경로 좌표 배열 [{lat, lng}, ...]
- * @param {Object} options - 옵션 {width, height, zoom}
+ * @param {Object} options - 옵션 {width, height, zoom, wateringSegments}
  * @returns {string} Static Maps API URL
  */
 export const generateRouteThumbnail = (route, options = {}) => {
@@ -16,7 +16,8 @@ export const generateRouteThumbnail = (route, options = {}) => {
         color = '0x4318FF',
         weight = 3,
         useDarkMode = false,  // 다크 모드 사용 여부 (기본값: false)
-        useMapId = true       // Map ID 사용 여부 (기본값: true)
+        useMapId = true,      // Map ID 사용 여부 (기본값: true)
+        wateringSegments = [] // 급수 구간 정보
     } = options;
 
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -126,20 +127,32 @@ export const generateRouteThumbnail = (route, options = {}) => {
     // 끝점 마커 (파란색 원형)
     params.append('markers', `color:blue|size:mid|${endPoint.lat},${endPoint.lng}`);
 
+    // 급수 마커 추가 (초록색)
+    if (wateringSegments && wateringSegments.length > 0) {
+        wateringSegments.forEach(segment => {
+            if (segment.start < route.length) {
+                const waterPoint = route[segment.start];
+                params.append('markers', `color:green|size:small|${waterPoint.lat},${waterPoint.lng}`);
+            }
+        });
+    }
+
     return `${baseUrl}?${params.toString()}`;
 };
 
 /**
  * 큰 지도 이미지 URL 생성 (결과 화면용)
  * @param {Array} route - 경로 좌표 배열
+ * @param {Array} wateringSegments - 급수 구간 정보
  * @returns {string} Static Maps API URL
  */
-export const generateRouteMapImage = (route) => {
+export const generateRouteMapImage = (route, wateringSegments = []) => {
     return generateRouteThumbnail(route, {
         width: 640,
         height: 400,
         color: '0x2D1B69',  // 진한 보라색
-        weight: 5
+        weight: 5,
+        wateringSegments
     });
 };
 

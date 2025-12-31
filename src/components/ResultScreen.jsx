@@ -45,7 +45,7 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
     const calories = Math.floor(distance * 60);
 
     // 지도 이미지 URL 생성 (썸네일이 없으면 route로 생성)
-    const mapImageUrl = thumbnail || (route && route.length > 0 ? generateRouteMapImage(route) : null);
+    const mapImageUrl = thumbnail || (route && route.length > 0 ? generateRouteMapImage(route, wateringSegments) : null);
 
     // 날짜/시간 포맷팅 - 2025년12월30일 10:36~10:36 형식
     const runDate = timestamp ? new Date(timestamp) : new Date();
