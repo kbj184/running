@@ -81,13 +81,13 @@
 /* Scrollable Content Area */
 .main-content {
     flex: 1;
-    margin-top: var(--header-height);
+    padding-top: var(--header-height);
     margin-bottom: 64px;
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
     width: 100%;
-    height: calc(100vh - 120px);
+    height: calc(100vh - var(--header-height) - 64px);
 }
 
 /* Tab Content */
