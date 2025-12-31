@@ -44,6 +44,7 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             formattedAddress: result.formatted_address
         };
 
+        // 행정 구역 정보를 담고 있는 모든 컴포넌트 순회
         addressComponents.forEach(component => {
             const types = component.types;
             const name = component.long_name;
@@ -54,22 +55,39 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             } else if (types.includes('administrative_area_level_1')) {
                 locationData.adminLevel1 = name;
             } else if (types.includes('locality') || types.includes('administrative_area_level_2')) {
+                // 시/군/구 단위 (예: 성남시, 수원시)
                 if (!locationData.adminLevel2 || name.endsWith('구') || name.endsWith('시')) {
                     locationData.adminLevel2 = name;
                 }
             } else if (types.includes('sublocality_level_1')) {
-                if (name.endsWith('구') || (name.endsWith('시') && !locationData.adminLevel2)) {
+                // 구 단위 (예: 강남구)
+                if (name.endsWith('구')) {
                     locationData.adminLevel2 = name;
                 }
             }
         });
 
+        // 후속 보정: 타입 기반으로 못 잡은 경우 접미사 '구'로 재검색
         if (!locationData.adminLevel2) {
-            const guComp = addressComponents.find(c => c.long_name.endsWith('구') || (c.long_name.endsWith('시') && !c.types.includes('administrative_area_level_1')));
+            const guComp = addressComponents.find(c => c.long_name.endsWith('구'));
             if (guComp) locationData.adminLevel2 = guComp.long_name;
         }
 
         return locationData;
+    };
+
+    // 여러 검색 결과 중 '구' 정보가 포함된 최적의 결과를 찾는 헬퍼
+    const findBestLocationData = (results, pos) => {
+        if (!results || results.length === 0) return null;
+
+        // 1. 우선적으로 '구' 정보가 포함된 결과 찾기
+        for (const res of results) {
+            const data = getLocationData(res, pos);
+            if (data.adminLevel2) return data;
+        }
+
+        // 2. 만약 하나도 없다면 첫 번째 결과 데이터 반환 (실패용)
+        return getLocationData(results[0], pos);
     };
 
     const handleMapClick = async (e) => {
@@ -79,11 +97,10 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             const geocoder = new window.google.maps.Geocoder();
             const response = await geocoder.geocode({ location: newPos });
 
-            if (response.results && response.results[0]) {
-                const locationData = getLocationData(response.results[0], newPos);
+            if (response.results && response.results.length > 0) {
+                const locationData = findBestLocationData(response.results, newPos);
 
-                // '구' 정보가 없는 지역은 무시
-                if (!locationData.adminLevel2) {
+                if (!locationData || !locationData.adminLevel2) {
                     alert('유효한 구/지역 정보가 없는 위치입니다. 다른 곳을 선택해주세요.');
                     return;
                 }
@@ -144,20 +161,20 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
                     map.setZoom(15);
                 }
 
-                // 현재 위치로 마커 설정 및 자치구 추출 시도
                 try {
                     const geocoder = new window.google.maps.Geocoder();
                     const response = await geocoder.geocode({ location: newPos });
-                    if (response.results && response.results[0]) {
-                        const locationData = getLocationData(response.results[0], newPos);
 
-                        // 구 정보가 있는 경우에만 상태 업데이트
-                        if (locationData.adminLevel2) {
+                    if (response.results && response.results.length > 0) {
+                        const locationData = findBestLocationData(response.results, newPos);
+
+                        if (locationData && locationData.adminLevel2) {
                             setMarkerPos({ lat: locationData.latitude, lng: locationData.longitude });
                             setSelectedAddress(locationData.formattedAddress);
                             setExtractedGu(locationData.adminLevel2);
                         } else {
-                            // 구 정보가 없더라도 일단 마커는 찍어줌
+                            // 현위치 정보가 행정구역상 구 정보를 포함하지 않는 경우
+                            alert('현재 위치에서 구 단위 정보를 찾을 수 없습니다. 지도를 드래그하여 정확한 위치를 클릭해주세요.');
                             setMarkerPos(newPos);
                             setSelectedAddress(response.results[0].formatted_address);
                             setExtractedGu('');
