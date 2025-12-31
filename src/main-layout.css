@@ -8,12 +8,9 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
-/* Fixed Header Style */
+/* Header Style */
 .main-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    position: relative;
     width: 100%;
     height: var(--header-height);
     background: linear-gradient(135deg, #4318FF 0%, #5B2FFF 100%);
@@ -81,20 +78,17 @@
 /* Scrollable Content Area */
 .main-content {
     flex: 1;
-    padding-top: var(--header-height);
-    margin-bottom: 64px;
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
     width: 100%;
-    height: calc(100vh - var(--header-height) - 64px);
 }
 
 /* Tab Content */
 .tab-content {
     width: 100%;
     height: 100%;
-    padding: 0 1rem 2rem 1rem;
+    padding: 2rem 1rem;
 }
 
 .running-tab {
