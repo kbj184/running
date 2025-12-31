@@ -208,7 +208,7 @@ function NicknameRegistration({ user, onComplete }) {
             }
 
             // 최종 완료
-            onComplete({ ...user, ...updatedUser });
+            onComplete({ ...user, ...updatedUser, activityAreaRegistered: true });
         } catch (err) {
             console.error('Registration error:', err);
             setError(err.message || '네트워크 오류가 발생했습니다.');
