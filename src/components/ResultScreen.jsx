@@ -1,5 +1,5 @@
 import { formatTime, formatDistance } from '../utils/gps';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { generateRouteMapImage } from '../utils/mapThumbnail';
 import './result-screen.css';
 
