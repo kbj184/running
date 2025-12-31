@@ -294,10 +294,27 @@ function App() {
     const handleDelete = async () => {
         if (sessionId) {
             try {
+                // 1. IndexedDB 삭제
                 await deleteSession(sessionId);
-                console.log('🗑️ 세션 삭제 완료:', sessionId);
+                console.log('🗑️ IndexedDB 세션 삭제 완료:', sessionId);
+
+                // 2. MariaDB(백엔드) 삭제
+                if (user && user.accessToken) {
+                    const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/session/${sessionId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        console.log('☁️ MariaDB 세션 삭제 완료:', sessionId);
+                    } else {
+                        console.error('❌ MariaDB 세션 삭제 실패:', response.status);
+                    }
+                }
             } catch (err) {
-                console.error('❌ 세션 삭제 실패:', err);
+                console.error('❌ 세션 삭제 에러:', err);
             }
         }
         setScreenMode('map');
