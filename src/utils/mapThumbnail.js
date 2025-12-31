@@ -19,6 +19,7 @@ export const generateRouteThumbnail = (route, options = {}) => {
     } = options;
 
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    const mapId = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
     if (!apiKey) {
         console.error('Google Maps API Key가 설정되지 않았습니다.');
@@ -75,6 +76,11 @@ export const generateRouteThumbnail = (route, options = {}) => {
         center: `${centerLat},${centerLng}`,
         key: apiKey
     });
+
+    // Map ID가 있으면 추가 (클라우드 스타일 적용)
+    if (mapId) {
+        params.append('map_id', mapId);
+    }
 
     // 다크 모드 또는 일반 모드 스타일 선택
     const styles = useDarkMode ? [
