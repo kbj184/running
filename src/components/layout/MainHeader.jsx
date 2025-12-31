@@ -97,7 +97,21 @@ function MainHeader({ user, onProfileClick, onGradeClick }) {
                             <div className="default-profile-icon">👤</div>
                         )}
                     </div>
-                    <span className="user-nickname">{user.nickname}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        <span className="user-nickname" style={{ lineHeight: '1.2' }}>{user.nickname}</span>
+                        {user.activityAreaDong && (
+                            <span style={{
+                                fontSize: '10px',
+                                color: 'rgba(255, 255, 255, 0.5)',
+                                background: 'rgba(255, 255, 255, 0.1)',
+                                padding: '1px 4px',
+                                borderRadius: '4px',
+                                marginTop: '2px'
+                            }}>
+                                📍 {user.activityAreaDong}
+                            </span>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

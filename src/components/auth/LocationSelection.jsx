@@ -1,25 +1,142 @@
-import React, { useState } from 'react';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import React, { useState, useCallback, useRef } from 'react';
+import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
 
 const SEOUL_CENTER = { lat: 37.5665, lng: 126.9780 };
+const LIBRARIES = ['places'];
 
 function LocationSelection({ onSelect, onBack, isLoading }) {
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-        language: 'ko'
+        language: 'ko',
+        libraries: LIBRARIES
     });
 
+    const [map, setMap] = useState(null);
     const [markerPos, setMarkerPos] = useState(null);
+    const [selectedAddress, setSelectedAddress] = useState('');
+    const [extractedDong, setExtractedDong] = useState('');
     const [isGeocoding, setIsGeocoding] = useState(false);
+    const autocompleteRef = useRef(null);
 
-    const handleMapClick = (e) => {
-        setMarkerPos({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+    const onLoad = useCallback(function callback(mapInstance) {
+        setMap(mapInstance);
+    }, []);
+
+    const onUnmount = useCallback(function callback() {
+        setMap(null);
+    }, []);
+
+    const extractDongName = (addressComponents) => {
+        let dong = '';
+        // '동', '읍', '면'으로 끝나는 요소 찾기
+        const dongTypes = [
+            'sublocality_level_2',
+            'sublocality_level_1',
+            'administrative_area_level_3',
+            'neighborhood',
+            'political'
+        ];
+
+        // 1. 명시적인 타입에서 찾기
+        for (const type of dongTypes) {
+            const component = addressComponents.find(c => c.types.includes(type));
+            if (component) {
+                const name = component.long_name;
+                if (name.endsWith('동') || name.endsWith('읍') || name.endsWith('면') || name.endsWith('가')) {
+                    dong = name;
+                    break;
+                }
+            }
+        }
+
+        // 2. 만약 못 찾았다면, sublocality_level_1 이나 administrative_area_level_3에서 강제로 가져옴
+        if (!dong) {
+            const backup = addressComponents.find(c =>
+                c.types.includes('sublocality_level_2') ||
+                c.types.includes('sublocality_level_1') ||
+                c.types.includes('administrative_area_level_3')
+            );
+            if (backup) dong = backup.long_name;
+        }
+
+        return dong;
+    };
+
+    const processGeocodeResult = (result) => {
+        const addressComponents = result.address_components;
+        let locationData = {
+            mainCountryCode: '',
+            mainCountryName: '',
+            adminLevel1: '',
+            adminLevel2: '',
+            adminLevel3: '',
+            latitude: result.geometry.location.lat(),
+            longitude: result.geometry.location.lng()
+        };
+
+        addressComponents.forEach(component => {
+            const types = component.types;
+            if (types.includes('country')) {
+                locationData.mainCountryCode = component.short_name;
+                locationData.mainCountryName = component.long_name;
+            } else if (types.includes('administrative_area_level_1')) {
+                locationData.adminLevel1 = component.long_name;
+            } else if (types.includes('administrative_area_level_2') || types.includes('locality')) {
+                // Locality와 admin_level_2 중 하나를 adminLevel2로 사용
+                if (!locationData.adminLevel2) {
+                    locationData.adminLevel2 = component.long_name;
+                }
+            }
+        });
+
+        // '동' 단위 추출
+        locationData.adminLevel3 = extractDongName(addressComponents);
+
+        setSelectedAddress(result.formatted_address);
+        setExtractedDong(locationData.adminLevel3);
+        setMarkerPos({ lat: locationData.latitude, lng: locationData.longitude });
+
+        return locationData;
+    };
+
+    const handleMapClick = async (e) => {
+        const newPos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+        setMarkerPos(newPos);
+
+        try {
+            const geocoder = new window.google.maps.Geocoder();
+            const response = await geocoder.geocode({ location: newPos });
+            if (response.results && response.results[0]) {
+                processGeocodeResult(response.results[0]);
+            }
+        } catch (error) {
+            console.error('Map click geocoding error:', error);
+        }
+    };
+
+    const onPlaceChanged = () => {
+        if (autocompleteRef.current !== null) {
+            const place = autocompleteRef.current.getPlace();
+            if (place.geometry && place.geometry.location) {
+                const newPos = {
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng()
+                };
+
+                processGeocodeResult(place);
+
+                if (map) {
+                    map.panTo(newPos);
+                    map.setZoom(15);
+                }
+            }
+        }
     };
 
     const handleConfirm = async () => {
         if (!markerPos) {
-            alert('주 활동 지역을 지도에서 클릭하여 마킹해주세요.');
+            alert('주 활동 지역을 검색하거나 지도에서 클릭하여 지정해주세요.');
             return;
         }
 
@@ -29,38 +146,8 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             const response = await geocoder.geocode({ location: markerPos });
 
             if (response.results && response.results.length > 0) {
-                // Find the best match (usually the first one)
-                // We want to find a result that has administrative levels if possible
-                const result = response.results[0];
-                const addressComponents = result.address_components;
-
-                let locationData = {
-                    mainCountryCode: '',
-                    mainCountryName: '',
-                    adminLevel1: '',
-                    adminLevel2: '',
-                    adminLevel3: '',
-                    latitude: markerPos.lat,
-                    longitude: markerPos.lng
-                };
-
-                addressComponents.forEach(component => {
-                    const types = component.types;
-                    if (types.includes('country')) {
-                        locationData.mainCountryCode = component.short_name;
-                        locationData.mainCountryName = component.long_name;
-                    } else if (types.includes('administrative_area_level_1')) {
-                        locationData.adminLevel1 = component.long_name;
-                    } else if (types.includes('administrative_area_level_2')) {
-                        locationData.adminLevel2 = component.long_name;
-                    } else if (types.includes('sublocality_level_1') || types.includes('administrative_area_level_3') || types.includes('locality')) {
-                        // For Korea, localities or sublocalities are often level 3 equivalents
-                        if (!locationData.adminLevel3) {
-                            locationData.adminLevel3 = component.long_name;
-                        }
-                    }
-                });
-
+                const locationData = processGeocodeResult(response.results[0]);
+                console.log('📍 Final Extracted Location:', locationData);
                 onSelect(locationData);
             } else {
                 alert('해당 위치의 주소 정보를 가져올 수 없습니다.');
@@ -84,8 +171,26 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
 
     return (
         <div style={styles.container}>
-            <h2 style={styles.title}>📍 활동 지역 설정</h2>
-            <p style={styles.subtitle}>주로 활동하시는 러닝 지역을 지도에서 클릭하여 마킹해주세요.</p>
+            <header style={styles.header}>
+                <h2 style={styles.title}>📍 활동 지역 설정</h2>
+                <p style={styles.subtitle}>동네 이름(예: 역삼동)을 검색하거나 지도를 클릭하세요.</p>
+            </header>
+
+            <div style={styles.searchWrapper}>
+                <Autocomplete
+                    onLoad={(autocomplete) => { autocompleteRef.current = autocomplete; }}
+                    onPlaceChanged={onPlaceChanged}
+                >
+                    <div style={styles.searchContainer}>
+                        <span style={styles.searchIcon}>🔍</span>
+                        <input
+                            type="text"
+                            placeholder="동네 이름 검색 (예: 서초동, 판교동)"
+                            style={styles.searchInput}
+                        />
+                    </div>
+                </Autocomplete>
+            </div>
 
             <div style={styles.mapWrapper}>
                 <GoogleMap
@@ -93,6 +198,8 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
                     center={SEOUL_CENTER}
                     zoom={12}
                     onClick={handleMapClick}
+                    onLoad={onLoad}
+                    onUnmount={onUnmount}
                     options={{
                         disableDefaultUI: false,
                         mapTypeControl: false,
@@ -110,14 +217,35 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
                 </GoogleMap>
             </div>
 
+            <div style={styles.resultCard}>
+                {selectedAddress ? (
+                    <>
+                        <div style={styles.dongBadge}>
+                            <span style={styles.dongIcon}>🏘️</span>
+                            <span style={styles.dongName}>{extractedDong || '지역 미지정'}</span>
+                        </div>
+                        <div style={styles.addressDisplay}>
+                            <span style={styles.addressText}>{selectedAddress}</span>
+                        </div>
+                    </>
+                ) : (
+                    <div style={styles.placeholderCard}>
+                        지도에서 활동 범위를 선택해주세요.
+                    </div>
+                )}
+            </div>
+
             <div style={styles.buttonGroup}>
                 <button onClick={onBack} style={styles.backButton}>이전</button>
                 <button
                     onClick={handleConfirm}
-                    disabled={isGeocoding || isLoading}
-                    style={styles.confirmButton}
+                    disabled={isGeocoding || isLoading || !markerPos}
+                    style={{
+                        ...styles.confirmButton,
+                        opacity: (isGeocoding || isLoading || !markerPos) ? 0.6 : 1
+                    }}
                 >
-                    {isGeocoding || isLoading ? '저장 중...' : '완료 및 가입'}
+                    {isGeocoding || isLoading ? '처리 중...' : '활동 지역 확정'}
                 </button>
             </div>
         </div>
@@ -127,12 +255,18 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
 const styles = {
     container: {
         width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '15px',
+    },
+    header: {
         textAlign: 'center',
+        marginBottom: '5px',
     },
     title: {
-        fontSize: '1.8rem',
+        fontSize: '1.6rem',
         color: '#fff',
-        marginBottom: '10px',
+        margin: '0 0 8px 0',
         fontWeight: '800',
         background: 'linear-gradient(to right, #00f2fe, #4facfe)',
         WebkitBackgroundClip: 'text',
@@ -140,55 +274,123 @@ const styles = {
     },
     subtitle: {
         color: 'rgba(255, 255, 255, 0.6)',
-        marginBottom: '20px',
-        fontSize: '0.9rem',
-        lineHeight: '1.5',
+        margin: 0,
+        fontSize: '0.85rem',
+        lineHeight: '1.4',
+    },
+    searchWrapper: {
+        width: '100%',
+        zIndex: 10,
+    },
+    searchContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        background: 'rgba(255, 255, 255, 0.08)',
+        borderRadius: '16px',
+        padding: '12px 16px',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(10px)',
+        transition: 'all 0.3s ease',
+    },
+    searchIcon: {
+        marginRight: '12px',
+        fontSize: '1rem',
+    },
+    searchInput: {
+        flex: 1,
+        background: 'none',
+        border: 'none',
+        color: '#fff',
+        fontSize: '0.95rem',
+        outline: 'none',
+        width: '100%',
     },
     mapWrapper: {
-        borderRadius: '20px',
+        borderRadius: '24px',
         overflow: 'hidden',
         border: '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
-        marginBottom: '25px',
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+        position: 'relative',
     },
     mapContainer: {
         width: '100%',
-        height: '350px',
+        height: '300px',
+    },
+    resultCard: {
+        background: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: '20px',
+        padding: '16px',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        textAlign: 'left',
+    },
+    dongBadge: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        background: 'rgba(0, 242, 254, 0.15)',
+        padding: '6px 12px',
+        borderRadius: '10px',
+        marginBottom: '10px',
+        border: '1px solid rgba(0, 242, 254, 0.3)',
+    },
+    dongIcon: {
+        fontSize: '1rem',
+    },
+    dongName: {
+        color: '#00f2fe',
+        fontWeight: '700',
+        fontSize: '0.9rem',
+    },
+    addressDisplay: {
+        padding: '0 4px',
+    },
+    addressText: {
+        color: 'rgba(255, 255, 255, 0.7)',
+        fontSize: '0.85rem',
+        lineHeight: '1.4',
+    },
+    placeholderCard: {
+        color: 'rgba(255, 255, 255, 0.3)',
+        fontSize: '0.9rem',
+        textAlign: 'center',
+        padding: '10px 0',
     },
     buttonGroup: {
         display: 'flex',
-        gap: '15px',
-        marginTop: '10px',
+        gap: '12px',
+        marginTop: '5px',
     },
     backButton: {
         flex: 1,
         padding: '16px',
-        borderRadius: '15px',
+        borderRadius: '16px',
         border: '1px solid rgba(255, 255, 255, 0.1)',
         background: 'rgba(255, 255, 255, 0.05)',
-        color: '#fff',
-        fontSize: '1.1rem',
+        color: 'rgba(255, 255, 255, 0.8)',
+        fontSize: '1rem',
         fontWeight: '700',
         cursor: 'pointer',
+        transition: 'all 0.2s',
     },
     confirmButton: {
         flex: 2,
         padding: '16px',
-        borderRadius: '15px',
+        borderRadius: '16px',
         border: 'none',
         background: 'linear-gradient(90deg, #00f2fe 0%, #4facfe 100%)',
         color: '#000',
-        fontSize: '1.1rem',
-        fontWeight: '700',
+        fontSize: '1rem',
+        fontWeight: '800',
         cursor: 'pointer',
         boxShadow: '0 10px 20px -5px rgba(0, 242, 254, 0.4)',
+        transition: 'all 0.2s',
     },
     loadingContainer: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '50px',
+        minHeight: '300px',
         color: '#fff',
     },
     loadingSpinner: {
@@ -199,7 +401,7 @@ const styles = {
         borderRadius: '50%',
         animation: 'spin 1s linear infinite',
         marginBottom: '15px',
-    }
+    },
 };
 
 export default LocationSelection;
