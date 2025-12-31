@@ -6,39 +6,6 @@ function MainHeader({ user, onProfileClick, onGradeClick }) {
         <div className="main-header">
             <div className="main-logo">llrun</div>
             <div className="main-user-profile">
-                {/* Crew Badge if joined */}
-                {user.crewName && (
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        background: 'rgba(255,255,255,0.1)',
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        marginRight: '8px',
-                        border: '1px solid rgba(255,255,255,0.2)'
-                    }}>
-                        <span style={{ fontSize: '14px' }}>
-                            {(() => {
-                                if (!user.crewImage) return '🏃';
-                                try {
-                                    const img = JSON.parse(user.crewImage);
-                                    if (img.url) {
-                                        return <img src={img.url} alt="crew" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />;
-                                    }
-                                    return img.emoji || '🏃';
-                                } catch {
-                                    if (user.crewImage.startsWith('http')) {
-                                        return <img src={user.crewImage} alt="crew" style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} />;
-                                    }
-                                    return '🏃';
-                                }
-                            })()}
-                        </span>
-                        <span style={{ color: '#fff', fontWeight: '600' }}>{user.crewName}</span>
-                    </div>
-                )}
 
                 {/* Runner Grade Badge */}
                 {user.runnerGrade && (() => {
@@ -99,18 +66,6 @@ function MainHeader({ user, onProfileClick, onGradeClick }) {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                         <span className="user-nickname" style={{ lineHeight: '1.2' }}>{user.nickname}</span>
-                        {user.activityAreaAddress && (
-                            <span style={{
-                                fontSize: '10px',
-                                color: 'rgba(255, 255, 255, 0.5)',
-                                background: 'rgba(255, 255, 255, 0.1)',
-                                padding: '1px 4px',
-                                borderRadius: '4px',
-                                marginTop: '2px'
-                            }}>
-                                📍 {user.activityAreaAddress}
-                            </span>
-                        )}
                     </div>
                 </div>
             </div>
