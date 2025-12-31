@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { GoogleMap, PolylineF, useJsApiLoader } from '@react-google-maps/api';
-import AdvancedMarker from './common/AdvancedMarker';
+import { GoogleMap, MarkerF, PolylineF, useJsApiLoader } from '@react-google-maps/api';
 import {
     calculateDistance,
     calculateSpeed,
@@ -20,7 +19,7 @@ const containerStyle = {
     height: '100%'
 };
 
-const LIBRARIES = ['places', 'marker'];
+const LIBRARIES = ['places'];
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
 const mapOptions = {
@@ -665,55 +664,51 @@ function RunningScreen({ onStop, sessionId, user }) {
                         {/* 급수 아이콘 마커 */}
                         {window.google && wateringSegments.map((segment, idx) => (
                             segment.start < route.length && (
-                                <AdvancedMarker
+                                <MarkerF
                                     key={`water-start-${idx}`}
-                                    map={map}
                                     position={route[segment.start]}
-                                >
-                                    <div style={{ fontSize: '24px' }}>💧</div>
-                                </AdvancedMarker>
+                                    icon={{
+                                        path: window.google.maps.SymbolPath.CIRCLE,
+                                        scale: 0, fillOpacity: 0, strokeWeight: 0
+                                    }}
+                                    label={{ text: "💧", fontSize: "24px" }}
+                                />
                             )
                         ))}
 
                         {window.google && isWatering && wateringStartIndex !== null && wateringStartIndex < route.length && (
-                            <AdvancedMarker
-                                map={map}
+                            <MarkerF
                                 position={route[wateringStartIndex]}
-                            >
-                                <div className="pulsing-water-drop" style={{ fontSize: '28px' }}>💧</div>
-                            </AdvancedMarker>
+                                icon={{
+                                    path: window.google.maps.SymbolPath.CIRCLE,
+                                    scale: 0, fillOpacity: 0, strokeWeight: 0
+                                }}
+                                label={{
+                                    text: "💧",
+                                    fontSize: "28px",
+                                    className: "pulsing-water-drop"
+                                }}
+                            />
                         )}
 
                         {route.length > 0 && window.google && (
-                            <AdvancedMarker
-                                map={map}
+                            <MarkerF
                                 position={route[0]}
-                            >
-                                <div style={{
-                                    width: '10px',
-                                    height: '10px',
-                                    backgroundColor: '#22c55e',
-                                    borderRadius: '50%',
-                                    border: '2px solid white',
-                                    boxShadow: '0 0 4px rgba(0,0,0,0.3)'
-                                }} />
-                            </AdvancedMarker>
+                                icon={{
+                                    path: window.google.maps.SymbolPath.CIRCLE,
+                                    scale: 5, fillColor: "#22c55e", fillOpacity: 1, strokeColor: "#ffffff", strokeWeight: 3
+                                }}
+                            />
                         )}
 
                         {window.google && (
-                            <AdvancedMarker
-                                map={map}
+                            <MarkerF
                                 position={currentPosition}
-                            >
-                                <div style={{
-                                    width: '16px',
-                                    height: '16px',
-                                    backgroundColor: '#667eea',
-                                    borderRadius: '50%',
-                                    border: '3px solid white',
-                                    boxShadow: '0 0 8px rgba(102,126,234,0.5)'
-                                }} />
-                            </AdvancedMarker>
+                                icon={{
+                                    path: window.google.maps.SymbolPath.CIRCLE,
+                                    scale: 8, fillColor: "#667eea", fillOpacity: 1, strokeColor: "#ffffff", strokeWeight: 3
+                                }}
+                            />
                         )}
                     </GoogleMap>
                 ) : (

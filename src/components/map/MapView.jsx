@@ -10,7 +10,7 @@ const containerStyle = {
     height: '100%'
 };
 
-const LIBRARIES = ['places', 'marker'];
+const LIBRARIES = ['places'];
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
 function MapView({
@@ -66,7 +66,6 @@ function MapView({
                 <MapController map={map} selectedRunner={selectedRunner} />
 
                 <RunnerMarkers
-                    map={map}
                     runners={runners}
                     selectedRunner={selectedRunner}
                     onRunnerClick={onRunnerClick}
