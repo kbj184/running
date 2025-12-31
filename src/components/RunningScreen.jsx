@@ -443,16 +443,23 @@ function RunningScreen({ onStop, sessionId, user }) {
 
     const handleWateringStart = () => {
         setIsWatering(true);
-        setWateringStartIndex(route.length);
+        // 현재 위치 인덱스 사용 (route.length - 1)
+        // route가 비어있으면 0, 아니면 마지막 인덱스
+        const currentIndex = route.length > 0 ? route.length - 1 : 0;
+        setWateringStartIndex(currentIndex);
+        console.log(`💧 급수 시작: 인덱스 ${currentIndex}`);
     };
 
     const handleWateringEnd = () => {
         setIsWatering(false);
         if (wateringStartIndex !== null) {
+            // 현재 위치 인덱스 사용
+            const currentIndex = route.length > 0 ? route.length - 1 : 0;
             setWateringSegments(prev => [...prev, {
                 start: wateringStartIndex,
-                end: route.length
+                end: currentIndex
             }]);
+            console.log(`💧 급수 종료: ${wateringStartIndex} ~ ${currentIndex}`);
             setWateringStartIndex(null);
         }
     };
