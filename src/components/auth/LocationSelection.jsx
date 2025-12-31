@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Autocomplete } from '@react-google-maps/api';
+import AdvancedMarker from '../common/AdvancedMarker';
 
 const SEOUL_CENTER = { lat: 37.5665, lng: 126.9780 };
-const LIBRARIES = ['places'];
+const LIBRARIES = ['places', 'marker'];
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
 function LocationSelection({ onSelect, onBack, isLoading }) {
@@ -270,7 +271,25 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
                         fullscreenControl: false,
                     }}
                 >
-                    {markerPos && <Marker position={markerPos} />}
+                    {markerPos && (
+                        <AdvancedMarker
+                            map={map}
+                            position={markerPos}
+                        >
+                            <div style={{
+                                width: '24px',
+                                height: '24px',
+                                backgroundColor: '#00f2fe',
+                                borderRadius: '50%',
+                                border: '3px solid white',
+                                boxShadow: '0 0 10px rgba(0,242,254,0.5)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '14px'
+                            }}>📍</div>
+                        </AdvancedMarker>
+                    )}
 
                     {/* Floating My Location Button */}
                     <button
