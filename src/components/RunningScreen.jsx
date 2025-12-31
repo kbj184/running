@@ -30,17 +30,6 @@ const mapOptions = {
     mapTypeControl: false,
     fullscreenControl: false,
     clickableIcons: false,
-    styles: [
-        {
-            featureType: "poi",
-            stylers: [{ visibility: "off" }],
-        },
-        {
-            featureType: "transit",
-            elementType: "labels.icon",
-            stylers: [{ visibility: "off" }],
-        },
-    ],
 };
 
 // 속도에 따른 색상 반환 (히트맵 스타일: Low-Green -> High-Red)

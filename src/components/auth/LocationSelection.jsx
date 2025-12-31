@@ -269,12 +269,6 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
                         mapTypeControl: false,
                         streetViewControl: false,
                         fullscreenControl: false,
-                        styles: [
-                            {
-                                featureType: "poi",
-                                stylers: [{ visibility: "off" }],
-                            }
-                        ]
                     }}
                 >
                     {markerPos && (
