@@ -127,31 +127,22 @@ export const generateRouteThumbnail = (route, options = {}) => {
     // 끝점 마커 (파란색 원형)
     params.append('markers', `color:blue|size:mid|${endPoint.lat},${endPoint.lng}`);
 
-    // 급수 마커 추가 (물방울 커스텀 아이콘)
+    // 급수 마커 추가
     if (wateringSegments && wateringSegments.length > 0) {
-        console.log(`💧 Adding ${wateringSegments.length} water markers to map`);
-
-        // 프로덕션 환경에서는 배포된 사이트의 이미지 사용
+        // 프로덕션 환경(도메인 접속)에서만 커스텀 아이콘 사용 시도
         const isProduction = typeof window !== 'undefined' &&
             (window.location.hostname === 'llrun.shop' ||
                 window.location.hostname.includes('amplifyapp.com'));
 
-        const iconUrl = isProduction
-            ? 'https://llrun.shop/water-marker.png'
-            : null;
+        const iconUrl = isProduction ? 'https://llrun.shop/water-marker.png' : null;
 
-        wateringSegments.forEach((segment, idx) => {
+        wateringSegments.forEach((segment) => {
             if (segment.start < route.length) {
                 const waterPoint = route[segment.start];
-
                 if (iconUrl) {
-                    // 커스텀 물방울 아이콘 사용 (프로덕션)
                     params.append('markers', `icon:${iconUrl}|${waterPoint.lat},${waterPoint.lng}`);
-                    console.log(`💧 Water marker ${idx + 1} (custom icon): ${waterPoint.lat}, ${waterPoint.lng}`);
                 } else {
-                    // 하늘색 작은 마커 사용 (개발 환경)
                     params.append('markers', `color:0x06b6d4|size:small|${waterPoint.lat},${waterPoint.lng}`);
-                    console.log(`💧 Water marker ${idx + 1} (default): ${waterPoint.lat}, ${waterPoint.lng}`);
                 }
             }
         });
