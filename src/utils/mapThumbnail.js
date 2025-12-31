@@ -14,7 +14,8 @@ export const generateRouteThumbnail = (route, options = {}) => {
         height = 160,
         maptype = 'roadmap',
         color = '0x4318FF',
-        weight = 3
+        weight = 3,
+        useDarkMode = false  // 다크 모드 사용 여부 (기본값: false)
     } = options;
 
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -75,8 +76,26 @@ export const generateRouteThumbnail = (route, options = {}) => {
         key: apiKey
     });
 
-    // 일반 지도 스타일 (라벨 최소화)
-    const styles = [
+    // 다크 모드 또는 일반 모드 스타일 선택
+    const styles = useDarkMode ? [
+        // Dark Mode 스타일
+        'feature:all|element:geometry|color:0x212121',         // 아주 어두운 회색
+        'feature:all|element:labels.text.stroke|visibility:off',
+        'feature:all|element:labels.text.fill|visibility:off',
+        'feature:all|element:labels|visibility:off',           // 모든 라벨 숨기기
+        'feature:road|element:geometry|color:0x383838',        // 도로를 약간 밝게
+        'feature:road|element:geometry.stroke|color:0x212121',
+        'feature:water|element:geometry|color:0x000000',       // 물은 검정색
+        'feature:poi|visibility:off',
+        'feature:transit|visibility:off',
+        'feature:transit.line|visibility:off',
+        'feature:transit.station|visibility:off',
+        'feature:transit.station.rail|visibility:off',
+        'feature:administrative|element:labels|visibility:off',
+        'feature:administrative.land_parcel|visibility:off',
+        'feature:administrative.neighborhood|visibility:off'
+    ] : [
+        // 일반 지도 스타일 (라벨 최소화)
         'feature:poi|visibility:off',                          // POI 숨기기
         'feature:transit|visibility:off',                      // 대중교통 숨기기
         'feature:administrative.land_parcel|visibility:off',   // 워터마크 숨기기
@@ -127,6 +146,7 @@ export const generateRouteThumbImage = (route) => {
         width: 300,
         height: 240,
         color: '0x39ff14',  // 진한 형광색 (Neon Green)
-        weight: 4
+        weight: 4,
+        useDarkMode: true   // 썸네일은 다크 모드 사용
     });
 };
