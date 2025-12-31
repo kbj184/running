@@ -10,6 +10,8 @@ const containerStyle = {
     height: '100%'
 };
 
+const LIBRARIES = ['places'];
+
 function MapView({
     runners,
     stats,
@@ -24,7 +26,7 @@ function MapView({
         id: 'google-map-script',
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
         language: 'ko',
-        libraries: ['places']
+        libraries: LIBRARIES
     });
 
     const [map, setMap] = useState(null);

@@ -19,6 +19,8 @@ const containerStyle = {
     height: '100%'
 };
 
+const LIBRARIES = ['places'];
+
 const mapOptions = {
     disableDefaultUI: true,
     zoomControl: false,
@@ -56,7 +58,7 @@ function RunningScreen({ onStop, sessionId, user }) {
         id: 'google-map-script',
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
         language: 'ko',
-        libraries: ['places']
+        libraries: LIBRARIES
     });
 
     const [map, setMap] = useState(null);
