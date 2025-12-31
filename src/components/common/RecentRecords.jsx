@@ -165,7 +165,7 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
     }
 
     return (
-        <div style={{ width: '100%' }}>
+        <div style={{ width: '100%', paddingTop: '16px' }}>
             {/* 통계 섹션 */}
             <div style={{
                 display: 'grid',
