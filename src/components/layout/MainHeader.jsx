@@ -99,7 +99,7 @@ function MainHeader({ user, onProfileClick, onGradeClick }) {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                         <span className="user-nickname" style={{ lineHeight: '1.2' }}>{user.nickname}</span>
-                        {user.activityAreaDong && (
+                        {user.activityAreaAddress && (
                             <span style={{
                                 fontSize: '10px',
                                 color: 'rgba(255, 255, 255, 0.5)',
@@ -108,7 +108,7 @@ function MainHeader({ user, onProfileClick, onGradeClick }) {
                                 borderRadius: '4px',
                                 marginTop: '2px'
                             }}>
-                                📍 {user.activityAreaDong}
+                                📍 {user.activityAreaAddress}
                             </span>
                         )}
                     </div>

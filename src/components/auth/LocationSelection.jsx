@@ -15,7 +15,7 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
     const [map, setMap] = useState(null);
     const [markerPos, setMarkerPos] = useState(null);
     const [selectedAddress, setSelectedAddress] = useState('');
-    const [extractedDong, setExtractedDong] = useState('');
+    const [extractedGu, setExtractedGu] = useState('');
     const [isGeocoding, setIsGeocoding] = useState(false);
     const autocompleteRef = useRef(null);
 
@@ -34,12 +34,12 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             mainCountryName: '',
             adminLevel1: '',
             adminLevel2: '',
-            adminLevel3: '',
+            adminLevel3: '', // Clear this explicitly
             latitude: result.geometry.location.lat(),
             longitude: result.geometry.location.lng()
         };
 
-        // 우선순위와 접미사(시, 군, 구, 동, 읍, 면)로 정확하게 분류
+        // 우선순위와 접미사(시, 군, 구)로 분류하여 adminLevel2(구 단위)까지 추출
         addressComponents.forEach(component => {
             const types = component.types;
             const name = component.long_name;
@@ -55,16 +55,9 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
                     locationData.adminLevel2 = name;
                 }
             } else if (types.includes('sublocality_level_1')) {
-                // 구 단위 (강남구, 팔달구 등) 또는 큰 동(동레벨이 sublocality_level_1인 경우도 있음)
+                // 구 단위 (강남구, 팔달구 등)
                 if (name.endsWith('구') || (name.endsWith('시') && !locationData.adminLevel2)) {
                     locationData.adminLevel2 = name;
-                } else if (name.endsWith('동') || name.endsWith('읍') || name.endsWith('면')) {
-                    locationData.adminLevel3 = name;
-                }
-            } else if (types.includes('sublocality_level_2') || types.includes('administrative_area_level_3') || types.includes('neighborhood') || types.includes('political')) {
-                // 동/읍/면/리
-                if (name.endsWith('동') || name.endsWith('읍') || name.endsWith('면') || name.endsWith('리') || name.endsWith('가')) {
-                    locationData.adminLevel3 = name;
                 }
             }
         });
@@ -75,13 +68,8 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             if (guComp) locationData.adminLevel2 = guComp.long_name;
         }
 
-        if (!locationData.adminLevel3) {
-            const dongComp = addressComponents.find(c => c.long_name.endsWith('동') || c.long_name.endsWith('읍') || c.long_name.endsWith('면'));
-            if (dongComp) locationData.adminLevel3 = dongComp.long_name;
-        }
-
         setSelectedAddress(result.formatted_address);
-        setExtractedDong(locationData.adminLevel3);
+        setExtractedGu(locationData.adminLevel2);
         setMarkerPos({ lat: locationData.latitude, lng: locationData.longitude });
 
         return locationData;
@@ -134,7 +122,7 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
 
             if (response.results && response.results.length > 0) {
                 const locationData = processGeocodeResult(response.results[0]);
-                console.log('📍 Final Extracted Location:', locationData);
+                console.log('📍 Final Extracted Location (Gu):', locationData);
                 onSelect(locationData);
             } else {
                 alert('해당 위치의 주소 정보를 가져올 수 없습니다.');
@@ -159,8 +147,8 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
     return (
         <div style={styles.container}>
             <header style={styles.header}>
-                <h2 style={styles.title}>📍 활동 지역 설정</h2>
-                <p style={styles.subtitle}>동네 이름(예: 역삼동)을 검색하거나 지도를 클릭하세요.</p>
+                <h2 style={styles.title}>📍 활동 범위 설정</h2>
+                <p style={styles.subtitle}>거주하시는 '구'(예: 강남구)를 검색하거나 지도를 클릭하세요.</p>
             </header>
 
             <div style={styles.searchWrapper}>
@@ -172,7 +160,7 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
                         <span style={styles.searchIcon}>🔍</span>
                         <input
                             type="text"
-                            placeholder="동네 이름 검색 (예: 서초동, 판교동)"
+                            placeholder="구 또는 지역명 검색 (예: 강남구, 분당구)"
                             style={styles.searchInput}
                         />
                     </div>
@@ -208,8 +196,8 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
                 {selectedAddress ? (
                     <>
                         <div style={styles.dongBadge}>
-                            <span style={styles.dongIcon}>🏘️</span>
-                            <span style={styles.dongName}>{extractedDong || '지역 미지정'}</span>
+                            <span style={styles.dongIcon}>�️</span>
+                            <span style={styles.dongName}>{extractedGu || '지역 미지정'}</span>
                         </div>
                         <div style={styles.addressDisplay}>
                             <span style={styles.addressText}>{selectedAddress}</span>
