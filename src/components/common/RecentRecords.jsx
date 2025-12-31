@@ -165,35 +165,44 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
     }
 
     return (
-        <div style={{ width: '100%' }}>
-            {/* 통계 섹션 */}
+        <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+            {/* 통계 섹션 - 스크롤 시 상단 고정 */}
             <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '12px',
-                padding: '20px',
-                margin: '0 10px 0 10px',
-                backgroundColor: '#fff',
-                borderRadius: '16px',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                border: '1px solid #f0f0f0'
+                position: 'sticky',
+                top: 0,
+                zIndex: 10,
+                backgroundColor: '#f8f9fa',
+                paddingTop: '12px',
+                paddingBottom: '12px'
             }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 거리</div>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
-                        {formatDistance(stats.totalDistance)}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '12px',
+                    padding: '20px',
+                    margin: '0 10px',
+                    backgroundColor: '#fff',
+                    borderRadius: '16px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                    border: '1px solid #f0f0f0'
+                }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 거리</div>
+                        <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
+                            {formatDistance(stats.totalDistance)}
+                        </div>
                     </div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 시간</div>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
-                        {formatTime(stats.totalDuration)}
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 시간</div>
+                        <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
+                            {formatTime(stats.totalDuration)}
+                        </div>
                     </div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>평균 페이스</div>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
-                        {stats.avgPace.toFixed(1)} <span style={{ fontSize: '12px', fontWeight: '500' }}>min/km</span>
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>평균 페이스</div>
+                        <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
+                            {stats.avgPace.toFixed(1)} <span style={{ fontSize: '12px', fontWeight: '500' }}>min/km</span>
+                        </div>
                     </div>
                 </div>
             </div>
