@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 import LocationSelection from './LocationSelection';
 
 function NicknameRegistration({ user, onComplete }) {
     const [step, setStep] = useState(1);
-    const [nickname, setNickname] = useState('');
-    const [selectedImage, setSelectedImage] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'); // Default image
+    const [nickname, setNickname] = useState(user?.nickname || '');
+    const [selectedImage, setSelectedImage] = useState(user?.nicknameImage || user?.profileImage || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
+
+    // 만약 닉네임은 있는데 지역 정보가 없는 경우, 바로 지도 단계(Step 2)로 이동
+    useEffect(() => {
+        if (user?.nickname && !user?.activityAreaRegistered) {
+            setStep(2);
+        }
+    }, [user]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [isUploading, setIsUploading] = useState(false);

@@ -379,8 +379,8 @@ function App() {
         return <LoginScreen onLogin={handleLogin} />;
     }
 
-    // Nickname Registration Screen
-    if (!user.nickname) {
+    // Nickname & Activity Area Registration Screen
+    if (!user.nickname || !user.activityAreaRegistered) {
         return <NicknameRegistration user={user} onComplete={handleLogin} />;
     }
 
