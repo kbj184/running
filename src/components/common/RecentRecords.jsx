@@ -102,6 +102,26 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
                     sessions = [];
                 }
 
+                // JSON 문자열 필드 파싱
+                sessions = sessions.map(session => {
+                    try {
+                        return {
+                            ...session,
+                            route: session.route ? JSON.parse(session.route) : [],
+                            splits: session.splits ? JSON.parse(session.splits) : [],
+                            wateringSegments: session.wateringSegments ? JSON.parse(session.wateringSegments) : []
+                        };
+                    } catch (e) {
+                        console.error('❌ JSON 파싱 실패:', e, session);
+                        return {
+                            ...session,
+                            route: [],
+                            splits: [],
+                            wateringSegments: []
+                        };
+                    }
+                });
+
                 console.log('📋 서버에서 가져온 기록 수:', sessions.length);
 
                 // 통계 계산
