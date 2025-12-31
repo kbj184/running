@@ -3,37 +3,21 @@ import { api } from '../../utils/api';
 
 function SettingsTab({ user, onLogout, onUserUpdate }) {
     const [nickname, setNickname] = useState(user?.nickname || '');
-    const [profileImage, setProfileImage] = useState(null);
-    const [profileImagePreview, setProfileImagePreview] = useState(user?.profileImage || '');
     const [saving, setSaving] = useState(false);
-
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setProfileImage(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfileImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
     const handleSave = async () => {
         setSaving(true);
         try {
-            const formData = new FormData();
-            formData.append('nickname', nickname);
-            if (profileImage) {
-                formData.append('profileImage', profileImage);
-            }
-
             const response = await api.request(`${import.meta.env.VITE_API_URL}/user/profile`, {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
-                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`,
+                    'Content-Type': 'application/json'
                 },
-                body: formData
+                body: JSON.stringify({
+                    nickname: nickname,
+                    nicknameImage: user.profileImage || user.nicknameImage
+                })
             });
 
             if (response.ok) {
@@ -43,6 +27,8 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                     onUserUpdate(updatedUser);
                 }
             } else {
+                const errorText = await response.text();
+                console.error('프로필 업데이트 실패:', errorText);
                 alert('프로필 업데이트에 실패했습니다.');
             }
         } catch (error) {
@@ -54,10 +40,10 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
     };
 
     return (
-        <div>
+        <div style={{ paddingBottom: '40px' }}>
             <h2 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: '700' }}>설정</h2>
             <div style={{ maxWidth: '600px' }}>
-                {/* 닉네임 및 프로필 이미지 변경 */}
+                {/* 닉네임 변경 */}
                 <div style={{
                     backgroundColor: '#fff',
                     padding: '24px',
@@ -66,53 +52,32 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
                 }}>
                     <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
-                        닉네임 및 프로필 이미지 변경
+                        닉네임 변경
                     </h3>
 
-                    {/* 프로필 이미지 */}
+                    {/* 현재 프로필 이미지 표시 */}
                     <div style={{ marginBottom: '20px', textAlign: 'center' }}>
                         <div style={{
-                            width: '100px',
-                            height: '100px',
+                            width: '80px',
+                            height: '80px',
                             borderRadius: '50%',
                             overflow: 'hidden',
-                            margin: '0 auto 12px',
+                            margin: '0 auto',
                             backgroundColor: '#f0f0f0',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center'
                         }}>
-                            {profileImagePreview ? (
+                            {user?.profileImage || user?.nicknameImage ? (
                                 <img
-                                    src={profileImagePreview}
+                                    src={user.profileImage || user.nicknameImage}
                                     alt="프로필"
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
                             ) : (
-                                <span style={{ fontSize: '40px' }}>👤</span>
+                                <span style={{ fontSize: '32px' }}>👤</span>
                             )}
                         </div>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            style={{ display: 'none' }}
-                            id="profile-image-input"
-                        />
-                        <label
-                            htmlFor="profile-image-input"
-                            style={{
-                                display: 'inline-block',
-                                padding: '8px 16px',
-                                backgroundColor: '#4318FF',
-                                color: '#fff',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontSize: '14px'
-                            }}
-                        >
-                            이미지 선택
-                        </label>
                     </div>
 
                     {/* 닉네임 입력 */}
@@ -177,7 +142,8 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                         borderRadius: '8px',
                         fontSize: '16px',
                         fontWeight: '600',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        marginBottom: '40px'
                     }}
                 >
                     로그아웃
