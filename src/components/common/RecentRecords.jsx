@@ -169,7 +169,7 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
             {/* 통계 섹션 - 스크롤 시 상단 고정 */}
             <div style={{
                 position: 'sticky',
-                top: '56px', // 헤더 높이만큼 띄우기
+                top: 'var(--header-height)', // CSS 변수 사용
                 zIndex: 10,
                 backgroundColor: '#f8f9fa',
                 paddingTop: '12px',
