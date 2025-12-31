@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 
 function SettingsTab({ user, onLogout, onUserUpdate }) {
@@ -7,6 +7,28 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
     const [profileImagePreview, setProfileImagePreview] = useState(user?.nicknameImage || user?.profileImage || '');
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [activityArea, setActivityArea] = useState(null);
+
+    useEffect(() => {
+        fetchActivityArea();
+    }, []);
+
+    const fetchActivityArea = async () => {
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/user/activity-area`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setActivityArea(data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch activity area:', err);
+        }
+    };
 
     const handleImageChange = async (e) => {
         const file = e.target.files[0];
@@ -187,13 +209,6 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                         >
                             {uploading ? '업로드 중...' : '이미지 선택'}
                         </label>
-                        <div style={{
-                            marginTop: '8px',
-                            fontSize: '12px',
-                            color: '#999'
-                        }}>
-                            JPG, PNG (최대 5MB)
-                        </div>
                     </div>
 
                     {/* 닉네임 입력 */}
@@ -222,13 +237,6 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                                 boxSizing: 'border-box'
                             }}
                         />
-                        <div style={{
-                            marginTop: '6px',
-                            fontSize: '12px',
-                            color: '#666'
-                        }}>
-                            한글, 영문, 숫자만 사용 가능 (2-10자)
-                        </div>
                     </div>
 
                     {/* 저장 버튼 */}
@@ -250,6 +258,31 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                         {saving ? '저장 중...' : '저장'}
                     </button>
                 </div>
+
+                {/* 주 활동 지역 표시 */}
+                {activityArea && (
+                    <div style={{
+                        backgroundColor: '#fff',
+                        padding: '24px',
+                        borderRadius: '12px',
+                        marginBottom: '20px',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                    }}>
+                        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
+                            📍 주 활동 지역
+                        </h3>
+                        <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
+                            {activityArea.adminLevel1} {activityArea.adminLevel2} {activityArea.adminLevel3}
+                        </p>
+                        <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #eee' }}>
+                            <img
+                                src={`https://maps.googleapis.com/maps/api/staticmap?center=${activityArea.latitude},${activityArea.longitude}&zoom=14&size=600x300&markers=color:red%7C${activityArea.latitude},${activityArea.longitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`}
+                                alt="Activity Area Map"
+                                style={{ width: '100%', display: 'block' }}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* 구분선 */}
                 <div style={{ height: '1px', backgroundColor: '#e0e0e0', margin: '30px 0' }}></div>
