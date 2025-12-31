@@ -165,14 +165,14 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
     }
 
     return (
-        <div style={{ width: '100%', paddingTop: '12px' }}>
+        <div style={{ width: '100%' }}>
             {/* 통계 섹션 */}
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: '12px',
-                padding: '20px',
-                margin: '0 10px',
+                padding: '20px 16px',
+                margin: '12px 0',
                 backgroundColor: '#fff',
                 borderRadius: '16px',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
