@@ -3,7 +3,7 @@ import MyRecordsTab from './MyRecordsTab';
 import MyInfoTab from './MyInfoTab';
 import SettingsTab from './SettingsTab';
 
-function ProfileMenu({ profileTab, user, refreshRecords, onRecordClick, onLogout }) {
+function ProfileMenu({ profileTab, user, refreshRecords, onRecordClick, onLogout, onUserUpdate }) {
     return (
         <div className="tab-content profile-tab" style={{ padding: '20px' }}>
             {profileTab === 'records' && (
@@ -19,7 +19,11 @@ function ProfileMenu({ profileTab, user, refreshRecords, onRecordClick, onLogout
             )}
 
             {profileTab === 'settings' && (
-                <SettingsTab onLogout={onLogout} />
+                <SettingsTab
+                    user={user}
+                    onLogout={onLogout}
+                    onUserUpdate={onUserUpdate}
+                />
             )}
         </div>
     );

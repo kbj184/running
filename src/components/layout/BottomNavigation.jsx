@@ -1,6 +1,6 @@
 import React from 'react';
 
-function BottomNavigation({ activeTab, onTabChange, onStartRunning }) {
+function BottomNavigation({ activeTab, onTabChange, onStartRunning, onProfileClick }) {
     return (
         <div className="main-bottom-nav">
             <div
@@ -34,11 +34,11 @@ function BottomNavigation({ activeTab, onTabChange, onStartRunning }) {
                 <span>Crew</span>
             </div>
             <div
-                className={`nav-item ${activeTab === 'myrun' ? 'active' : ''}`}
-                onClick={() => onTabChange('myrun')}
+                className="nav-item"
+                onClick={onProfileClick}
             >
-                <div className="nav-icon">📊</div>
-                <span>MyRun</span>
+                <div className="nav-icon">👤</div>
+                <span>My</span>
             </div>
         </div>
     );

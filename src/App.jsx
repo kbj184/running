@@ -196,6 +196,13 @@ function App() {
         setScreenMode('map');
     };
 
+    const handleUserUpdate = (updatedUser) => {
+        console.log('✅ 사용자 정보 업데이트:', updatedUser);
+        const newUserData = { ...user, ...updatedUser };
+        setUser(newUserData);
+        localStorage.setItem('running_user', JSON.stringify(newUserData));
+    };
+
     // Initialize Runners
     useEffect(() => {
         const initialRunners = generateRunners(50);
@@ -437,6 +444,7 @@ function App() {
                         refreshRecords={refreshRecords}
                         onRecordClick={handleRecordClick}
                         onLogout={handleLogout}
+                        onUserUpdate={handleUserUpdate}
                     />
                 )}
 
@@ -511,6 +519,7 @@ function App() {
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
                 onStartRunning={handleStartToggle}
+                onProfileClick={handleProfileClick}
             />
         </div>
     );
