@@ -15,7 +15,8 @@ export const generateRouteThumbnail = (route, options = {}) => {
         maptype = 'roadmap',
         color = '0x4318FF',
         weight = 3,
-        useDarkMode = false  // 다크 모드 사용 여부 (기본값: false)
+        useDarkMode = false,  // 다크 모드 사용 여부 (기본값: false)
+        useMapId = true       // Map ID 사용 여부 (기본값: true)
     } = options;
 
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -77,8 +78,8 @@ export const generateRouteThumbnail = (route, options = {}) => {
         key: apiKey
     });
 
-    // Map ID가 있으면 추가 (클라우드 스타일 적용)
-    if (mapId) {
+    // Map ID가 있고 useMapId 옵션이 true일 때만 추가 (클라우드 스타일 적용)
+    if (mapId && useMapId) {
         params.append('map_id', mapId);
     }
 
@@ -153,6 +154,7 @@ export const generateRouteThumbImage = (route) => {
         height: 240,
         color: '0x39ff14',  // 진한 형광색 (Neon Green)
         weight: 4,
-        useDarkMode: true   // 썸네일은 다크 모드 사용
+        useDarkMode: true,   // 썸네일은 다크 모드 사용
+        useMapId: false      // 썸네일은 Map ID 사용 안 함 (커스텀 스타일 유지)
     });
 };
