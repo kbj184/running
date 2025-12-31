@@ -6,6 +6,28 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
     const [saving, setSaving] = useState(false);
 
     const handleSave = async () => {
+        // 닉네임이 변경되지 않았으면 저장하지 않음
+        if (nickname === user?.nickname) {
+            alert('변경된 내용이 없습니다.');
+            return;
+        }
+
+        // 닉네임 검증
+        if (!nickname || nickname.trim().length < 2) {
+            alert('닉네임은 최소 2자 이상이어야 합니다.');
+            return;
+        }
+
+        if (nickname.length > 10) {
+            alert('닉네임은 최대 10자까지 가능합니다.');
+            return;
+        }
+
+        if (!/^[가-힣a-zA-Z0-9]+$/.test(nickname)) {
+            alert('닉네임은 한글, 영문, 숫자만 사용 가능합니다.');
+            return;
+        }
+
         setSaving(true);
         try {
             const response = await api.request(`${import.meta.env.VITE_API_URL}/user/profile`, {
@@ -15,25 +37,32 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    nickname: nickname,
-                    nicknameImage: user.profileImage || user.nicknameImage
+                    nickname: nickname.trim(),
+                    nicknameImage: user.nicknameImage || user.profileImage
                 })
             });
 
             if (response.ok) {
                 const updatedUser = await response.json();
-                alert('프로필이 업데이트되었습니다!');
+                alert('닉네임이 업데이트되었습니다!');
                 if (onUserUpdate) {
                     onUserUpdate(updatedUser);
                 }
             } else {
                 const errorText = await response.text();
-                console.error('프로필 업데이트 실패:', errorText);
-                alert('프로필 업데이트에 실패했습니다.');
+                console.error('프로필 업데이트 실패:', response.status, errorText);
+
+                // 에러 메시지 파싱
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    alert(errorJson.message || '프로필 업데이트에 실패했습니다.');
+                } catch {
+                    alert(errorText || '프로필 업데이트에 실패했습니다.');
+                }
             }
         } catch (error) {
             console.error('프로필 업데이트 실패:', error);
-            alert('프로필 업데이트 중 오류가 발생했습니다.');
+            alert('프로필 업데이트 중 오류가 발생했습니다: ' + error.message);
         } finally {
             setSaving(false);
         }
@@ -68,15 +97,22 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                             alignItems: 'center',
                             justifyContent: 'center'
                         }}>
-                            {user?.profileImage || user?.nicknameImage ? (
+                            {user?.nicknameImage || user?.profileImage ? (
                                 <img
-                                    src={user.profileImage || user.nicknameImage}
+                                    src={user.nicknameImage || user.profileImage}
                                     alt="프로필"
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
                             ) : (
                                 <span style={{ fontSize: '32px' }}>👤</span>
                             )}
+                        </div>
+                        <div style={{
+                            marginTop: '8px',
+                            fontSize: '12px',
+                            color: '#999'
+                        }}>
+                            현재 프로필 이미지
                         </div>
                     </div>
 
@@ -95,7 +131,8 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                             type="text"
                             value={nickname}
                             onChange={(e) => setNickname(e.target.value)}
-                            placeholder="닉네임을 입력하세요"
+                            placeholder="닉네임을 입력하세요 (2-10자)"
+                            maxLength={10}
                             style={{
                                 width: '100%',
                                 padding: '12px',
@@ -105,6 +142,13 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                                 boxSizing: 'border-box'
                             }}
                         />
+                        <div style={{
+                            marginTop: '6px',
+                            fontSize: '12px',
+                            color: '#666'
+                        }}>
+                            한글, 영문, 숫자만 사용 가능 (2-10자)
+                        </div>
                     </div>
 
                     {/* 저장 버튼 */}
