@@ -41,6 +41,7 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
             adminLevel1: '',
             adminLevel2: '',
             adminLevel3: '',
+            adminLevelFull: result.formatted_address,  // 전체 주소
             latitude: lat,
             longitude: lng,
             formattedAddress: result.formatted_address
