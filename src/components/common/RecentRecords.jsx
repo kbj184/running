@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { formatDistance, formatTime } from '../../utils/gps';
 import { generateRouteThumbImage } from '../../utils/mapThumbnail';
 import { api } from '../../utils/api';
@@ -10,8 +10,13 @@ const thumbnailMapStyle = {
 };
 
 function RouteThumbnail({ route, thumbnail }) {
-    // 저장된 썸네일보다 새로운 스타일(Dark Mode) 적용을 위해 항상 generateRouteThumbImage 사용
-    const thumbnailUrl = (route && route.length > 0) ? generateRouteThumbImage(route) : thumbnail;
+    // useMemo로 썸네일 URL 캐싱 (무한 재생성 방지)
+    const thumbnailUrl = useMemo(() => {
+        if (route && route.length > 0) {
+            return generateRouteThumbImage(route);
+        }
+        return thumbnail;
+    }, [route, thumbnail]);
 
     if (!thumbnailUrl) {
         return (
