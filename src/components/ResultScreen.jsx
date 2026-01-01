@@ -8,6 +8,15 @@ import './result-screen.css';
 const LIBRARIES = ['places', 'marker'];
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
+// 속도에 따른 색상 반환 (RunningScreen과 동일)
+const getSpeedColor = (speedKmh) => {
+    if (speedKmh <= 0) return "#667eea"; // 멈춤
+    if (speedKmh < 6) return "#10b981"; // 걷기/느린 조깅 (초록)
+    if (speedKmh < 9) return "#f59e0b"; // 중강도 (주황)
+    if (speedKmh < 12) return "#ef4444"; // 고강도 (빨강)
+    return "#7c3aed"; // 초고속 (보라)
+};
+
 function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
     const {
         distance,
@@ -84,14 +93,64 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         };
     }, [route]);
 
-    // 경로를 Google Maps Polyline 형식으로 변환
-    const routePath = useMemo(() => {
-        if (!route || route.length === 0) return [];
-        return route.map(point => ({ lat: point.lat, lng: point.lng }));
-    }, [route]);
+    // 경로를 속도별 세그먼트로 변환
+    const routeSegments = useMemo(() => {
+        if (!route || route.length < 2) return [];
+
+        const segments = [];
+        let currentPath = [];
+        let currentColor = getSpeedColor(route[0]?.speed || 0);
+
+        // 수분 보충 구간 판별 헬퍼
+        const isIndexInWatering = (idx) => {
+            if (!wateringSegments || wateringSegments.length === 0) return false;
+
+            for (const seg of wateringSegments) {
+                if (typeof seg === 'object' && 'start' in seg && 'end' in seg) {
+                    if (idx >= seg.start && idx <= seg.end) return true;
+                }
+            }
+            return false;
+        };
+
+        for (let i = 0; i < route.length - 1; i++) {
+            const p1 = route[i];
+            const p2 = route[i + 1];
+
+            const watering = isIndexInWatering(i);
+
+            // 색상 결정: 급수중이면 하늘색, 아니면 속도기반 색상
+            let color = watering ? "#06b6d4" : getSpeedColor(p1.speed || 0);
+
+            // 현재 세그먼트가 비어있으면 시작
+            if (currentPath.length === 0) {
+                currentPath.push({ lat: p1.lat, lng: p1.lng });
+                currentColor = color;
+            }
+
+            // 색상이 바뀌면 이전 세그먼트 끝내고 새로 시작
+            if (color !== currentColor) {
+                currentPath.push({ lat: p1.lat, lng: p1.lng }); // 연결점 추가
+                segments.push({ path: [...currentPath], color: currentColor });
+                currentPath = [{ lat: p1.lat, lng: p1.lng }]; // 새로운 시작점
+                currentColor = color;
+            }
+
+            currentPath.push({ lat: p2.lat, lng: p2.lng });
+        }
+
+        // 마지막 세그먼트 추가
+        if (currentPath.length > 0) {
+            segments.push({ path: currentPath, color: currentColor });
+        }
+
+        console.log(`🎨 Created ${segments.length} route segments with speed colors`);
+        return segments;
+    }, [route, wateringSegments]);
 
     // wateringSegments를 인덱스에서 실제 좌표 배열로 변환
-    const wateringPaths = useMemo(() => {
+    // (이제 routeSegments에 통합되어 사용하지 않음)
+    /* const wateringPaths = useMemo(() => {
         if (!route || route.length === 0 || !wateringSegments || wateringSegments.length === 0) {
             return [];
         }
@@ -124,7 +183,7 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
 
         console.log(`💧 Converted ${paths.length} watering paths`);
         return paths;
-    }, [route, wateringSegments]);
+    }, [route, wateringSegments]); */
 
     // 마커 위치 계산
     const markers = useMemo(() => {
@@ -134,22 +193,26 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         const goal = route[route.length - 1];
 
         console.log('🗺️ Markers - Route length:', route.length);
-        console.log('🗺️ Markers - WateringPaths count:', wateringPaths.length);
+        console.log('🗺️ Markers - WateringSegments:', wateringSegments);
 
         // 수분 보충 구간의 중간 지점들
         const waterMarkers = [];
 
-        if (wateringPaths && wateringPaths.length > 0) {
-            wateringPaths.forEach((path, idx) => {
-                console.log(`💧 Water path ${idx}:`, path.length, 'points');
+        if (wateringSegments && wateringSegments.length > 0) {
+            wateringSegments.forEach((segment, idx) => {
+                console.log(`💧 Water segment ${idx}:`, segment);
 
-                if (path && Array.isArray(path) && path.length > 0) {
-                    const midIndex = Math.floor(path.length / 2);
-                    const waterPos = path[midIndex];
+                if (segment && typeof segment === 'object' && 'start' in segment && 'end' in segment) {
+                    const { start: startIdx, end: endIdx } = segment;
 
-                    if (waterPos && waterPos.lat && waterPos.lng) {
-                        waterMarkers.push(waterPos);
-                        console.log(`✅ Water marker ${idx} added:`, waterPos);
+                    if (startIdx >= 0 && endIdx < route.length && startIdx <= endIdx) {
+                        const midIndex = Math.floor((startIdx + endIdx) / 2);
+                        const waterPos = route[midIndex];
+
+                        if (waterPos && waterPos.lat && waterPos.lng) {
+                            waterMarkers.push(waterPos);
+                            console.log(`✅ Water marker ${idx} added at index ${midIndex}:`, waterPos);
+                        }
                     }
                 }
             });
@@ -163,7 +226,7 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         });
 
         return { start, goal, water: waterMarkers };
-    }, [route, wateringPaths]);
+    }, [route, wateringSegments]);
 
     // 지도 로드 콜백
     const onLoad = (mapInstance) => {
@@ -325,28 +388,18 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                         fullscreenControl: true,
                                     }}
                                 >
-                                    {/* 수분 보충 구간 (먼저 그려서 아래에 표시) */}
-                                    {wateringPaths && wateringPaths.length > 0 && wateringPaths.map((path, idx) => (
+                                    {/* 속도별 경로 세그먼트 (속도에 따라 색상 변경) */}
+                                    {routeSegments.map((segment, idx) => (
                                         <Polyline
-                                            key={`water-${idx}`}
-                                            path={path}
+                                            key={`segment-${idx}`}
+                                            path={segment.path}
                                             options={{
-                                                strokeColor: '#4facfe',
-                                                strokeOpacity: 0.6,
+                                                strokeColor: segment.color,
+                                                strokeOpacity: 0.9,
                                                 strokeWeight: 6,
                                             }}
                                         />
                                     ))}
-
-                                    {/* 러닝 경로 (나중에 그려서 위에 표시) */}
-                                    <Polyline
-                                        path={routePath}
-                                        options={{
-                                            strokeColor: '#00f2fe',
-                                            strokeOpacity: 0.8,
-                                            strokeWeight: 4,
-                                        }}
-                                    />
 
                                     {/* S (Start) 마커 */}
                                     {markers.start && (
