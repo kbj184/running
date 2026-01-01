@@ -7,6 +7,9 @@ import { generateRunners } from './utils/runnerUtils';
 import { deleteSession } from './utils/db';
 import { api } from './utils/api';
 
+// Google Maps 라이브러리 배열을 상수로 선언 (재렌더링 시 재생성 방지)
+const GOOGLE_MAPS_LIBRARIES = ['marker', 'places'];
+
 // Layout Components
 import MainHeader from './components/layout/MainHeader';
 import ProfileSubHeader from './components/layout/ProfileSubHeader';
@@ -443,7 +446,7 @@ function App() {
     return (
         <LoadScript
             googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-            libraries={['marker', 'places']}
+            libraries={GOOGLE_MAPS_LIBRARIES}
             loadingElement={<div>Loading Maps...</div>}
         >
             <div className="main-app-container">
