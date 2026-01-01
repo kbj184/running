@@ -47,7 +47,8 @@ export const generateRouteThumbnail = (route, options = {}) => {
         useMapId = true,      // Map ID 사용 여부 (기본값: true)
         wateringSegments = [], // 급수 구간 정보
         useSpeedColors = false, // 속도별 색상 사용 여부
-        useKmMarkers = false // 킬로미터 마커 사용 여부
+        useKmMarkers = false, // 킬로미터 마커 사용 여부
+        useMarkers = true     // 마커 표시 여부 (기본값: true, 썸네일은 false)
     } = options;
 
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -209,23 +210,26 @@ export const generateRouteThumbnail = (route, options = {}) => {
         params.append('path', `color:${color}|weight:${weight}|${pathPoints}`);
     }
 
-    // 시작점 마커 (커스텀 이미지) - scale로 크기 조정
-    params.append('markers', `icon:${encodeURIComponent(MARKER_ICONS.start)}|scale:0.5|${startPoint.lat},${startPoint.lng}`);
+    // 마커 추가 (useMarkers 옵션이 true일 때만)
+    if (useMarkers) {
+        // 시작점 마커 (커스텀 이미지) - scale로 크기 조정
+        params.append('markers', `icon:${encodeURIComponent(MARKER_ICONS.start)}|scale:0.5|${startPoint.lat},${startPoint.lng}`);
 
-    // 끝점 마커 (커스텀 이미지) - scale로 크기 조정
-    params.append('markers', `icon:${encodeURIComponent(MARKER_ICONS.goal)}|scale:0.5|${endPoint.lat},${endPoint.lng}`);
+        // 끝점 마커 (커스텀 이미지) - scale로 크기 조정
+        params.append('markers', `icon:${encodeURIComponent(MARKER_ICONS.goal)}|scale:0.5|${endPoint.lat},${endPoint.lng}`);
 
-    // 급수 마커 추가 (커스텀 이미지) - scale로 크기 조정
-    if (wateringSegments && wateringSegments.length > 0) {
-        wateringSegments.forEach((segment) => {
-            if (typeof segment === 'object' && 'start' in segment && 'end' in segment) {
-                const midIndex = Math.floor((segment.start + segment.end) / 2);
-                if (midIndex < route.length) {
-                    const waterPoint = route[midIndex];
-                    params.append('markers', `icon:${encodeURIComponent(MARKER_ICONS.water)}|scale:0.44|${waterPoint.lat},${waterPoint.lng}`);
+        // 급수 마커 추가 (커스텀 이미지) - scale로 크기 조정
+        if (wateringSegments && wateringSegments.length > 0) {
+            wateringSegments.forEach((segment) => {
+                if (typeof segment === 'object' && 'start' in segment && 'end' in segment) {
+                    const midIndex = Math.floor((segment.start + segment.end) / 2);
+                    if (midIndex < route.length) {
+                        const waterPoint = route[midIndex];
+                        params.append('markers', `icon:${encodeURIComponent(MARKER_ICONS.water)}|scale:0.44|${waterPoint.lat},${waterPoint.lng}`);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     // 킬로미터 마커 추가 (1km, 2km, 3km...) - useKmMarkers 옵션이 true일 때만
@@ -342,6 +346,7 @@ export const generateRouteThumbImage = (route) => {
         color: '0x39ff14',  // 진한 형광색 (Neon Green)
         weight: 4,
         useDarkMode: true,   // 썸네일은 다크 모드 사용
-        useMapId: false      // 썸네일은 Map ID 사용 안 함 (커스텀 스타일 유지)
+        useMapId: false,     // 썸네일은 Map ID 사용 안 함 (커스텀 스타일 유지)
+        useMarkers: false    // 썸네일은 마커 표시 안 함 (경로만 표시)
     });
 };
