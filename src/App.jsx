@@ -51,6 +51,7 @@ function App() {
     const [runningResult, setRunningResult] = useState(null);
     const [sessionId, setSessionId] = useState(null);
     const [refreshRecords, setRefreshRecords] = useState(0);
+    const [savedScrollPosition, setSavedScrollPosition] = useState(0);
 
     // Navigation State
     const [activeTab, setActiveTab] = useState('home');
@@ -278,6 +279,11 @@ function App() {
     };
 
     const handleRecordClick = (record) => {
+        // 현재 스크롤 위치 저장
+        const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+        setSavedScrollPosition(scrollPosition);
+        console.log('📍 스크롤 위치 저장:', scrollPosition);
+
         setRunningResult(record);
         setSessionId(record.sessionId);
         setScreenMode('view_record');
@@ -289,6 +295,12 @@ function App() {
         setRunningResult(null);
         setSessionId(null);
         setRefreshRecords(prev => prev + 1);
+
+        // 저장된 스크롤 위치로 복원
+        setTimeout(() => {
+            window.scrollTo(0, savedScrollPosition);
+            console.log('📍 스크롤 위치 복원:', savedScrollPosition);
+        }, 0);
     };
 
     const handleDelete = async () => {
@@ -321,6 +333,12 @@ function App() {
         setRunningResult(null);
         setSessionId(null);
         setRefreshRecords(prev => prev + 1);
+
+        // 저장된 스크롤 위치로 복원
+        setTimeout(() => {
+            window.scrollTo(0, savedScrollPosition);
+            console.log('📍 스크롤 위치 복원:', savedScrollPosition);
+        }, 0);
     };
 
     const handleToggleLabels = () => {
