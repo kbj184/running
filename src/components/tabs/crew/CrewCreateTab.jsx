@@ -53,8 +53,8 @@ function CrewCreateTab({ user, onCreate }) {
     }, []);
 
     const handleMapClick = async (event) => {
-        if (activityAreas.length >= 5) {
-            setError('활동 지역은 최대 5개까지 선택할 수 있습니다.');
+        if (activityAreas.length >= 1) {
+            setError('활동 지역은 1개만 선택할 수 있습니다. 기존 지역을 삭제 후 다시 선택해주세요.');
             return;
         }
 
@@ -302,10 +302,10 @@ function CrewCreateTab({ user, onCreate }) {
                 {/* 크루 활동 지역 */}
                 <div style={{ marginBottom: '24px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
-                        크루 활동 지역 * (최대 5개)
+                        크루 활동 지역 *
                     </label>
                     <p style={{ fontSize: '13px', color: '#666', marginBottom: '12px' }}>
-                        지도를 클릭하여 활동 지역을 추가하세요
+                        지도를 클릭하여 활동 지역을 선택하세요 (1개만 선택 가능)
                     </p>
 
                     {/* 지도 */}
@@ -350,7 +350,7 @@ function CrewCreateTab({ user, onCreate }) {
                     {activityAreas.length > 0 && (
                         <div style={{ marginTop: '16px' }}>
                             <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#1a1a1a' }}>
-                                선택된 지역 ({activityAreas.length}/5)
+                                선택된 지역 ({activityAreas.length}/1)
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {activityAreas.map((area) => (
