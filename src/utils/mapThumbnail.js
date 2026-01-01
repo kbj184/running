@@ -151,7 +151,7 @@ export const generateRouteMapImage = (route, wateringSegments = []) => {
     return generateRouteThumbnail(route, {
         width: 640,
         height: 400,
-        color: '0x2D1B69',  // 진한 보라색
+        color: '0x00f2fe',  // 청록색 (러닝 경로 색상과 동일)
         weight: 5,
         wateringSegments
     });
