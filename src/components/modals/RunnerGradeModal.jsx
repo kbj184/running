@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { getGradeInfo, getBadgeStyle, RUNNER_GRADE_INFO } from '../../constants/runnerGradeInfo';
 import './RunnerGradeModal.css';
 
 function RunnerGradeModal({ user, onClose }) {
+    const { t } = useTranslation();
     const currentGrade = user.runnerGrade ? getGradeInfo(user.runnerGrade) : null;
 
     return (
@@ -24,7 +26,7 @@ function RunnerGradeModal({ user, onClose }) {
                     >
                         ←
                     </button>
-                    <h1 className="result-title">🏅 러너 등급</h1>
+                    <h1 className="result-title">🏅 {t('modal.runnerGrade.title')}</h1>
                     <div style={{ width: '40px' }}></div>
                 </div>
 
@@ -48,7 +50,7 @@ function RunnerGradeModal({ user, onClose }) {
                                 fontWeight: '600',
                                 letterSpacing: '0.5px'
                             }}>
-                                현재 등급
+                                {t('profile.grade')}
                             </div>
                             <div style={{ fontSize: '64px', marginBottom: '12px' }}>
                                 {currentGrade.emoji}
@@ -97,7 +99,7 @@ function RunnerGradeModal({ user, onClose }) {
                             marginBottom: '12px',
                             color: '#333'
                         }}>
-                            📊 등급 시스템
+                            📊 {t('modal.runnerGrade.title')}
                         </h3>
                         <p style={{
                             fontSize: '14px',
@@ -105,8 +107,7 @@ function RunnerGradeModal({ user, onClose }) {
                             lineHeight: '1.6',
                             margin: 0
                         }}>
-                            러너 등급은 여러분의 최고 기록을 기반으로 자동으로 산정됩니다.
-                            더 멀리, 더 빠르게 달릴수록 높은 등급을 획득할 수 있습니다!
+                            {t('modal.runnerGrade.description')}
                         </p>
                     </div>
 
@@ -117,7 +118,7 @@ function RunnerGradeModal({ user, onClose }) {
                         marginBottom: '16px',
                         color: '#333'
                     }}>
-                        전체 등급
+                        {t('modal.runnerGrade.criteria')}
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {Object.entries(RUNNER_GRADE_INFO).map(([key, grade]) => {
@@ -178,7 +179,7 @@ function RunnerGradeModal({ user, onClose }) {
                                                     fontWeight: '700',
                                                     letterSpacing: '0.3px'
                                                 }}>
-                                                    현재 등급
+                                                    {t('profile.grade')}
                                                 </span>
                                             )}
                                         </div>
