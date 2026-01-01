@@ -1,7 +1,11 @@
 import { formatTime, formatDistance } from '../utils/gps';
 import { useState, useEffect, useMemo } from 'react';
 import { generateRouteMapImage } from '../utils/mapThumbnail';
+import { GoogleMap, useJsApiLoader, Polyline } from '@react-google-maps/api';
 import './result-screen.css';
+
+const LIBRARIES = ['places', 'marker'];
+const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
 function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
     const {
@@ -21,6 +25,18 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
 
     // 승급 메시지 표시 여부 상태
     const [showGradeUpgrade, setShowGradeUpgrade] = useState(false);
+
+    // 지도 모드 상태 (true: 실제 지도, false: 이미지)
+    const [showInteractiveMap, setShowInteractiveMap] = useState(false);
+    const [map, setMap] = useState(null);
+
+    // Google Maps API 로드
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+        language: 'ko',
+        libraries: LIBRARIES
+    });
 
     // 승급 메시지 최초 1회만 표시 체크
     useEffect(() => {
@@ -53,6 +69,43 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         }
         return null;
     }, [thumbnail, route, wateringSegments]);
+
+    // 지도 중심점 계산
+    const mapCenter = useMemo(() => {
+        if (!route || route.length === 0) return { lat: 37.5665, lng: 126.9780 };
+
+        const lats = route.map(p => p.lat);
+        const lngs = route.map(p => p.lng);
+
+        return {
+            lat: (Math.min(...lats) + Math.max(...lats)) / 2,
+            lng: (Math.min(...lngs) + Math.max(...lngs)) / 2
+        };
+    }, [route]);
+
+    // 경로를 Google Maps Polyline 형식으로 변환
+    const routePath = useMemo(() => {
+        if (!route || route.length === 0) return [];
+        return route.map(point => ({ lat: point.lat, lng: point.lng }));
+    }, [route]);
+
+    // 지도 로드 콜백
+    const onLoad = (mapInstance) => {
+        setMap(mapInstance);
+
+        // 경로에 맞게 지도 범위 조정
+        if (route && route.length > 0) {
+            const bounds = new window.google.maps.LatLngBounds();
+            route.forEach(point => {
+                bounds.extend({ lat: point.lat, lng: point.lng });
+            });
+            mapInstance.fitBounds(bounds);
+        }
+    };
+
+    const onUnmount = () => {
+        setMap(null);
+    };
 
     // 날짜/시간 포맷팅 - 2025년12월30일 10:36~10:36 형식
     const runDate = timestamp ? new Date(timestamp) : new Date();
@@ -107,41 +160,157 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                 <div className="result-distance-value">{formatDistance(distance)}</div>
             </section>
 
-            {/* 지도만 표기 */}
+            {/* 지도 표기 - 이미지 또는 실제 지도 */}
             <section className="result-card-section">
-                <div className="result-map-card">
-                    {!mapImageUrl ? (
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            height: '400px',
-                            color: '#999',
-                            fontSize: '16px',
-                            backgroundColor: '#f5f5f5',
-                            borderRadius: '12px'
-                        }}>
-                            경로 없음
-                        </div>
+                <div className="result-map-card" style={{ position: 'relative' }}>
+                    {!showInteractiveMap ? (
+                        // 이미지 모드
+                        <>
+                            {!mapImageUrl ? (
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '400px',
+                                    color: '#999',
+                                    fontSize: '16px',
+                                    backgroundColor: '#f5f5f5',
+                                    borderRadius: '12px'
+                                }}>
+                                    경로 없음
+                                </div>
+                            ) : (
+                                <div
+                                    style={{
+                                        position: 'relative',
+                                        cursor: 'pointer'
+                                    }}
+                                    onClick={() => setShowInteractiveMap(true)}
+                                >
+                                    <img
+                                        src={mapImageUrl}
+                                        alt="러닝 경로"
+                                        style={{
+                                            width: '100%',
+                                            height: '400px',
+                                            objectFit: 'cover',
+                                            borderRadius: '12px',
+                                            display: 'block'
+                                        }}
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            const errorDiv = document.createElement('div');
+                                            errorDiv.style.cssText = 'display:flex;align-items:center;justify-content:center;height:400px;color:#999;background:#f5f5f5;border-radius:12px;';
+                                            errorDiv.textContent = '지도 로딩 실패';
+                                            e.target.parentElement.appendChild(errorDiv);
+                                        }}
+                                    />
+                                    {/* 클릭 힌트 오버레이 */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '16px',
+                                        right: '16px',
+                                        background: 'rgba(0, 0, 0, 0.7)',
+                                        color: '#fff',
+                                        padding: '8px 16px',
+                                        borderRadius: '20px',
+                                        fontSize: '13px',
+                                        fontWeight: '600',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        backdropFilter: 'blur(4px)'
+                                    }}>
+                                        🗺️ 지도 보기
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     ) : (
-                        <img
-                            src={mapImageUrl}
-                            alt="러닝 경로"
-                            style={{
-                                width: '100%',
-                                height: '400px',
-                                objectFit: 'cover',
-                                borderRadius: '12px',
-                                display: 'block'
-                            }}
-                            onError={(e) => {
-                                e.target.style.display = 'none';
-                                const errorDiv = document.createElement('div');
-                                errorDiv.style.cssText = 'display:flex;align-items:center;justify-content:center;height:400px;color:#999;background:#f5f5f5;border-radius:12px;';
-                                errorDiv.textContent = '지도 로딩 실패';
-                                e.target.parentElement.appendChild(errorDiv);
-                            }}
-                        />
+                        // 실제 지도 모드
+                        <div style={{ position: 'relative' }}>
+                            {isLoaded && route && route.length > 0 ? (
+                                <GoogleMap
+                                    mapContainerStyle={{
+                                        width: '100%',
+                                        height: '400px',
+                                        borderRadius: '12px'
+                                    }}
+                                    center={mapCenter}
+                                    zoom={14}
+                                    onLoad={onLoad}
+                                    onUnmount={onUnmount}
+                                    options={{
+                                        mapId: MAP_ID,
+                                        disableDefaultUI: false,
+                                        zoomControl: true,
+                                        mapTypeControl: false,
+                                        streetViewControl: false,
+                                        fullscreenControl: true,
+                                    }}
+                                >
+                                    {/* 러닝 경로 */}
+                                    <Polyline
+                                        path={routePath}
+                                        options={{
+                                            strokeColor: '#00f2fe',
+                                            strokeOpacity: 0.8,
+                                            strokeWeight: 4,
+                                        }}
+                                    />
+
+                                    {/* 수분 보충 구간 */}
+                                    {wateringSegments.map((segment, idx) => (
+                                        <Polyline
+                                            key={`water-${idx}`}
+                                            path={segment}
+                                            options={{
+                                                strokeColor: '#4facfe',
+                                                strokeOpacity: 0.6,
+                                                strokeWeight: 6,
+                                            }}
+                                        />
+                                    ))}
+                                </GoogleMap>
+                            ) : (
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '400px',
+                                    color: '#999',
+                                    backgroundColor: '#f5f5f5',
+                                    borderRadius: '12px'
+                                }}>
+                                    지도 로딩 중...
+                                </div>
+                            )}
+
+                            {/* 이미지로 돌아가기 버튼 */}
+                            <button
+                                onClick={() => setShowInteractiveMap(false)}
+                                style={{
+                                    position: 'absolute',
+                                    bottom: '16px',
+                                    right: '16px',
+                                    background: 'rgba(0, 0, 0, 0.7)',
+                                    color: '#fff',
+                                    border: 'none',
+                                    padding: '8px 16px',
+                                    borderRadius: '20px',
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    backdropFilter: 'blur(4px)',
+                                    zIndex: 10
+                                }}
+                            >
+                                🖼️ 이미지로
+                            </button>
+                        </div>
                     )}
                 </div>
             </section>
@@ -224,3 +393,4 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
 }
 
 export default ResultScreen;
+
