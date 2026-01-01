@@ -262,21 +262,22 @@ export const generateRouteThumbnail = (route, options = {}) => {
             let adjustedLat = lat;
             let adjustedLng = lng;
 
-            // S, W, G와 너무 가까운지 확인 (약 50m 이내)
+            // S, W, G와 너무 가까운지 확인 (약 100m 이내로 증가)
             const tooClose = specialMarkers.some(marker => {
                 const distance = Math.sqrt(
                     Math.pow((marker.lat - lat) * 111000, 2) +
                     Math.pow((marker.lng - lng) * 111000 * Math.cos(lat * Math.PI / 180), 2)
                 );
-                return distance < 50; // 50m 이내
+                return distance < 100; // 100m 이내
             });
 
             if (tooClose) {
-                // 오른쪽으로 약간 이동 (경도 +0.0003도, 약 30m)
-                adjustedLng = lng + 0.0003;
+                // 오른쪽으로 더 많이 이동 (경도 +0.0006도, 약 60m)
+                adjustedLng = lng + 0.0006;
             }
 
-            params.append('markers', `color:purple|size:small|label:${km}|${adjustedLat},${adjustedLng}`);
+            // tiny 크기로 축소 (기존 small의 절반)
+            params.append('markers', `color:purple|size:tiny|label:${km}|${adjustedLat},${adjustedLng}`);
         });
     }
 

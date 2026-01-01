@@ -518,7 +518,7 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                         </AdvancedMarker>
                                     )}
 
-                                    {/* 킬로미터 마커 (1km, 2km, 3km...) */}
+                                    {/* 킬로미터 마커 (1km, 2km, 3km...) - 크기 축소 */}
                                     {kmMarkers.map((marker, idx) => (
                                         <AdvancedMarker
                                             key={`km-${idx}`}
@@ -527,17 +527,17 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                             zIndex={98}
                                         >
                                             <div style={{
-                                                minWidth: '40px',
-                                                height: '24px',
+                                                minWidth: '32px',
+                                                height: '18px',
                                                 backgroundColor: '#ffffff',
-                                                borderRadius: '12px',
-                                                border: '2px solid #4318FF',
-                                                boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                                                borderRadius: '9px',
+                                                border: '1.5px solid #4318FF',
+                                                boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                padding: '0 8px',
-                                                fontSize: '12px',
+                                                padding: '0 6px',
+                                                fontSize: '10px',
                                                 fontWeight: '700',
                                                 color: '#4318FF'
                                             }}>
