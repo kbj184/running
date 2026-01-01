@@ -72,13 +72,13 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
 
     // 지도 이미지 URL 생성 (데이터가 바뀔 때만 재계산)
     const mapImageUrl = useMemo(() => {
-        if (thumbnail) return thumbnail;
+        // 썸네일이 있어도 무시하고 항상 최신 스타일로 생성 (km 마커 등 새 기능 반영)
         if (route && route.length > 0) {
-            console.log("🗺️ Generating new map image URL...");
+            console.log("🗺️ Generating new map image URL with km markers...");
             return generateRouteMapImage(route, wateringSegments);
         }
         return null;
-    }, [thumbnail, route, wateringSegments]);
+    }, [route, wateringSegments]);
 
     // 지도 중심점 계산
     const mapCenter = useMemo(() => {

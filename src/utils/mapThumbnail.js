@@ -281,7 +281,17 @@ export const generateRouteThumbnail = (route, options = {}) => {
         });
     }
 
-    return `${baseUrl}?${params.toString()}`;
+    const finalUrl = `${baseUrl}?${params.toString()}`;
+
+    // 디버깅: 마커 정보 출력
+    console.log('🗺️ Static Map URL generated:');
+    console.log('  - Start marker (S):', startPoint);
+    console.log('  - Goal marker (G):', endPoint);
+    console.log('  - Water markers (W):', wateringSegments?.length || 0);
+    console.log('  - Km markers:', useKmMarkers ? 'enabled' : 'disabled');
+    console.log('  - URL length:', finalUrl.length);
+
+    return finalUrl;
 };
 
 /**
