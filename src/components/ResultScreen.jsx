@@ -97,14 +97,34 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         const start = route[0];
         const goal = route[route.length - 1];
 
+        console.log('🗺️ Markers - Route length:', route.length);
+        console.log('🗺️ Markers - WateringSegments:', wateringSegments);
+
         // 수분 보충 구간의 중간 지점들
-        const waterMarkers = wateringSegments.map(segment => {
-            if (segment && segment.length > 0) {
-                const midIndex = Math.floor(segment.length / 2);
-                return segment[midIndex];
-            }
-            return null;
-        }).filter(Boolean);
+        const waterMarkers = [];
+
+        if (wateringSegments && Array.isArray(wateringSegments) && wateringSegments.length > 0) {
+            wateringSegments.forEach((segment, idx) => {
+                console.log(`💧 Water segment ${idx}:`, segment);
+
+                if (segment && Array.isArray(segment) && segment.length > 0) {
+                    const midIndex = Math.floor(segment.length / 2);
+                    const waterPos = segment[midIndex];
+
+                    if (waterPos && waterPos.lat && waterPos.lng) {
+                        waterMarkers.push(waterPos);
+                        console.log(`✅ Water marker ${idx} added:`, waterPos);
+                    }
+                }
+            });
+        }
+
+        console.log('🗺️ Final markers:', {
+            start,
+            goal,
+            waterCount: waterMarkers.length,
+            water: waterMarkers
+        });
 
         return { start, goal, water: waterMarkers };
     }, [route, wateringSegments]);
