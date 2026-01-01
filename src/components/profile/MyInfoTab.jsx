@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getGradeInfo, getBadgeStyle } from '../../constants/runnerGradeInfo';
 import { api } from '../../utils/api';
 
 function MyInfoTab({ user }) {
+    const { t } = useTranslation();
     const [activityArea, setActivityArea] = useState(null);
     const [isLoadingArea, setIsLoadingArea] = useState(true);
 
@@ -46,7 +48,7 @@ function MyInfoTab({ user }) {
 
     return (
         <div>
-            <h2 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: '700' }}>내 정보</h2>
+            <h2 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: '700' }}>{t('profile.tabs.info')}</h2>
             <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -82,7 +84,7 @@ function MyInfoTab({ user }) {
                             backgroundColor: '#f9f9f9',
                             borderRadius: '12px'
                         }}>
-                            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>러너 등급</div>
+                            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>{t('profile.grade')}</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ fontSize: '32px' }}>{gradeInfo.emoji}</span>
                                 <span style={{ fontSize: '20px', fontWeight: '700', color: gradeInfo.color }}>
@@ -105,7 +107,7 @@ function MyInfoTab({ user }) {
                         backgroundColor: '#f9f9f9',
                         borderRadius: '12px'
                     }}>
-                        <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>소속 크루</div>
+                        <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>{t('crew.name')}</div>
                         <div style={{ fontSize: '18px', fontWeight: '700' }}>{user.crewName}</div>
                     </div>
                 )}
@@ -119,7 +121,7 @@ function MyInfoTab({ user }) {
                         textAlign: 'center',
                         color: '#999'
                     }}>
-                        주 활동 지역 정보를 불러오는 중...
+                        {t('common.loading')}
                     </div>
                 ) : activityArea ? (
                     <div style={{

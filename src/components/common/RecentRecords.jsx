@@ -1,5 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { formatDistance, formatTime } from '../../utils/gps';
+import { useTranslation } from 'react-i18next';
+import { formatTime } from '../../utils/gps';
+import { formatDistance as formatDistanceUtil, formatPace } from '../../utils/unitConverter';
+import { useUnit } from '../../contexts/UnitContext';
 import { generateRouteThumbImage } from '../../utils/mapThumbnail';
 import { api } from '../../utils/api';
 
@@ -72,6 +75,8 @@ function RouteThumbnail({ route, thumbnail }) {
 }
 
 function RecentRecords({ onRefresh, onRecordClick, user }) {
+    const { t } = useTranslation();
+    const { unit } = useUnit();
     const [records, setRecords] = useState([]);
     const [stats, setStats] = useState({
         totalDistance: 0,
@@ -163,7 +168,7 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
                 color: '#999'
             }}>
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏃</div>
-                <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>아직 기록이 없습니다</div>
+                <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>{t('profile.noRecords')}</div>
                 <div style={{ fontSize: '14px' }}>첫 러닝을 시작해보세요!</div>
             </div>
         );
@@ -184,21 +189,21 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
                 border: '1px solid #f0f0f0'
             }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 거리</div>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>{t('profile.totalDistance')}</div>
                     <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
-                        {formatDistance(stats.totalDistance)}
+                        {formatDistanceUtil(stats.totalDistance, unit)}
                     </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>총 시간</div>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>{t('running.time')}</div>
                     <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
                         {formatTime(stats.totalDuration)}
                     </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>평균 페이스</div>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>{t('running.avgPace')}</div>
                     <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
-                        {stats.avgPace.toFixed(1)} <span style={{ fontSize: '12px', fontWeight: '500' }}>min/km</span>
+                        {formatPace(stats.avgPace * 60, unit)}
                     </div>
                 </div>
             </div>
@@ -211,7 +216,7 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
                     fontWeight: '700',
                     color: '#ffffff'
                 }}>
-                    최근활동
+                    {t('profile.recentRecords')}
                 </h3>
 
                 <div style={{
@@ -274,7 +279,7 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
                                     color: '#4318FF',
                                     lineHeight: '1.2'
                                 }}>
-                                    {formatDistance(record.distance)}
+                                    {formatDistanceUtil(record.distance, unit)}
                                 </div>
 
                                 {/* 하단: 시간 + 페이스 + 칼로리 (14px) */}
@@ -294,7 +299,7 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
                                             return `${minutes}분 ${seconds}초`;
                                         })()}
                                     </span>
-                                    <span>{record.pace.toFixed(1)} min/km</span>
+                                    <span>{formatPace(record.pace * 60, unit)}</span>
                                     <span>{Math.floor(record.distance * 60)} kcal</span>
                                 </div>
                             </div>

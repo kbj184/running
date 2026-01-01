@@ -1,6 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 function ProfileSubHeader({ profileTab, onTabChange }) {
+    const { t } = useTranslation();
+
     return (
         <div style={{
             position: 'relative',
@@ -33,7 +36,7 @@ function ProfileSubHeader({ profileTab, onTabChange }) {
                         transition: 'all 0.2s'
                     }}
                 >
-                    내 기록
+                    {t('profile.tabs.records')}
                 </button>
                 <button
                     onClick={() => onTabChange('info')}
@@ -50,7 +53,7 @@ function ProfileSubHeader({ profileTab, onTabChange }) {
                         transition: 'all 0.2s'
                     }}
                 >
-                    내 정보
+                    {t('profile.tabs.info')}
                 </button>
                 <button
                     onClick={() => onTabChange('settings')}
