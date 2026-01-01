@@ -5,13 +5,22 @@
  * @returns {string} Static Maps API URL
  */
 
-// 커스텀 마커 이미지 URL (Cloudinary)
-const CLOUDINARY_BASE = 'https://res.cloudinary.com/dpqcyw2wh/image/upload';
+// 커스텀 마커 이미지 URL (public 폴더)
+// 배포 시 자동으로 포함되며, 절대 URL로 변환됨
+const getMarkerIconUrl = (filename) => {
+    // 프로덕션: 배포된 도메인 사용
+    if (import.meta.env.PROD) {
+        return `https://llrun.shop/markers/${filename}`;
+    }
+    // 개발: 로컬 서버 사용
+    return `https://localhost:3000/markers/${filename}`;
+};
+
 const MARKER_ICONS = {
-    start: `${CLOUDINARY_BASE}/markers/start_marker.png`,
-    goal: `${CLOUDINARY_BASE}/markers/goal_marker.png`,
-    water: `${CLOUDINARY_BASE}/markers/water_marker.png`,
-    km: `${CLOUDINARY_BASE}/markers/km_marker.png`
+    start: getMarkerIconUrl('start_marker.png'),
+    goal: getMarkerIconUrl('goal_marker.png'),
+    water: getMarkerIconUrl('water_marker.png'),
+    km: getMarkerIconUrl('km_marker.png')
 };
 
 // 속도에 따른 색상 반환 (16진수 형식)
