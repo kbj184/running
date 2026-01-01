@@ -130,6 +130,8 @@ function EditActivityAreaModal({ isOpen, onClose, onSave, user, currentArea }) {
                     zoom={13}
                     onClick={handleMapClick}
                     options={{
+                        disableDefaultUI: true,  // 모든 기본 UI 숨기기
+                        zoomControl: true,       // 줌 컨트롤만 표시
                         styles: [
                             {
                                 featureType: 'poi',
