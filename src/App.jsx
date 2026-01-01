@@ -9,6 +9,7 @@ import { api } from './utils/api';
 // Layout Components
 import MainHeader from './components/layout/MainHeader';
 import ProfileSubHeader from './components/layout/ProfileSubHeader';
+import CrewSubHeader from './components/layout/CrewSubHeader';
 import BottomNavigation from './components/layout/BottomNavigation';
 
 // Tab Components
@@ -462,10 +463,21 @@ function App() {
                         onTabChange={handleProfileTabChange}
                     />
                 )}
+
+                {activeTab === 'crew' && !showProfileMenu && (
+                    <CrewSubHeader
+                        crewTab={user.crewTab || 'home'}
+                        onTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
+                    />
+                )}
             </div>
 
             {/* Scrollable Content Area */}
-            <div className="main-content" style={{ marginTop: showProfileMenu ? 'calc(var(--header-height) + 60px)' : 'var(--header-height)' }}>
+            <div className="main-content" style={{
+                marginTop: showProfileMenu ? 'calc(var(--header-height) + 60px)' :
+                    (activeTab === 'crew' && !showProfileMenu) ? 'calc(var(--header-height) + 60px)' :
+                        'var(--header-height)'
+            }}>
                 {/* Home Tab */}
                 {activeTab === 'home' && !showProfileMenu && <HomeTab />}
 
@@ -504,6 +516,8 @@ function App() {
                         allCrews={allCrews}
                         onCrewClick={handleCrewClick}
                         onRefreshCrews={fetchCrews}
+                        crewTab={user.crewTab || 'home'}
+                        onCrewTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
                     />
                 )}
 

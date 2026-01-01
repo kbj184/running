@@ -16,8 +16,6 @@ function CrewSubHeader({ crewTab, onTabChange }) {
             <div style={{
                 display: 'flex',
                 gap: '0',
-                padding: '0 20px',
-                maxWidth: '1200px',
                 margin: '0 auto'
             }}>
                 <button
