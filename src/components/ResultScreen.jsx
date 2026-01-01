@@ -325,17 +325,7 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                         fullscreenControl: true,
                                     }}
                                 >
-                                    {/* 러닝 경로 */}
-                                    <Polyline
-                                        path={routePath}
-                                        options={{
-                                            strokeColor: '#00f2fe',
-                                            strokeOpacity: 0.8,
-                                            strokeWeight: 4,
-                                        }}
-                                    />
-
-                                    {/* 수분 보충 구간 */}
+                                    {/* 수분 보충 구간 (먼저 그려서 아래에 표시) */}
                                     {wateringPaths && wateringPaths.length > 0 && wateringPaths.map((path, idx) => (
                                         <Polyline
                                             key={`water-${idx}`}
@@ -347,6 +337,16 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                             }}
                                         />
                                     ))}
+
+                                    {/* 러닝 경로 (나중에 그려서 위에 표시) */}
+                                    <Polyline
+                                        path={routePath}
+                                        options={{
+                                            strokeColor: '#00f2fe',
+                                            strokeOpacity: 0.8,
+                                            strokeWeight: 4,
+                                        }}
+                                    />
 
                                     {/* S (Start) 마커 */}
                                     {markers.start && (
