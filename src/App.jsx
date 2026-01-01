@@ -31,7 +31,6 @@ import LoginScreen from './components/auth/LoginScreen';
 import NicknameRegistration from './components/auth/NicknameRegistration';
 
 // Existing Modals
-import CreateCrewModal from './components/common/CreateCrewModal';
 import CrewDetailModal from './components/common/CrewDetailModal';
 
 function App() {
@@ -60,7 +59,6 @@ function App() {
     const [userCrew, setUserCrew] = useState(null);
     const [selectedCrew, setSelectedCrew] = useState(null);
     const [allCrews, setAllCrews] = useState([]);
-    const [showCreateCrewModal, setShowCreateCrewModal] = useState(false);
     const [showCrewDetailModal, setShowCrewDetailModal] = useState(false);
 
     // Profile Menu State
@@ -504,8 +502,8 @@ function App() {
                     <CrewTab
                         user={user}
                         allCrews={allCrews}
-                        onCreateCrew={() => setShowCreateCrewModal(true)}
                         onCrewClick={handleCrewClick}
+                        onRefreshCrews={fetchCrews}
                     />
                 )}
 
@@ -518,13 +516,7 @@ function App() {
                     />
                 )}
 
-                {/* Modals */}
-                <CreateCrewModal
-                    isOpen={showCreateCrewModal}
-                    onClose={() => setShowCreateCrewModal(false)}
-                    onCreate={handleCreateCrew}
-                    user={user}
-                />
+
 
                 <CrewDetailModal
                     isOpen={showCrewDetailModal}
