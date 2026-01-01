@@ -228,6 +228,45 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         return { start, goal, water: waterMarkers };
     }, [route, wateringSegments]);
 
+    // 킬로미터 마커 위치 계산 (1km, 2km, 3km...)
+    const kmMarkers = useMemo(() => {
+        if (!route || route.length < 2) return [];
+
+        const markers = [];
+        let cumulativeDistance = 0;
+        let nextKm = 1; // 다음 킬로미터 목표
+
+        for (let i = 1; i < route.length; i++) {
+            const p1 = route[i - 1];
+            const p2 = route[i];
+
+            // 두 점 사이의 거리 계산 (Haversine formula)
+            const R = 6371; // 지구 반지름 (km)
+            const dLat = (p2.lat - p1.lat) * Math.PI / 180;
+            const dLng = (p2.lng - p1.lng) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const segmentDistance = R * c;
+
+            cumulativeDistance += segmentDistance;
+
+            // 1km 지점을 지나쳤는지 확인
+            if (cumulativeDistance >= nextKm) {
+                markers.push({
+                    km: nextKm,
+                    position: p2,
+                    index: i
+                });
+                nextKm++;
+            }
+        }
+
+        console.log(`🚩 Found ${markers.length} km markers`);
+        return markers;
+    }, [route]);
+
     // 지도 로드 콜백
     const onLoad = (mapInstance) => {
         setMap(mapInstance);
@@ -474,11 +513,38 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                                 fontSize: '14px',
                                                 fontWeight: '800',
                                                 color: 'white'
-                                            }}>
-                                                G
+                                            }}> G
                                             </div>
                                         </AdvancedMarker>
                                     )}
+
+                                    {/* 킬로미터 마커 (1km, 2km, 3km...) */}
+                                    {kmMarkers.map((marker, idx) => (
+                                        <AdvancedMarker
+                                            key={`km-${idx}`}
+                                            map={map}
+                                            position={marker.position}
+                                            zIndex={98}
+                                        >
+                                            <div style={{
+                                                minWidth: '40px',
+                                                height: '24px',
+                                                backgroundColor: '#ffffff',
+                                                borderRadius: '12px',
+                                                border: '2px solid #4318FF',
+                                                boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                padding: '0 8px',
+                                                fontSize: '12px',
+                                                fontWeight: '700',
+                                                color: '#4318FF'
+                                            }}>
+                                                {marker.km}km
+                                            </div>
+                                        </AdvancedMarker>
+                                    ))}
                                 </GoogleMap>
                             ) : (
                                 <div style={{

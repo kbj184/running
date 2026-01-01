@@ -209,6 +209,35 @@ export const generateRouteThumbnail = (route, options = {}) => {
         });
     }
 
+    // 킬로미터 마커 추가 (1km, 2km, 3km...)
+    if (route.length >= 2) {
+        let cumulativeDistance = 0;
+        let nextKm = 1;
+
+        for (let i = 1; i < route.length; i++) {
+            const p1 = route[i - 1];
+            const p2 = route[i];
+
+            // Haversine formula
+            const R = 6371;
+            const dLat = (p2.lat - p1.lat) * Math.PI / 180;
+            const dLng = (p2.lng - p1.lng) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const segmentDistance = R * c;
+
+            cumulativeDistance += segmentDistance;
+
+            if (cumulativeDistance >= nextKm) {
+                // 킬로미터 마커 추가 (보라색)
+                params.append('markers', `color:purple|size:small|label:${nextKm}|${p2.lat},${p2.lng}`);
+                nextKm++;
+            }
+        }
+    }
+
     return `${baseUrl}?${params.toString()}`;
 };
 
