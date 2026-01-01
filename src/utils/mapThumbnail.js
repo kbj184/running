@@ -1,9 +1,19 @@
 /**
  * Google Static Maps API를 사용하여 경로 썸네일 URL 생성
- * @param {Array} route - 경로 좌표 배열 [{lat, lng}, ...]
- * @param {Object} options - 옵션 {width, height, zoom, wateringSegments}
+ * @param {Array} route - 경로 좌표 배열 [{lat, lng, speed}, ...]
+ * @param {Object} options - 옵션 {width, height, zoom, wateringSegments, useSpeedColors}
  * @returns {string} Static Maps API URL
  */
+
+// 속도에 따른 색상 반환 (16진수 형식)
+const getSpeedColorHex = (speedKmh) => {
+    if (speedKmh <= 0) return "0x667eea"; // 멈춤 (보라)
+    if (speedKmh < 6) return "0x10b981"; // 걷기/느린 조깅 (초록)
+    if (speedKmh < 9) return "0xf59e0b"; // 중강도 (주황)
+    if (speedKmh < 12) return "0xef4444"; // 고강도 (빨강)
+    return "0x7c3aed"; // 초고속 (보라)
+};
+
 export const generateRouteThumbnail = (route, options = {}) => {
     if (!route || route.length === 0) {
         return null;
@@ -17,7 +27,8 @@ export const generateRouteThumbnail = (route, options = {}) => {
         weight = 3,
         useDarkMode = false,  // 다크 모드 사용 여부 (기본값: false)
         useMapId = true,      // Map ID 사용 여부 (기본값: true)
-        wateringSegments = [] // 급수 구간 정보
+        wateringSegments = [], // 급수 구간 정보
+        useSpeedColors = false // 속도별 색상 사용 여부
     } = options;
 
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -27,17 +38,6 @@ export const generateRouteThumbnail = (route, options = {}) => {
         console.error('Google Maps API Key가 설정되지 않았습니다.');
         return null;
     }
-
-    // 경로 포인트 샘플링 (URL 길이 제한 때문에 모든 포인트를 사용할 수 없음)
-    // 최대 100개 포인트로 제한
-    const maxPoints = 100;
-    const step = Math.max(1, Math.floor(route.length / maxPoints));
-    const sampledRoute = route.filter((_, index) => index % step === 0);
-
-    // 경로를 path 파라미터로 변환
-    const pathPoints = sampledRoute
-        .map(p => `${p.lat},${p.lng}`)
-        .join('|');
 
     // 시작점과 끝점
     const startPoint = route[0];
@@ -118,8 +118,77 @@ export const generateRouteThumbnail = (route, options = {}) => {
     // visible 파라미터로 경로 전체가 보이도록 설정
     params.append('visible', visiblePoints);
 
-    // 경로 path 추가 - 두껋고 진한 색상
-    params.append('path', `color:${color}|weight:${weight}|${pathPoints}`);
+    // 속도별 색상 사용 여부에 따라 경로 추가
+    if (useSpeedColors && route.length >= 2) {
+        // 수분 보충 구간 판별 헬퍼
+        const isIndexInWatering = (idx) => {
+            if (!wateringSegments || wateringSegments.length === 0) return false;
+
+            for (const seg of wateringSegments) {
+                if (typeof seg === 'object' && 'start' in seg && 'end' in seg) {
+                    if (idx >= seg.start && idx <= seg.end) return true;
+                }
+            }
+            return false;
+        };
+
+        // 속도별 세그먼트 생성
+        const segments = [];
+        let currentPath = [];
+        let currentColor = isIndexInWatering(0) ? "0x06b6d4" : getSpeedColorHex(route[0]?.speed || 0);
+
+        for (let i = 0; i < route.length - 1; i++) {
+            const p1 = route[i];
+            const p2 = route[i + 1];
+
+            const watering = isIndexInWatering(i);
+            let segColor = watering ? "0x06b6d4" : getSpeedColorHex(p1.speed || 0);
+
+            if (currentPath.length === 0) {
+                currentPath.push(p1);
+                currentColor = segColor;
+            }
+
+            if (segColor !== currentColor) {
+                currentPath.push(p1);
+                segments.push({ path: [...currentPath], color: currentColor });
+                currentPath = [p1];
+                currentColor = segColor;
+            }
+
+            currentPath.push(p2);
+        }
+
+        if (currentPath.length > 0) {
+            segments.push({ path: currentPath, color: currentColor });
+        }
+
+        // 각 세그먼트를 path 파라미터로 추가 (샘플링 적용)
+        segments.forEach((segment, idx) => {
+            const maxPoints = 50; // 세그먼트당 최대 포인트
+            const step = Math.max(1, Math.floor(segment.path.length / maxPoints));
+            const sampledPath = segment.path.filter((_, index) => index % step === 0);
+
+            const pathPoints = sampledPath
+                .map(p => `${p.lat},${p.lng}`)
+                .join('|');
+
+            params.append('path', `color:${segment.color}|weight:${weight}|${pathPoints}`);
+        });
+
+        console.log(`🎨 Generated ${segments.length} speed-colored segments for static map`);
+    } else {
+        // 단일 색상 경로
+        const maxPoints = 100;
+        const step = Math.max(1, Math.floor(route.length / maxPoints));
+        const sampledRoute = route.filter((_, index) => index % step === 0);
+
+        const pathPoints = sampledRoute
+            .map(p => `${p.lat},${p.lng}`)
+            .join('|');
+
+        params.append('path', `color:${color}|weight:${weight}|${pathPoints}`);
+    }
 
     // 시작점 마커 (초록색 + S)
     params.append('markers', `color:green|size:mid|label:S|${startPoint.lat},${startPoint.lng}`);
@@ -130,10 +199,12 @@ export const generateRouteThumbnail = (route, options = {}) => {
     // 급수 마커 추가 (하늘색 + W)
     if (wateringSegments && wateringSegments.length > 0) {
         wateringSegments.forEach((segment) => {
-            if (segment.start < route.length) {
-                const waterPoint = route[segment.start];
-                // 가장 물방울 느낌이 나는 하늘색(blue) 마커에 W 라벨 사용
-                params.append('markers', `color:blue|size:mid|label:W|${waterPoint.lat},${waterPoint.lng}`);
+            if (typeof segment === 'object' && 'start' in segment && 'end' in segment) {
+                const midIndex = Math.floor((segment.start + segment.end) / 2);
+                if (midIndex < route.length) {
+                    const waterPoint = route[midIndex];
+                    params.append('markers', `color:blue|size:mid|label:W|${waterPoint.lat},${waterPoint.lng}`);
+                }
             }
         });
     }
@@ -151,9 +222,9 @@ export const generateRouteMapImage = (route, wateringSegments = []) => {
     return generateRouteThumbnail(route, {
         width: 640,
         height: 400,
-        color: '0x00f2fe',  // 청록색 (러닝 경로 색상과 동일)
         weight: 5,
-        wateringSegments
+        wateringSegments,
+        useSpeedColors: true  // 속도별 색상 사용
     });
 };
 
