@@ -267,7 +267,7 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
                                             const day = date.getDate();
                                             const hours = String(date.getHours()).padStart(2, '0');
                                             const minutes = String(date.getMinutes()).padStart(2, '0');
-                                            return `${year}년${month}월${day}일 ${hours}:${minutes}`;
+                                            return `${year}${t('common.year')}${month}${t('common.month')}${day}${t('common.day')} ${hours}:${minutes}`;
                                         })()}
                                     </span>
                                 </div>
@@ -296,7 +296,7 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
                                             const totalSeconds = Math.floor(record.duration);
                                             const minutes = Math.floor(totalSeconds / 60);
                                             const seconds = totalSeconds % 60;
-                                            return `${minutes}분 ${seconds}초`;
+                                            return `${minutes}${t('common.minute')} ${seconds}${t('common.second')}`;
                                         })()}
                                     </span>
                                     <span>{formatPace(record.pace * 60, unit)}</span>

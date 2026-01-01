@@ -1,13 +1,22 @@
 {
     "common": {
-        "save": "저장하기",
+        "save": "저장",
         "delete": "삭제하기",
         "cancel": "취소",
         "confirm": "확인",
         "edit": "편집",
         "close": "닫기",
         "loading": "로딩 중...",
-        "error": "오류가 발생했습니다"
+        "error": "오류가 발생했습니다",
+        "year": "년",
+        "month": "월",
+        "day": "일",
+        "hour": "시",
+        "minute": "분",
+        "second": "초",
+        "selectImage": "이미지 선택",
+        "uploading": "업로드 중...",
+        "saving": "저장 중..."
     },
     "navigation": {
         "home": "홈",

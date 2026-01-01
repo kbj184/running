@@ -216,7 +216,7 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                                 fontWeight: '600'
                             }}
                         >
-                            {uploading ? '업로드 중...' : '이미지 선택'}
+                            {uploading ? t('common.uploading') : t('common.selectImage')}
                         </label>
                     </div>
 
@@ -264,7 +264,7 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                             cursor: (saving || uploading) ? 'not-allowed' : 'pointer'
                         }}
                     >
-                        {saving ? '저장 중...' : '저장'}
+                        {saving ? t('common.saving') : t('common.save')}
                     </button>
                 </div>
 

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function CountdownScreen({ onComplete }) {
+    const { t } = useTranslation();
     const [count, setCount] = useState(3);
 
     useEffect(() => {
@@ -58,7 +60,7 @@ function CountdownScreen({ onComplete }) {
                 zIndex: 2,
                 position: 'relative'
             }}>
-                {count > 0 ? count : 'GO!'}
+                {count > 0 ? count : t('running.countdown.go')}
             </div>
 
             {/* 준비 메시지 */}
@@ -73,7 +75,7 @@ function CountdownScreen({ onComplete }) {
                     zIndex: 2,
                     position: 'relative'
                 }}>
-                    준비하세요...
+                    {t('running.countdown.ready')}...
                 </div>
             )}
 
