@@ -5,6 +5,15 @@
  * @returns {string} Static Maps API URL
  */
 
+// 커스텀 마커 이미지 URL (Cloudinary)
+const CLOUDINARY_BASE = 'https://res.cloudinary.com/dpqcyw2wh/image/upload';
+const MARKER_ICONS = {
+    start: `${CLOUDINARY_BASE}/markers/start_marker.png`,
+    goal: `${CLOUDINARY_BASE}/markers/goal_marker.png`,
+    water: `${CLOUDINARY_BASE}/markers/water_marker.png`,
+    km: `${CLOUDINARY_BASE}/markers/km_marker.png`
+};
+
 // 속도에 따른 색상 반환 (16진수 형식)
 const getSpeedColorHex = (speedKmh) => {
     if (speedKmh <= 0) return "0x667eea"; // 멈춤 (보라)
@@ -191,20 +200,20 @@ export const generateRouteThumbnail = (route, options = {}) => {
         params.append('path', `color:${color}|weight:${weight}|${pathPoints}`);
     }
 
-    // 시작점 마커 (초록색 + S)
-    params.append('markers', `color:green|size:mid|label:S|${startPoint.lat},${startPoint.lng}`);
+    // 시작점 마커 (커스텀 이미지) - scale로 크기 조정
+    params.append('markers', `icon:${encodeURIComponent(MARKER_ICONS.start)}|scale:0.5|${startPoint.lat},${startPoint.lng}`);
 
-    // 끝점 마커 (빨간색 + G)
-    params.append('markers', `color:red|size:mid|label:G|${endPoint.lat},${endPoint.lng}`);
+    // 끝점 마커 (커스텀 이미지) - scale로 크기 조정
+    params.append('markers', `icon:${encodeURIComponent(MARKER_ICONS.goal)}|scale:0.5|${endPoint.lat},${endPoint.lng}`);
 
-    // 급수 마커 추가 (하늘색 + W)
+    // 급수 마커 추가 (커스텀 이미지) - scale로 크기 조정
     if (wateringSegments && wateringSegments.length > 0) {
         wateringSegments.forEach((segment) => {
             if (typeof segment === 'object' && 'start' in segment && 'end' in segment) {
                 const midIndex = Math.floor((segment.start + segment.end) / 2);
                 if (midIndex < route.length) {
                     const waterPoint = route[midIndex];
-                    params.append('markers', `color:blue|size:mid|label:W|${waterPoint.lat},${waterPoint.lng}`);
+                    params.append('markers', `icon:${encodeURIComponent(MARKER_ICONS.water)}|scale:0.44|${waterPoint.lat},${waterPoint.lng}`);
                 }
             }
         });
@@ -276,7 +285,8 @@ export const generateRouteThumbnail = (route, options = {}) => {
                 adjustedLng = lng + 0.0006;
             }
 
-            // tiny 크기로 축소 (기존 small의 절반)
+            // 커스텀 km 마커 이미지 사용
+            // 참고: km 마커는 텍스트가 동적이므로 기본 마커 사용 (또는 서버사이드 이미지 생성 필요)
             params.append('markers', `color:purple|size:tiny|label:${km}|${adjustedLat},${adjustedLng}`);
         });
     }
