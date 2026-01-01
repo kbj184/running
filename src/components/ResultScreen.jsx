@@ -90,6 +90,42 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         return route.map(point => ({ lat: point.lat, lng: point.lng }));
     }, [route]);
 
+    // wateringSegments를 인덱스에서 실제 좌표 배열로 변환
+    const wateringPaths = useMemo(() => {
+        if (!route || route.length === 0 || !wateringSegments || wateringSegments.length === 0) {
+            return [];
+        }
+
+        console.log('💧 Converting wateringSegments to paths...');
+        console.log('💧 Original wateringSegments:', wateringSegments);
+
+        const paths = wateringSegments.map((segment, idx) => {
+            // segment가 {start, end} 형식인 경우
+            if (segment && typeof segment === 'object' && 'start' in segment && 'end' in segment) {
+                const { start, end } = segment;
+                console.log(`💧 Segment ${idx}: start=${start}, end=${end}`);
+
+                // route에서 start부터 end까지의 좌표 추출
+                if (start >= 0 && end < route.length && start <= end) {
+                    const path = route.slice(start, end + 1).map(p => ({ lat: p.lat, lng: p.lng }));
+                    console.log(`✅ Converted segment ${idx} to path with ${path.length} points`);
+                    return path;
+                }
+            }
+            // segment가 이미 좌표 배열인 경우
+            else if (Array.isArray(segment) && segment.length > 0) {
+                console.log(`✅ Segment ${idx} is already a path with ${segment.length} points`);
+                return segment;
+            }
+
+            console.warn(`⚠️ Invalid segment ${idx}:`, segment);
+            return null;
+        }).filter(path => path && path.length > 0);
+
+        console.log(`💧 Converted ${paths.length} watering paths`);
+        return paths;
+    }, [route, wateringSegments]);
+
     // 마커 위치 계산
     const markers = useMemo(() => {
         if (!route || route.length === 0) return { start: null, goal: null, water: [] };
@@ -98,18 +134,18 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         const goal = route[route.length - 1];
 
         console.log('🗺️ Markers - Route length:', route.length);
-        console.log('🗺️ Markers - WateringSegments:', wateringSegments);
+        console.log('🗺️ Markers - WateringPaths count:', wateringPaths.length);
 
         // 수분 보충 구간의 중간 지점들
         const waterMarkers = [];
 
-        if (wateringSegments && Array.isArray(wateringSegments) && wateringSegments.length > 0) {
-            wateringSegments.forEach((segment, idx) => {
-                console.log(`💧 Water segment ${idx}:`, segment);
+        if (wateringPaths && wateringPaths.length > 0) {
+            wateringPaths.forEach((path, idx) => {
+                console.log(`💧 Water path ${idx}:`, path.length, 'points');
 
-                if (segment && Array.isArray(segment) && segment.length > 0) {
-                    const midIndex = Math.floor(segment.length / 2);
-                    const waterPos = segment[midIndex];
+                if (path && Array.isArray(path) && path.length > 0) {
+                    const midIndex = Math.floor(path.length / 2);
+                    const waterPos = path[midIndex];
 
                     if (waterPos && waterPos.lat && waterPos.lng) {
                         waterMarkers.push(waterPos);
@@ -127,7 +163,7 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         });
 
         return { start, goal, water: waterMarkers };
-    }, [route, wateringSegments]);
+    }, [route, wateringPaths]);
 
     // 지도 로드 콜백
     const onLoad = (mapInstance) => {
@@ -300,25 +336,17 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                     />
 
                                     {/* 수분 보충 구간 */}
-                                    {wateringSegments && Array.isArray(wateringSegments) && wateringSegments.map((segment, idx) => {
-                                        // segment가 유효한 배열인지 확인
-                                        if (!segment || !Array.isArray(segment) || segment.length === 0) {
-                                            console.warn(`⚠️ Invalid water segment ${idx}:`, segment);
-                                            return null;
-                                        }
-
-                                        return (
-                                            <Polyline
-                                                key={`water-${idx}`}
-                                                path={segment}
-                                                options={{
-                                                    strokeColor: '#4facfe',
-                                                    strokeOpacity: 0.6,
-                                                    strokeWeight: 6,
-                                                }}
-                                            />
-                                        );
-                                    })}
+                                    {wateringPaths && wateringPaths.length > 0 && wateringPaths.map((path, idx) => (
+                                        <Polyline
+                                            key={`water-${idx}`}
+                                            path={path}
+                                            options={{
+                                                strokeColor: '#4facfe',
+                                                strokeOpacity: 0.6,
+                                                strokeWeight: 6,
+                                            }}
+                                        />
+                                    ))}
 
                                     {/* S (Start) 마커 */}
                                     {markers.start && (
