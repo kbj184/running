@@ -186,12 +186,24 @@ function CrewCreateTab({ user, onCreate }) {
             return;
         }
 
+        // 이미지 선택 확인 (업로드된 이미지 또는 기본 이미지)
+        if (!uploadedImage && !selectedImageId) {
+            setError('크루 이미지를 선택해주세요.');
+            return;
+        }
+
         setIsSubmitting(true);
         setError('');
 
         try {
-            const selectedImage = uploadedImage || CREW_IMAGES.find(img => img.id === selectedImageId);
-            const imageUrl = uploadedImage || JSON.stringify(selectedImage);
+            // 이미지 URL 생성 (업로드된 이미지 우선, 없으면 기본 이미지)
+            let imageUrl;
+            if (uploadedImage) {
+                imageUrl = uploadedImage;
+            } else {
+                const selectedImage = CREW_IMAGES.find(img => img.id === selectedImageId) || CREW_IMAGES[0];
+                imageUrl = JSON.stringify(selectedImage);
+            }
 
             // 활동 지역 데이터에서 임시 ID 제거
             const areasToSend = activityAreas.map(({ id, ...area }) => area);
