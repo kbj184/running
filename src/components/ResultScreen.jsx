@@ -300,17 +300,25 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                     />
 
                                     {/* 수분 보충 구간 */}
-                                    {wateringSegments.map((segment, idx) => (
-                                        <Polyline
-                                            key={`water-${idx}`}
-                                            path={segment}
-                                            options={{
-                                                strokeColor: '#4facfe',
-                                                strokeOpacity: 0.6,
-                                                strokeWeight: 6,
-                                            }}
-                                        />
-                                    ))}
+                                    {wateringSegments && Array.isArray(wateringSegments) && wateringSegments.map((segment, idx) => {
+                                        // segment가 유효한 배열인지 확인
+                                        if (!segment || !Array.isArray(segment) || segment.length === 0) {
+                                            console.warn(`⚠️ Invalid water segment ${idx}:`, segment);
+                                            return null;
+                                        }
+
+                                        return (
+                                            <Polyline
+                                                key={`water-${idx}`}
+                                                path={segment}
+                                                options={{
+                                                    strokeColor: '#4facfe',
+                                                    strokeOpacity: 0.6,
+                                                    strokeWeight: 6,
+                                                }}
+                                            />
+                                        );
+                                    })}
 
                                     {/* S (Start) 마커 */}
                                     {markers.start && (
