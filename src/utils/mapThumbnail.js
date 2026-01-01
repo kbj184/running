@@ -28,7 +28,8 @@ export const generateRouteThumbnail = (route, options = {}) => {
         useDarkMode = false,  // 다크 모드 사용 여부 (기본값: false)
         useMapId = true,      // Map ID 사용 여부 (기본값: true)
         wateringSegments = [], // 급수 구간 정보
-        useSpeedColors = false // 속도별 색상 사용 여부
+        useSpeedColors = false, // 속도별 색상 사용 여부
+        useKmMarkers = false // 킬로미터 마커 사용 여부
     } = options;
 
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -209,11 +210,13 @@ export const generateRouteThumbnail = (route, options = {}) => {
         });
     }
 
-    // 킬로미터 마커 추가 (1km, 2km, 3km...)
-    if (route.length >= 2) {
+    // 킬로미터 마커 추가 (1km, 2km, 3km...) - useKmMarkers 옵션이 true일 때만
+    if (useKmMarkers && route.length >= 2) {
         let cumulativeDistance = 0;
         let nextKm = 1;
+        const kmMarkerPositions = [];
 
+        // 먼저 모든 km 마커 위치 수집
         for (let i = 1; i < route.length; i++) {
             const p1 = route[i - 1];
             const p2 = route[i];
@@ -231,11 +234,50 @@ export const generateRouteThumbnail = (route, options = {}) => {
             cumulativeDistance += segmentDistance;
 
             if (cumulativeDistance >= nextKm) {
-                // 킬로미터 마커 추가 (보라색)
-                params.append('markers', `color:purple|size:small|label:${nextKm}|${p2.lat},${p2.lng}`);
+                kmMarkerPositions.push({ km: nextKm, lat: p2.lat, lng: p2.lng, index: i });
                 nextKm++;
             }
         }
+
+        // S, W, G 마커 위치 수집
+        const specialMarkers = [
+            { lat: startPoint.lat, lng: startPoint.lng }, // S
+            { lat: endPoint.lat, lng: endPoint.lng }      // G
+        ];
+
+        // W 마커 위치 추가
+        if (wateringSegments && wateringSegments.length > 0) {
+            wateringSegments.forEach((segment) => {
+                if (typeof segment === 'object' && 'start' in segment && 'end' in segment) {
+                    const midIndex = Math.floor((segment.start + segment.end) / 2);
+                    if (midIndex < route.length) {
+                        specialMarkers.push({ lat: route[midIndex].lat, lng: route[midIndex].lng });
+                    }
+                }
+            });
+        }
+
+        // km 마커 추가 (겹치는 경우 오른쪽으로 이동)
+        kmMarkerPositions.forEach(({ km, lat, lng }) => {
+            let adjustedLat = lat;
+            let adjustedLng = lng;
+
+            // S, W, G와 너무 가까운지 확인 (약 50m 이내)
+            const tooClose = specialMarkers.some(marker => {
+                const distance = Math.sqrt(
+                    Math.pow((marker.lat - lat) * 111000, 2) +
+                    Math.pow((marker.lng - lng) * 111000 * Math.cos(lat * Math.PI / 180), 2)
+                );
+                return distance < 50; // 50m 이내
+            });
+
+            if (tooClose) {
+                // 오른쪽으로 약간 이동 (경도 +0.0003도, 약 30m)
+                adjustedLng = lng + 0.0003;
+            }
+
+            params.append('markers', `color:purple|size:small|label:${km}|${adjustedLat},${adjustedLng}`);
+        });
     }
 
     return `${baseUrl}?${params.toString()}`;
@@ -253,7 +295,8 @@ export const generateRouteMapImage = (route, wateringSegments = []) => {
         height: 400,
         weight: 5,
         wateringSegments,
-        useSpeedColors: true  // 속도별 색상 사용
+        useSpeedColors: true,  // 속도별 색상 사용
+        useKmMarkers: true     // 킬로미터 마커 사용
     });
 };
 
