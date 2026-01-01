@@ -1,0 +1,117 @@
+{
+    "common": {
+        "save": "저장하기",
+        "delete": "삭제하기",
+        "cancel": "취소",
+        "confirm": "확인",
+        "edit": "편집",
+        "close": "닫기",
+        "loading": "로딩 중...",
+        "error": "오류가 발생했습니다"
+    },
+    "navigation": {
+        "home": "홈",
+        "running": "런닝센터",
+        "crew": "Crew",
+        "my": "My",
+        "profile": "프로필"
+    },
+    "header": {
+        "title": "러닝 맵",
+        "total": "전체",
+        "advanced": "고급",
+        "pro": "프로",
+        "elite": "엘리트",
+        "createCrew": "크루 만들기",
+        "captain": "CAPTAIN",
+        "labelOn": "지명 ON",
+        "labelOff": "지명 OFF",
+        "logout": "로그아웃"
+    },
+    "home": {
+        "welcome": "Welcome to LLRun! 🏃",
+        "subtitle": "함께 달리는 즐거움을 경험하세요"
+    },
+    "running": {
+        "distance": "거리",
+        "time": "시간",
+        "pace": "페이스",
+        "avgPace": "평균 페이스",
+        "currentPace": "현재 페이스",
+        "start": "시작",
+        "pause": "일시정지",
+        "resume": "재개",
+        "stop": "정지",
+        "water": "물",
+        "countdown": {
+            "ready": "준비",
+            "set": "시작!",
+            "go": "달려!"
+        },
+        "result": {
+            "title": "러닝 완료!",
+            "summary": "오늘의 기록",
+            "gradeUp": "등급 상승!",
+            "newGrade": "새로운 등급"
+        }
+    },
+    "crew": {
+        "create": "크루 만들기",
+        "join": "가입하기",
+        "leave": "탈퇴하기",
+        "members": "멤버",
+        "description": "설명",
+        "createdAt": "생성일",
+        "name": "크루 이름",
+        "selectImage": "이미지 선택"
+    },
+    "profile": {
+        "tabs": {
+            "records": "내 기록",
+            "info": "내 정보",
+            "settings": "설정"
+        },
+        "nickname": "닉네임",
+        "grade": "등급",
+        "totalDistance": "총 거리",
+        "totalRuns": "총 러닝 횟수",
+        "bestPace": "최고 페이스",
+        "recentRecords": "최근 기록",
+        "noRecords": "아직 기록이 없습니다"
+    },
+    "settings": {
+        "language": "언어",
+        "unit": "거리 단위",
+        "korean": "한국어",
+        "english": "English",
+        "japanese": "日本語",
+        "chinese": "中文",
+        "comingSoon": "준비중",
+        "km": "킬로미터 (km)",
+        "miles": "마일 (miles)"
+    },
+    "auth": {
+        "login": "로그인",
+        "loginWith": "{{provider}}로 로그인",
+        "nickname": "닉네임을 입력하세요",
+        "selectLocation": "활동 지역을 선택하세요",
+        "next": "다음으로",
+        "complete": "완료",
+        "welcome": "환영합니다!"
+    },
+    "modal": {
+        "runnerGrade": {
+            "title": "러너 등급",
+            "description": "거리와 페이스에 따라 등급이 결정됩니다",
+            "criteria": "달성 기준"
+        }
+    },
+    "units": {
+        "km": "km",
+        "miles": "mi",
+        "kmPerHour": "km/h",
+        "milesPerHour": "mph",
+        "minPerKm": "/km",
+        "minPerMile": "/mi"
+    }
+}

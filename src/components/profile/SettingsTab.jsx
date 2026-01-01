@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
+import LanguageSwitcher from '../common/LanguageSwitcher';
+import UnitSwitcher from '../common/UnitSwitcher';
 
 function SettingsTab({ user, onLogout, onUserUpdate }) {
+    const { t } = useTranslation();
     const [nickname, setNickname] = useState(user?.nickname || '');
     const [profileImage, setProfileImage] = useState(null);
     const [profileImagePreview, setProfileImagePreview] = useState(user?.nicknameImage || user?.profileImage || '');
@@ -36,13 +40,13 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
 
         // 파일 크기 체크 (5MB)
         if (file.size > 5 * 1024 * 1024) {
-            alert('이미지 크기는 5MB 이하여야 합니다.');
+            alert(t('common.error') + ': ' + '이미지 크기는 5MB 이하여야 합니다.');
             return;
         }
 
         // 파일 형식 체크
         if (!file.type.startsWith('image/')) {
-            alert('이미지 파일만 업로드 가능합니다.');
+            alert(t('common.error') + ': ' + '이미지 파일만 업로드 가능합니다.');
             return;
         }
 
@@ -148,8 +152,13 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
 
     return (
         <div style={{ paddingBottom: '40px' }}>
-            <h2 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: '700' }}>설정</h2>
+            <h2 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: '700' }}>{t('profile.tabs.settings')}</h2>
             <div style={{ maxWidth: '600px' }}>
+                {/* 언어 설정 */}
+                <LanguageSwitcher />
+
+                {/* 단위 설정 */}
+                <UnitSwitcher />
                 {/* 닉네임 및 프로필 이미지 변경 */}
                 <div style={{
                     backgroundColor: '#fff',
@@ -303,7 +312,7 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                         marginBottom: '40px'
                     }}
                 >
-                    로그아웃
+                    {t('header.logout')}
                 </button>
             </div>
         </div>

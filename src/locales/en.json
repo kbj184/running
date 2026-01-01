@@ -1,0 +1,117 @@
+{
+    "common": {
+        "save": "Save",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "edit": "Edit",
+        "close": "Close",
+        "loading": "Loading...",
+        "error": "An error occurred"
+    },
+    "navigation": {
+        "home": "Home",
+        "running": "Running",
+        "crew": "Crew",
+        "my": "My",
+        "profile": "Profile"
+    },
+    "header": {
+        "title": "Running Map",
+        "total": "Total",
+        "advanced": "Advanced",
+        "pro": "Pro",
+        "elite": "Elite",
+        "createCrew": "Create Crew",
+        "captain": "CAPTAIN",
+        "labelOn": "Labels ON",
+        "labelOff": "Labels OFF",
+        "logout": "Logout"
+    },
+    "home": {
+        "welcome": "Welcome to LLRun! 🏃",
+        "subtitle": "Experience the joy of running together"
+    },
+    "running": {
+        "distance": "Distance",
+        "time": "Time",
+        "pace": "Pace",
+        "avgPace": "Avg Pace",
+        "currentPace": "Current Pace",
+        "start": "Start",
+        "pause": "Pause",
+        "resume": "Resume",
+        "stop": "Stop",
+        "water": "Water",
+        "countdown": {
+            "ready": "Ready",
+            "set": "Set",
+            "go": "Go!"
+        },
+        "result": {
+            "title": "Run Complete!",
+            "summary": "Today's Record",
+            "gradeUp": "Grade Up!",
+            "newGrade": "New Grade"
+        }
+    },
+    "crew": {
+        "create": "Create Crew",
+        "join": "Join",
+        "leave": "Leave",
+        "members": "Members",
+        "description": "Description",
+        "createdAt": "Created",
+        "name": "Crew Name",
+        "selectImage": "Select Image"
+    },
+    "profile": {
+        "tabs": {
+            "records": "My Records",
+            "info": "My Info",
+            "settings": "Settings"
+        },
+        "nickname": "Nickname",
+        "grade": "Grade",
+        "totalDistance": "Total Distance",
+        "totalRuns": "Total Runs",
+        "bestPace": "Best Pace",
+        "recentRecords": "Recent Records",
+        "noRecords": "No records yet"
+    },
+    "settings": {
+        "language": "Language",
+        "unit": "Distance Unit",
+        "korean": "한국어",
+        "english": "English",
+        "japanese": "日本語",
+        "chinese": "中文",
+        "comingSoon": "Coming Soon",
+        "km": "Kilometers (km)",
+        "miles": "Miles (miles)"
+    },
+    "auth": {
+        "login": "Login",
+        "loginWith": "Login with {{provider}}",
+        "nickname": "Enter your nickname",
+        "selectLocation": "Select your activity area",
+        "next": "Next",
+        "complete": "Complete",
+        "welcome": "Welcome!"
+    },
+    "modal": {
+        "runnerGrade": {
+            "title": "Runner Grades",
+            "description": "Grades are determined by distance and pace",
+            "criteria": "Achievement Criteria"
+        }
+    },
+    "units": {
+        "km": "km",
+        "miles": "mi",
+        "kmPerHour": "km/h",
+        "milesPerHour": "mph",
+        "minPerKm": "/km",
+        "minPerMile": "/mi"
+    }
+}

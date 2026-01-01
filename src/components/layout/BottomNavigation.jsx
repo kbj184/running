@@ -1,6 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 function BottomNavigation({ activeTab, onTabChange, onStartRunning, onProfileClick }) {
+    const { t } = useTranslation();
+
     return (
         <div className="main-bottom-nav">
             <div
@@ -8,14 +11,14 @@ function BottomNavigation({ activeTab, onTabChange, onStartRunning, onProfileCli
                 onClick={() => onTabChange('home')}
             >
                 <div className="nav-icon">🏠</div>
-                <span>홈</span>
+                <span>{t('navigation.home')}</span>
             </div>
             <div
                 className={`nav-item ${activeTab === 'running' ? 'active' : ''}`}
                 onClick={() => onTabChange('running')}
             >
                 <div className="nav-icon">🏃</div>
-                <span>런닝센터</span>
+                <span>{t('navigation.running')}</span>
             </div>
 
             {/* Play Button */}
@@ -31,14 +34,14 @@ function BottomNavigation({ activeTab, onTabChange, onStartRunning, onProfileCli
                 onClick={() => onTabChange('crew')}
             >
                 <div className="nav-icon">👥</div>
-                <span>Crew</span>
+                <span>{t('navigation.crew')}</span>
             </div>
             <div
                 className="nav-item"
                 onClick={onProfileClick}
             >
                 <div className="nav-icon">👤</div>
-                <span>My</span>
+                <span>{t('navigation.my')}</span>
             </div>
         </div>
     );
