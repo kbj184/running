@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 import UnitSwitcher from '../common/UnitSwitcher';
+import EditActivityAreaModal from '../common/EditActivityAreaModal';
 
 function SettingsTab({ user, onLogout, onUserUpdate }) {
     const { t } = useTranslation();
@@ -12,6 +13,7 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [activityArea, setActivityArea] = useState(null);
+    const [showEditAreaModal, setShowEditAreaModal] = useState(false);
 
     useEffect(() => {
         fetchActivityArea();
@@ -150,6 +152,30 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
         }
     };
 
+    const handleSaveActivityArea = async (locationData) => {
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/user/activity-area`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                },
+                body: JSON.stringify(locationData)
+            });
+
+            if (response.ok) {
+                alert('주 활동 지역이 변경되었습니다!');
+                setShowEditAreaModal(false);
+                fetchActivityArea(); // 새로고침
+            } else {
+                throw new Error('Failed to update activity area');
+            }
+        } catch (err) {
+            console.error('Failed to save activity area:', err);
+            alert('활동 지역 변경에 실패했습니다.');
+        }
+    };
+
     return (
         <div style={{ paddingBottom: '40px' }}>
             <h2 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: '700' }}>{t('profile.tabs.settings')}</h2>
@@ -270,16 +296,34 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
 
                 {/* 주 활동 지역 표시 */}
                 {activityArea && (
-                    <div style={{
-                        backgroundColor: '#fff',
-                        padding: '24px',
-                        borderRadius: '12px',
-                        marginBottom: '20px',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
-                    }}>
-                        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
-                            📍 주 활동 지역
-                        </h3>
+                    <div
+                        onClick={() => setShowEditAreaModal(true)}
+                        style={{
+                            backgroundColor: '#fff',
+                            padding: '24px',
+                            borderRadius: '12px',
+                            marginBottom: '20px',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <h3 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>
+                                📍 주 활동 지역
+                            </h3>
+                            <span style={{ fontSize: '12px', color: '#4318FF', fontWeight: '600' }}>
+                                클릭하여 변경 →
+                            </span>
+                        </div>
                         <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
                             {activityArea.adminLevel1} {activityArea.adminLevel2} {activityArea.adminLevel3}
                         </p>
@@ -315,6 +359,15 @@ function SettingsTab({ user, onLogout, onUserUpdate }) {
                     {t('header.logout')}
                 </button>
             </div>
+
+            {/* 활동 지역 변경 모달 */}
+            <EditActivityAreaModal
+                isOpen={showEditAreaModal}
+                onClose={() => setShowEditAreaModal(false)}
+                onSave={handleSaveActivityArea}
+                user={user}
+                currentArea={activityArea}
+            />
         </div>
     );
 }
