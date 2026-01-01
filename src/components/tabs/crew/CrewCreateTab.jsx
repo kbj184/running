@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { GoogleMap, Marker } from '@react-google-maps/api';
 import { api } from '../../../utils/api';
 
 const CREW_IMAGES = [
@@ -309,42 +309,40 @@ function CrewCreateTab({ user, onCreate }) {
                     </p>
 
                     {/* 지도 */}
-                    <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
-                        <GoogleMap
-                            mapContainerStyle={mapContainerStyle}
-                            center={mapCenter}
-                            zoom={13}
-                            onClick={handleMapClick}
-                            options={{
-                                styles: [
-                                    {
-                                        featureType: 'poi',
-                                        stylers: [{ visibility: 'off' }]
-                                    },
-                                    {
-                                        featureType: 'transit',
-                                        stylers: [{ visibility: 'off' }]
-                                    }
-                                ]
-                            }}
-                        >
-                            {activityAreas.map((area) => (
-                                <Marker
-                                    key={area.id}
-                                    position={{ lat: area.latitude, lng: area.longitude }}
-                                    icon={{
-                                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                                            <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="16" cy="16" r="14" fill="#00f2fe" stroke="#fff" stroke-width="2"/>
-                                                <text x="16" y="21" font-size="16" text-anchor="middle" fill="#fff">📍</text>
-                                            </svg>
-                                        `),
-                                        scaledSize: new window.google.maps.Size(32, 32)
-                                    }}
-                                />
-                            ))}
-                        </GoogleMap>
-                    </LoadScript>
+                    <GoogleMap
+                        mapContainerStyle={mapContainerStyle}
+                        center={mapCenter}
+                        zoom={13}
+                        onClick={handleMapClick}
+                        options={{
+                            styles: [
+                                {
+                                    featureType: 'poi',
+                                    stylers: [{ visibility: 'off' }]
+                                },
+                                {
+                                    featureType: 'transit',
+                                    stylers: [{ visibility: 'off' }]
+                                }
+                            ]
+                        }}
+                    >
+                        {activityAreas.map((area) => (
+                            <Marker
+                                key={area.id}
+                                position={{ lat: area.latitude, lng: area.longitude }}
+                                icon={{
+                                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                                        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="16" cy="16" r="14" fill="#00f2fe" stroke="#fff" stroke-width="2"/>
+                                            <text x="16" y="21" font-size="16" text-anchor="middle" fill="#fff">📍</text>
+                                        </svg>
+                                    `),
+                                    scaledSize: new window.google.maps.Size(32, 32)
+                                }}
+                            />
+                        ))}
+                    </GoogleMap>
 
                     {/* 선택된 지역 목록 */}
                     {activityAreas.length > 0 && (

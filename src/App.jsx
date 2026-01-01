@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { LoadScript } from '@react-google-maps/api';
 import './running-styles.css';
 import './main-layout.css';
 import { RUNNER_GRADES } from './constants/runnerGrades';
@@ -440,129 +441,134 @@ function App() {
 
     // Main App Screen
     return (
-        <div className="main-app-container">
-            {/* Fixed Header Container (MainHeader + optional ProfileSubHeader) */}
-            <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                zIndex: 1000,
-                display: 'flex',
-                flexDirection: 'column'
-            }}>
-                <MainHeader
-                    user={user}
+        <LoadScript
+            googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+            loadingElement={<div>Loading Maps...</div>}
+        >
+            <div className="main-app-container">
+                {/* Fixed Header Container (MainHeader + optional ProfileSubHeader) */}
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    zIndex: 1000,
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
+                    <MainHeader
+                        user={user}
+                        onProfileClick={handleProfileClick}
+                        onGradeClick={() => setShowRunnerGradeModal(true)}
+                    />
+
+                    {showProfileMenu && (
+                        <ProfileSubHeader
+                            profileTab={profileTab}
+                            onTabChange={handleProfileTabChange}
+                        />
+                    )}
+
+                    {activeTab === 'crew' && !showProfileMenu && (
+                        <CrewSubHeader
+                            crewTab={user.crewTab || 'home'}
+                            onTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
+                        />
+                    )}
+                </div>
+
+                {/* Scrollable Content Area */}
+                <div className="main-content" style={{
+                    marginTop: showProfileMenu ? 'calc(var(--header-height) + 60px)' :
+                        (activeTab === 'crew' && !showProfileMenu) ? 'calc(var(--header-height) + 60px)' :
+                            'var(--header-height)'
+                }}>
+                    {/* Home Tab */}
+                    {activeTab === 'home' && !showProfileMenu && <HomeTab />}
+
+                    {/* Profile Menu Content */}
+                    {showProfileMenu && (
+                        <ProfileMenu
+                            profileTab={profileTab}
+                            user={user}
+                            refreshRecords={refreshRecords}
+                            onRecordClick={handleRecordClick}
+                            onLogout={handleLogout}
+                            onUserUpdate={handleUserUpdate}
+                        />
+                    )}
+
+                    {/* Running Center Tab */}
+                    {activeTab === 'running' && !showProfileMenu && (
+                        <RunningTab
+                            runners={runners}
+                            stats={stats}
+                            selectedRunner={selectedRunner}
+                            isRunning={isRunning}
+                            showLabels={showLabels}
+                            onRunnerClick={handleRunnerClick}
+                            onRefresh={handleRefresh}
+                            onStartToggle={handleStartToggle}
+                            onToggleLabels={handleToggleLabels}
+                            onClosePanel={handleClosePanel}
+                        />
+                    )}
+
+                    {/* Crew Tab */}
+                    {activeTab === 'crew' && !showProfileMenu && (
+                        <CrewTab
+                            user={user}
+                            allCrews={allCrews}
+                            onCrewClick={handleCrewClick}
+                            onRefreshCrews={fetchCrews}
+                            crewTab={user.crewTab || 'home'}
+                            onCrewTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
+                        />
+                    )}
+
+                    {/* MyRun Tab */}
+                    {activeTab === 'myrun' && !showProfileMenu && (
+                        <MyRunTab
+                            refreshRecords={refreshRecords}
+                            onRecordClick={handleRecordClick}
+                            user={user}
+                        />
+                    )}
+
+
+
+                    <CrewDetailModal
+                        isOpen={showCrewDetailModal}
+                        onClose={() => {
+                            setShowCrewDetailModal(false);
+                            setSelectedCrew(null);
+                        }}
+                        crew={selectedCrew}
+                        user={user}
+                        onUpdateUser={() => {
+                            checkAuth();
+                            fetchCrews();
+                        }}
+                    />
+
+                    {/* Runner Grade Modal */}
+                    {showRunnerGradeModal && (
+                        <RunnerGradeModal
+                            user={user}
+                            onClose={() => setShowRunnerGradeModal(false)}
+                        />
+                    )}
+                </div>
+
+                {/* Fixed Bottom Navigation */}
+                <BottomNavigation
+                    activeTab={activeTab}
+                    onTabChange={handleTabChange}
+                    onStartRunning={handleStartToggle}
                     onProfileClick={handleProfileClick}
-                    onGradeClick={() => setShowRunnerGradeModal(true)}
                 />
-
-                {showProfileMenu && (
-                    <ProfileSubHeader
-                        profileTab={profileTab}
-                        onTabChange={handleProfileTabChange}
-                    />
-                )}
-
-                {activeTab === 'crew' && !showProfileMenu && (
-                    <CrewSubHeader
-                        crewTab={user.crewTab || 'home'}
-                        onTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
-                    />
-                )}
             </div>
-
-            {/* Scrollable Content Area */}
-            <div className="main-content" style={{
-                marginTop: showProfileMenu ? 'calc(var(--header-height) + 60px)' :
-                    (activeTab === 'crew' && !showProfileMenu) ? 'calc(var(--header-height) + 60px)' :
-                        'var(--header-height)'
-            }}>
-                {/* Home Tab */}
-                {activeTab === 'home' && !showProfileMenu && <HomeTab />}
-
-                {/* Profile Menu Content */}
-                {showProfileMenu && (
-                    <ProfileMenu
-                        profileTab={profileTab}
-                        user={user}
-                        refreshRecords={refreshRecords}
-                        onRecordClick={handleRecordClick}
-                        onLogout={handleLogout}
-                        onUserUpdate={handleUserUpdate}
-                    />
-                )}
-
-                {/* Running Center Tab */}
-                {activeTab === 'running' && !showProfileMenu && (
-                    <RunningTab
-                        runners={runners}
-                        stats={stats}
-                        selectedRunner={selectedRunner}
-                        isRunning={isRunning}
-                        showLabels={showLabels}
-                        onRunnerClick={handleRunnerClick}
-                        onRefresh={handleRefresh}
-                        onStartToggle={handleStartToggle}
-                        onToggleLabels={handleToggleLabels}
-                        onClosePanel={handleClosePanel}
-                    />
-                )}
-
-                {/* Crew Tab */}
-                {activeTab === 'crew' && !showProfileMenu && (
-                    <CrewTab
-                        user={user}
-                        allCrews={allCrews}
-                        onCrewClick={handleCrewClick}
-                        onRefreshCrews={fetchCrews}
-                        crewTab={user.crewTab || 'home'}
-                        onCrewTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
-                    />
-                )}
-
-                {/* MyRun Tab */}
-                {activeTab === 'myrun' && !showProfileMenu && (
-                    <MyRunTab
-                        refreshRecords={refreshRecords}
-                        onRecordClick={handleRecordClick}
-                        user={user}
-                    />
-                )}
-
-
-
-                <CrewDetailModal
-                    isOpen={showCrewDetailModal}
-                    onClose={() => {
-                        setShowCrewDetailModal(false);
-                        setSelectedCrew(null);
-                    }}
-                    crew={selectedCrew}
-                    user={user}
-                    onUpdateUser={() => {
-                        checkAuth();
-                        fetchCrews();
-                    }}
-                />
-
-                {/* Runner Grade Modal */}
-                {showRunnerGradeModal && (
-                    <RunnerGradeModal
-                        user={user}
-                        onClose={() => setShowRunnerGradeModal(false)}
-                    />
-                )}
-            </div>
-
-            {/* Fixed Bottom Navigation */}
-            <BottomNavigation
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                onStartRunning={handleStartToggle}
-                onProfileClick={handleProfileClick}
-            />
-        </div>
+        </LoadScript>
     );
 }
 
