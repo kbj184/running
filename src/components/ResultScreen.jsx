@@ -325,8 +325,8 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                         fullscreenControl: true,
                                     }}
                                 >
-                                    {/* 수분 보충 구간 (먼저 그려서 아래에 표시) */}
-                                    {wateringPaths && wateringPaths.length > 0 && wateringPaths.map((path, idx) => (
+                                    {/* 수분 보충 구간 (먼저 그려서 아래에 표시) - 임시 주석 처리 */}
+                                    {/* {wateringPaths && wateringPaths.length > 0 && wateringPaths.map((path, idx) => (
                                         <Polyline
                                             key={`water-${idx}`}
                                             path={path}
@@ -336,7 +336,7 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                                 strokeWeight: 6,
                                             }}
                                         />
-                                    ))}
+                                    ))} */}
 
                                     {/* 러닝 경로 (나중에 그려서 위에 표시) */}
                                     <Polyline
