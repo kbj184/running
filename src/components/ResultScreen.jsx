@@ -2,6 +2,7 @@ import { formatTime, formatDistance } from '../utils/gps';
 import { useState, useEffect, useMemo } from 'react';
 import { generateRouteMapImage } from '../utils/mapThumbnail';
 import { GoogleMap, useJsApiLoader, Polyline } from '@react-google-maps/api';
+import AdvancedMarker from './common/AdvancedMarker';
 import './result-screen.css';
 
 const LIBRARIES = ['places', 'marker'];
@@ -88,6 +89,25 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
         if (!route || route.length === 0) return [];
         return route.map(point => ({ lat: point.lat, lng: point.lng }));
     }, [route]);
+
+    // 마커 위치 계산
+    const markers = useMemo(() => {
+        if (!route || route.length === 0) return { start: null, goal: null, water: [] };
+
+        const start = route[0];
+        const goal = route[route.length - 1];
+
+        // 수분 보충 구간의 중간 지점들
+        const waterMarkers = wateringSegments.map(segment => {
+            if (segment && segment.length > 0) {
+                const midIndex = Math.floor(segment.length / 2);
+                return segment[midIndex];
+            }
+            return null;
+        }).filter(Boolean);
+
+        return { start, goal, water: waterMarkers };
+    }, [route, wateringSegments]);
 
     // 지도 로드 콜백
     const onLoad = (mapInstance) => {
@@ -271,6 +291,85 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                             }}
                                         />
                                     ))}
+
+                                    {/* S (Start) 마커 */}
+                                    {markers.start && (
+                                        <AdvancedMarker
+                                            map={map}
+                                            position={markers.start}
+                                            zIndex={100}
+                                        >
+                                            <div style={{
+                                                width: '32px',
+                                                height: '32px',
+                                                backgroundColor: '#22c55e',
+                                                borderRadius: '50%',
+                                                border: '3px solid white',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '14px',
+                                                fontWeight: '800',
+                                                color: 'white'
+                                            }}>
+                                                S
+                                            </div>
+                                        </AdvancedMarker>
+                                    )}
+
+                                    {/* W (Water) 마커들 */}
+                                    {markers.water.map((waterPos, idx) => (
+                                        <AdvancedMarker
+                                            key={`water-marker-${idx}`}
+                                            map={map}
+                                            position={waterPos}
+                                            zIndex={99}
+                                        >
+                                            <div style={{
+                                                width: '28px',
+                                                height: '28px',
+                                                backgroundColor: '#3b82f6',
+                                                borderRadius: '50%',
+                                                border: '3px solid white',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '13px',
+                                                fontWeight: '800',
+                                                color: 'white'
+                                            }}>
+                                                W
+                                            </div>
+                                        </AdvancedMarker>
+                                    ))}
+
+                                    {/* G (Goal) 마커 */}
+                                    {markers.goal && (
+                                        <AdvancedMarker
+                                            map={map}
+                                            position={markers.goal}
+                                            zIndex={100}
+                                        >
+                                            <div style={{
+                                                width: '32px',
+                                                height: '32px',
+                                                backgroundColor: '#ef4444',
+                                                borderRadius: '50%',
+                                                border: '3px solid white',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '14px',
+                                                fontWeight: '800',
+                                                color: 'white'
+                                            }}>
+                                                G
+                                            </div>
+                                        </AdvancedMarker>
+                                    )}
                                 </GoogleMap>
                             ) : (
                                 <div style={{
