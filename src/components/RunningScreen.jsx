@@ -760,17 +760,23 @@ function RunningScreen({ onStop, sessionId, user }) {
                                         }} />
                                     </div>
 
-                                    {/* 2. Blue Dot Pulse (Centered at 0,0) */}
+                                    {/* 2. Blue Dot Pulse (Position Wrapper -> Animation Inner) */}
                                     <div style={{
                                         position: 'absolute',
-                                        left: '-18px',
-                                        top: '-18px',
-                                        width: '36px',
-                                        height: '36px',
-                                        backgroundColor: 'rgba(66, 133, 244, 0.2)',
-                                        borderRadius: '50%',
-                                        animation: 'pulse-ring 2s ease-out infinite'
-                                    }} />
+                                        left: '-28px', /* Increased size for visibility, properly centered half of 56px */
+                                        top: '-28px',
+                                        width: '56px',
+                                        height: '56px',
+                                        pointerEvents: 'none'
+                                    }}>
+                                        <div style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            backgroundColor: 'rgba(66, 133, 244, 0.4)',
+                                            borderRadius: '50%',
+                                            animation: 'pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite'
+                                        }} />
+                                    </div>
 
                                     {/* 3. Main Blue Dot (Centered at 0,0) */}
                                     <div style={{
