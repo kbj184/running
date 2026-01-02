@@ -710,21 +710,74 @@ function RunningScreen({ onStop, sessionId, user }) {
                             </AdvancedMarker>
                         )}
 
-                        {window.google && (
-                            <AdvancedMarker
-                                map={map}
-                                position={currentPosition}
-                            >
-                                <div style={{
-                                    width: '16px',
-                                    height: '16px',
-                                    backgroundColor: '#667eea',
-                                    borderRadius: '50%',
-                                    border: '3px solid white',
-                                    boxShadow: '0 0 8px rgba(102,126,234,0.5)'
-                                }} />
-                            </AdvancedMarker>
-                        )}
+                        {window.google && (() => {
+                            // 방향 계산: 마지막 두 점을 사용하여 heading 계산
+                            let heading = 0;
+                            if (route.length >= 2) {
+                                const lastPoint = route[route.length - 1];
+                                const prevPoint = route[route.length - 2];
+
+                                // 두 점 사이의 각도 계산 (북쪽 기준 시계방향)
+                                const deltaLng = lastPoint.lng - prevPoint.lng;
+                                const deltaLat = lastPoint.lat - prevPoint.lat;
+                                heading = Math.atan2(deltaLng, deltaLat) * (180 / Math.PI);
+                            }
+
+                            return (
+                                <AdvancedMarker
+                                    map={map}
+                                    position={currentPosition}
+                                >
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        position: 'relative',
+                                        transform: `rotate(${heading}deg)`,
+                                        transition: 'transform 0.3s ease-out'
+                                    }}>
+                                        {/* 외곽 원 (그림자 효과) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '50%',
+                                            left: '50%',
+                                            transform: 'translate(-50%, -50%)',
+                                            width: '32px',
+                                            height: '32px',
+                                            backgroundColor: 'rgba(102, 126, 234, 0.3)',
+                                            borderRadius: '50%',
+                                            animation: 'pulse-ring 2s ease-out infinite'
+                                        }} />
+
+                                        {/* 메인 원 */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '50%',
+                                            left: '50%',
+                                            transform: 'translate(-50%, -50%)',
+                                            width: '24px',
+                                            height: '24px',
+                                            backgroundColor: '#667eea',
+                                            borderRadius: '50%',
+                                            border: '3px solid white',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            {/* 방향 화살표 */}
+                                            <div style={{
+                                                width: 0,
+                                                height: 0,
+                                                borderLeft: '4px solid transparent',
+                                                borderRight: '4px solid transparent',
+                                                borderBottom: '8px solid white',
+                                                marginBottom: '2px'
+                                            }} />
+                                        </div>
+                                    </div>
+                                </AdvancedMarker>
+                            );
+                        })()}
                     </GoogleMap>
                 ) : (
                     <div className="loading-container"><div className="loading-spinner"></div></div>
@@ -760,7 +813,21 @@ function RunningScreen({ onStop, sessionId, user }) {
             </div>
 
             <style>{`
-                @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+                @keyframes pulse { 
+                    0% { transform: scale(1); } 
+                    50% { transform: scale(1.05); } 
+                    100% { transform: scale(1); } 
+                }
+                @keyframes pulse-ring {
+                    0% {
+                        transform: translate(-50%, -50%) scale(0.8);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translate(-50%, -50%) scale(1.5);
+                        opacity: 0;
+                    }
+                }
             `}</style>
         </div>
     );
