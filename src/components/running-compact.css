@@ -166,6 +166,18 @@
     }
 }
 
+@keyframes marker-pulse {
+    0% {
+        transform: scale(0.5);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
 .mode-toggle-button {
     position: fixed;
     top: 50% !important;

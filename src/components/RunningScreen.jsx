@@ -774,7 +774,8 @@ function RunningScreen({ onStop, sessionId, user }) {
                                             height: '100%',
                                             backgroundColor: 'rgba(66, 133, 244, 0.4)',
                                             borderRadius: '50%',
-                                            animation: 'pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite'
+                                            transformOrigin: 'center center',
+                                            animation: 'marker-pulse 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite'
                                         }} />
                                     </div>
 
