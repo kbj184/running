@@ -54,16 +54,16 @@ function RunnerMarkers({ map, runners, selectedRunner, onRunnerClick }) {
                         }}>
                             {/* 닉네임 말풍선 */}
                             <div style={{
-                                backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                                color: 'white',
+                                backgroundColor: 'white',
+                                color: '#1a1a1a',
                                 padding: '4px 8px',
                                 borderRadius: '12px',
                                 fontSize: isSelected ? '13px' : '11px',
                                 fontWeight: isSelected ? '600' : '500',
                                 whiteSpace: 'nowrap',
                                 marginBottom: '4px',
-                                boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                                border: isSelected ? `1.5px solid ${gradeInfo.color}` : 'none',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                                border: isSelected ? `2px solid ${gradeInfo.color}` : '1px solid rgba(0,0,0,0.1)',
                                 transition: 'all 0.3s ease',
                                 pointerEvents: 'none'
                             }}>
