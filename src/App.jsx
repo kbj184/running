@@ -430,6 +430,7 @@ function App() {
     // Main App Screen (including Running Screen and Result Screen inside LoadScript)
     return (
         <LoadScript
+            id="google-map-script"
             googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
             libraries={GOOGLE_MAPS_LIBRARIES}
             loadingElement={<div>Loading Maps...</div>}
