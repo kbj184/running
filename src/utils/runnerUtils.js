@@ -47,7 +47,7 @@ export const generateRunners = (count = 50) => {
 
         runners.push({
             id: i + 1,
-            name: `${names[i % names.length]} ${Math.floor(i / names.length) + 1}`,
+            nickname: `${names[i % names.length]} ${Math.floor(i / names.length) + 1}`,
             position: currentPosition,
             grade: grade,
             distance: distance.toFixed(1),

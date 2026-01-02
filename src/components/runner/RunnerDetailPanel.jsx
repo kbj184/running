@@ -17,7 +17,7 @@ function RunnerDetailPanel({ runner, onClose }) {
                         {RUNNER_GRADES[runner.grade].name}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <h2 style={{ margin: 0 }}>{runner.name}</h2>
+                        <h2 style={{ margin: 0 }}>{runner.nickname}</h2>
                         {runner.crew && (
                             <div style={{
                                 width: '24px',
