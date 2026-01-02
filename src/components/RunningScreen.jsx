@@ -735,51 +735,53 @@ function RunningScreen({ onStop, sessionId, user }) {
                                 position={markerPosition}
                             >
                                 <div style={{
-                                    width: '0px',
-                                    height: '0px',
-                                    position: 'relative',
+                                    width: '120px',
+                                    height: '120px',
+                                    position: 'absolute',
+                                    transform: 'translate(-50%, -50%)',
+                                    pointerEvents: 'none'
                                 }}>
-                                    {/* 1. Heading Indicator (Rotated Apex at 0,0) */}
+                                    {/* 1. Heading Indicator (Apex at Center) */}
                                     <div style={{
                                         position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
                                         width: '100px',
                                         height: '100px',
-                                        left: '-50px',
-                                        bottom: '0px', // 꼭짓점이 부모의 중심(0,0)에 위치
                                         background: 'linear-gradient(to top, rgba(66, 133, 244, 0.4) 0%, rgba(66, 133, 244, 0.05) 100%)',
                                         clipPath: 'polygon(50% 100%, 15% 0%, 85% 0%)',
                                         transformOrigin: '50% 100%',
-                                        transform: `rotate(${heading}deg)`,
+                                        transform: `translate(-50%, -100%) rotate(${heading}deg)`,
                                         opacity: 0.8,
-                                        pointerEvents: 'none'
+                                        willChange: 'transform'
                                     }} />
 
-                                    {/* 2. Blue Dot Pulse (Subtle, Centered at 0,0) */}
+                                    {/* 2. Blue Dot Pulse (Centered) */}
                                     <div style={{
                                         position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
                                         width: '36px',
                                         height: '36px',
-                                        top: '-18px',
-                                        left: '-18px',
                                         backgroundColor: 'rgba(66, 133, 244, 0.2)',
                                         borderRadius: '50%',
-                                        animation: 'pulse-ring 2s ease-out infinite',
-                                        pointerEvents: 'none'
+                                        transform: 'translate(-50%, -50%)',
+                                        animation: 'pulse-ring 2s ease-out infinite'
                                     }} />
 
-                                    {/* 3. Main Blue Dot (Centered at 0,0) */}
+                                    {/* 3. Main Blue Dot (Center Top-most) */}
                                     <div style={{
                                         position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
                                         width: '18px',
                                         height: '18px',
-                                        top: '-9px',
-                                        left: '-9px',
                                         backgroundColor: '#4285F4',
                                         borderRadius: '50%',
                                         border: '3px solid white',
+                                        transform: 'translate(-50%, -50%)',
                                         boxShadow: '0 1px 6px rgba(0, 0, 0, 0.3)',
-                                        zIndex: 10,
-                                        pointerEvents: 'none'
+                                        zIndex: 10
                                     }} />
                                 </div>
                             </AdvancedMarker>
