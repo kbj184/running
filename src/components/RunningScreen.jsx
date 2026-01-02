@@ -739,9 +739,10 @@ function RunningScreen({ onStop, sessionId, user }) {
                                     height: '0px',
                                     position: 'relative',
                                 }}>
+                                    {/* Google Maps 'My Location' Style Marker */}
                                     <div style={{
-                                        width: '80px',
-                                        height: '80px',
+                                        width: '120px',
+                                        height: '120px',
                                         position: 'absolute',
                                         top: '0px',
                                         left: '0px',
@@ -750,62 +751,38 @@ function RunningScreen({ onStop, sessionId, user }) {
                                         alignItems: 'center',
                                         justifyContent: 'center'
                                     }}>
-                                        {/* 방사형 방향 빔 */}
+                                        {/* Heading Indicator (Cone/Sector) */}
                                         <div style={{
                                             position: 'absolute',
                                             bottom: '50%',
-                                            width: '60px',
-                                            height: '60px',
-                                            background: 'radial-gradient(ellipse 60px 80px at 50% 100%, rgba(96, 165, 250, 0.4) 0%, rgba(96, 165, 250, 0.2) 40%, transparent 70%)',
+                                            width: '100px',
+                                            height: '100px',
+                                            background: 'linear-gradient(to top, rgba(66, 133, 244, 0.4) 0%, rgba(66, 133, 244, 0.05) 100%)',
+                                            clipPath: 'polygon(50% 100%, 15% 0%, 85% 0%)', // 삼각 쐐기 모양
                                             transformOrigin: '50% 100%',
-                                            transform: 'translateY(15px)',
-                                            borderRadius: '50% 50% 0 0',
-                                            filter: 'blur(3px)'
+                                            opacity: 0.8
                                         }} />
 
-                                        {/* 빔 중심선 (더 진한 색) */}
+                                        {/* Blue Dot Pulse (Subtle) */}
                                         <div style={{
                                             position: 'absolute',
-                                            bottom: '50%',
-                                            width: '30px',
-                                            height: '50px',
-                                            background: 'linear-gradient(to top, rgba(59, 130, 246, 0.6) 0%, rgba(96, 165, 250, 0.3) 50%, transparent 100%)',
-                                            transformOrigin: '50% 100%',
-                                            borderRadius: '50% 50% 0 0'
-                                        }} />
-
-                                        {/* 외곽 펄스 링 */}
-                                        <div style={{
-                                            position: 'absolute',
-                                            width: '32px',
-                                            height: '32px',
-                                            backgroundColor: 'rgba(96, 165, 250, 0.3)',
+                                            width: '36px',
+                                            height: '36px',
+                                            backgroundColor: 'rgba(66, 133, 244, 0.2)',
                                             borderRadius: '50%',
                                             animation: 'pulse-ring 2s ease-out infinite'
                                         }} />
 
-                                        {/* 메인 원 (중심점) */}
+                                        {/* Main Blue Dot */}
                                         <div style={{
                                             position: 'absolute',
-                                            width: '20px',
-                                            height: '20px',
-                                            backgroundColor: '#3b82f6',
+                                            width: '18px',
+                                            height: '18px',
+                                            backgroundColor: '#4285F4',
                                             borderRadius: '50%',
                                             border: '3px solid white',
-                                            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.5)',
+                                            boxShadow: '0 1px 6px rgba(0, 0, 0, 0.3)',
                                             zIndex: 10
-                                        }} />
-
-                                        {/* 내부 하이라이트 */}
-                                        <div style={{
-                                            position: 'absolute',
-                                            width: '8px',
-                                            height: '8px',
-                                            backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                                            borderRadius: '50%',
-                                            marginTop: '-4px',
-                                            marginLeft: '-2px',
-                                            zIndex: 11
                                         }} />
                                     </div>
                                 </div>
