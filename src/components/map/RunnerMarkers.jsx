@@ -47,16 +47,42 @@ function RunnerMarkers({ map, runners, selectedRunner, onRunnerClick }) {
                         zIndex={isSelected ? 10 : 1}
                     >
                         <div style={{
-                            width: isSelected ? '16px' : '12px',
-                            height: isSelected ? '16px' : '12px',
-                            backgroundColor: gradeInfo.color,
-                            borderRadius: '50%',
-                            border: isSelected ? '3px solid white' : '2px solid white',
-                            opacity: isSelected ? 1 : 0.8,
-                            boxShadow: isSelected ? '0 0 8px rgba(0,0,0,0.4)' : '0 0 4px rgba(0,0,0,0.2)',
-                            transition: 'all 0.3s ease',
-                            cursor: 'pointer'
-                        }} />
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            transform: 'translateY(-50%)'
+                        }}>
+                            {/* 닉네임 말풍선 */}
+                            <div style={{
+                                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                                color: 'white',
+                                padding: '4px 8px',
+                                borderRadius: '12px',
+                                fontSize: isSelected ? '13px' : '11px',
+                                fontWeight: isSelected ? '600' : '500',
+                                whiteSpace: 'nowrap',
+                                marginBottom: '4px',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                                border: isSelected ? `1.5px solid ${gradeInfo.color}` : 'none',
+                                transition: 'all 0.3s ease',
+                                pointerEvents: 'none'
+                            }}>
+                                {runner.nickname}
+                            </div>
+
+                            {/* 마커 점 */}
+                            <div style={{
+                                width: isSelected ? '16px' : '12px',
+                                height: isSelected ? '16px' : '12px',
+                                backgroundColor: gradeInfo.color,
+                                borderRadius: '50%',
+                                border: isSelected ? '3px solid white' : '2px solid white',
+                                opacity: isSelected ? 1 : 0.8,
+                                boxShadow: isSelected ? '0 0 8px rgba(0,0,0,0.4)' : '0 0 4px rgba(0,0,0,0.2)',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer'
+                            }} />
+                        </div>
                     </AdvancedMarker>
                 );
             })}
