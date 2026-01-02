@@ -729,13 +729,42 @@ function RunningScreen({ onStop, sessionId, user }) {
                                     position={currentPosition}
                                 >
                                     <div style={{
-                                        width: '40px',
-                                        height: '40px',
+                                        width: '80px',
+                                        height: '80px',
                                         position: 'relative',
                                         transform: `rotate(${heading}deg)`,
                                         transition: 'transform 0.3s ease-out'
                                     }}>
-                                        {/* 외곽 원 (그림자 효과) */}
+                                        {/* 방향 빔 (원뿔형 - 외곽) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '50%',
+                                            left: '50%',
+                                            width: 0,
+                                            height: 0,
+                                            borderLeft: '20px solid transparent',
+                                            borderRight: '20px solid transparent',
+                                            borderBottom: '50px solid rgba(102, 126, 234, 0.35)',
+                                            transform: 'translate(-50%, -100%)',
+                                            transformOrigin: 'bottom center',
+                                            filter: 'blur(2px)'
+                                        }} />
+
+                                        {/* 빔 중심선 (더 진한 색) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '50%',
+                                            left: '50%',
+                                            width: 0,
+                                            height: 0,
+                                            borderLeft: '10px solid transparent',
+                                            borderRight: '10px solid transparent',
+                                            borderBottom: '45px solid rgba(102, 126, 234, 0.5)',
+                                            transform: 'translate(-50%, -100%)',
+                                            transformOrigin: 'bottom center'
+                                        }} />
+
+                                        {/* 외곽 펄스 링 */}
                                         <div style={{
                                             position: 'absolute',
                                             top: '50%',
@@ -748,32 +777,35 @@ function RunningScreen({ onStop, sessionId, user }) {
                                             animation: 'pulse-ring 2s ease-out infinite'
                                         }} />
 
-                                        {/* 메인 원 */}
+                                        {/* 메인 원 (중심점) */}
                                         <div style={{
                                             position: 'absolute',
                                             top: '50%',
                                             left: '50%',
                                             transform: 'translate(-50%, -50%)',
-                                            width: '24px',
-                                            height: '24px',
+                                            width: '20px',
+                                            height: '20px',
                                             backgroundColor: '#667eea',
                                             borderRadius: '50%',
                                             border: '3px solid white',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}>
-                                            {/* 방향 화살표 */}
-                                            <div style={{
-                                                width: 0,
-                                                height: 0,
-                                                borderLeft: '4px solid transparent',
-                                                borderRight: '4px solid transparent',
-                                                borderBottom: '8px solid white',
-                                                marginBottom: '2px'
-                                            }} />
-                                        </div>
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                                            zIndex: 10
+                                        }} />
+
+                                        {/* 내부 하이라이트 */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '50%',
+                                            left: '50%',
+                                            transform: 'translate(-50%, -50%)',
+                                            width: '8px',
+                                            height: '8px',
+                                            backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                                            borderRadius: '50%',
+                                            marginTop: '-4px',
+                                            marginLeft: '-2px',
+                                            zIndex: 11
+                                        }} />
                                     </div>
                                 </AdvancedMarker>
                             );
