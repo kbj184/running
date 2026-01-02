@@ -111,11 +111,11 @@ function RunningScreen({ onStop, sessionId, user }) {
 
     // Google Elevation Service 초기화
     useEffect(() => {
-        if (isLoaded && window.google && window.google.maps) {
+        if (window.google && window.google.maps) {
             setElevationService(new window.google.maps.ElevationService());
             console.log('🗻 Elevation Service initialized');
         }
-    }, [isLoaded]);
+    }, []);
 
     // MariaDB 동기화 함수
     const syncToBackend = useCallback(async (isFinal = false) => {
