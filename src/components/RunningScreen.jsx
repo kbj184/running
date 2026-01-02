@@ -737,49 +737,67 @@ function RunningScreen({ onStop, sessionId, user }) {
                                 <div style={{
                                     width: '0px',
                                     height: '0px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
                                     position: 'relative',
                                     pointerEvents: 'none'
                                 }}>
-                                    {/* 1. Heading Indicator (Pivot exactly at 0,0) */}
                                     <div style={{
                                         position: 'absolute',
-                                        width: '100px',
-                                        height: '100px',
-                                        left: '-50px',
-                                        top: '-100px',
-                                        background: 'linear-gradient(to top, rgba(66, 133, 244, 0.4) 0%, rgba(66, 133, 244, 0.05) 100%)',
-                                        clipPath: 'polygon(50% 100%, 15% 0%, 85% 0%)',
-                                        transformOrigin: '50% 100%',
-                                        transform: `rotate(${heading}deg)`,
-                                        opacity: 0.8,
-                                        willChange: 'transform'
-                                    }} />
+                                        width: '0px',
+                                        height: '0px',
+                                        transform: 'translate(0,0)' /* Origin point */
+                                    }}>
+                                        {/* 1. Heading Indicator (Separated Rotation Layer) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            transform: `rotate(${heading}deg)`,
+                                            transformOrigin: '0 0',
+                                            willChange: 'transform'
+                                        }}>
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: '0px',
+                                                left: '-50px',
+                                                width: '100px',
+                                                height: '100px',
+                                                background: 'linear-gradient(to top, rgba(66, 133, 244, 0.4) 0%, rgba(66, 133, 244, 0.05) 100%)',
+                                                clipPath: 'polygon(50% 100%, 15% 0%, 85% 0%)',
+                                                opacity: 0.8
+                                            }} />
+                                        </div>
 
-                                    {/* 2. Blue Dot Pulse (Pivot exactly at 0,0) */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        width: '36px',
-                                        height: '36px',
-                                        left: '-18px',
-                                        top: '-18px',
-                                        backgroundColor: 'rgba(66, 133, 244, 0.2)',
-                                        borderRadius: '50%',
-                                        animation: 'pulse-ring 2s ease-out infinite'
-                                    }} />
+                                        {/* 2. Blue Dot Pulse (Separated Animation Layer) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            transform: 'translate(-50%, -50%)'
+                                        }}>
+                                            <div style={{
+                                                width: '36px',
+                                                height: '36px',
+                                                backgroundColor: 'rgba(66, 133, 244, 0.2)',
+                                                borderRadius: '50%',
+                                                animation: 'pulse-ring 2s ease-out infinite'
+                                            }} />
+                                        </div>
 
-                                    {/* 3. Main Blue Dot (Center point at 0,0) */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        width: '18px',
-                                        height: '18px',
-                                        left: '-9px',
-                                        top: '-9px',
-                                        backgroundColor: '#4285F4',
-                                        borderRadius: '50%',
-                                        border: '3px solid white',
-                                        boxShadow: '0 1px 6px rgba(0, 0, 0, 0.3)',
-                                        zIndex: 10
-                                    }} />
+                                        {/* 3. Main Blue Dot (Final Centering) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            transform: 'translate(-50%, -50%)',
+                                            zIndex: 10
+                                        }}>
+                                            <div style={{
+                                                width: '18px',
+                                                height: '18px',
+                                                backgroundColor: '#4285F4',
+                                                borderRadius: '50%',
+                                                border: '3px solid white',
+                                                boxShadow: '0 1px 6px rgba(0, 0, 0, 0.3)'
+                                            }} />
+                                        </div>
+                                    </div>
                                 </div>
                             </AdvancedMarker>
                         )}

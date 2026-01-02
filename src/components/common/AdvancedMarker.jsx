@@ -5,8 +5,14 @@ import { createPortal } from 'react-dom';
  * Custom wrapper for Google Maps AdvancedMarkerElement
  * Note: Requires 'marker' library in useJsApiLoader and mapId in GoogleMap options.
  */
-const AdvancedMarker = ({ map, position, onClick, children, title, zIndex }) => {
-    const [contentDiv] = useState(() => document.createElement('div'));
+const AdvancedMarker = ({ map, position, onClick, children, title, zIndex, anchor }) => {
+    const [contentDiv] = useState(() => {
+        const div = document.createElement('div');
+        div.style.width = '0px';
+        div.style.height = '0px';
+        div.style.position = 'absolute';
+        return div;
+    });
     const markerRef = useRef(null);
 
     useEffect(() => {
@@ -17,6 +23,7 @@ const AdvancedMarker = ({ map, position, onClick, children, title, zIndex }) => 
             content: children ? contentDiv : null,
             title: title || '',
             zIndex: zIndex || 0,
+            anchor: anchor || null,
         });
 
         if (onClick) {
