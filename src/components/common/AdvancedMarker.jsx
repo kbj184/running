@@ -23,7 +23,6 @@ const AdvancedMarker = ({ map, position, onClick, children, title, zIndex, ancho
             content: children ? contentDiv : null,
             title: title || '',
             zIndex: zIndex || 0,
-            anchor: anchor || null,
         });
 
         if (onClick) {
