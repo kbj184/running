@@ -581,6 +581,11 @@ function RunningScreen({ onStop, sessionId, user }) {
         return segments;
     }, [route, wateringSegments, isWatering, wateringStartIndex]);
 
+    // 마커 위치 - route의 마지막 점 사용 (폴리라인과 동기화)
+    const markerPosition = useMemo(() => {
+        return route.length > 0 ? route[route.length - 1] : currentPosition;
+    }, [route, currentPosition]);
+
     return (
         <div className="running-screen">
             {/* 1km 알림 (Splits 토스트) - 가장 최근 Split 3초간 표시 */}
@@ -726,7 +731,7 @@ function RunningScreen({ onStop, sessionId, user }) {
                             return (
                                 <AdvancedMarker
                                     map={map}
-                                    position={currentPosition}
+                                    position={markerPosition}
                                 >
                                     <div style={{
                                         width: '80px',
