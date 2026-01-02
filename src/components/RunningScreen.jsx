@@ -615,47 +615,30 @@ function RunningScreen({ onStop, sessionId, user }) {
             )}
 
             <div className="running-stats-panel">
-                <div className="running-stat-card primary">
-                    <div className="stat-label">시간</div>
-                    <div className="stat-value-xl">{formatTime(duration)}</div>
-                </div>
-                <div className="running-stats-grid">
-                    <div className="running-stat-card">
+                <div className="running-stats-compact">
+                    <div className="stat-item">
+                        <div className="stat-label">시간</div>
+                        <div className="stat-value">{formatTime(duration)}</div>
+                    </div>
+                    <div className="stat-item">
                         <div className="stat-label">거리</div>
-                        <div className="stat-value-lg">{formatDistance(distance)}</div>
+                        <div className="stat-value">{formatDistance(distance)}</div>
                     </div>
-                    <div className="running-stat-card">
+                    <div className="stat-item">
                         <div className="stat-label">속도</div>
-                        <div className="stat-value-lg" style={{ color: getSpeedColor(speed) }}>{speed.toFixed(1)} km/h</div>
+                        <div className="stat-value">{speed.toFixed(1)} km/h</div>
                     </div>
-                    <div className="running-stat-card">
+                    <div className="stat-item">
                         <div className="stat-label">칼로리</div>
-                        <div className="stat-value-lg">
-                            {Math.floor(distance * 60)} kcal
-                        </div>
+                        <div className="stat-value">{Math.floor(distance * 60)} kcal</div>
                     </div>
                 </div>
 
-                {/* 고도 정보 */}
-                <div className="running-stats-grid" style={{ marginTop: '8px' }}>
-                    <div className="running-stat-card">
-                        <div className="stat-label">고도</div>
-                        <div className="stat-value-lg" style={{ color: '#667eea' }}>
-                            {currentElevation.toFixed(0)}m
-                        </div>
-                    </div>
-                    <div className="running-stat-card">
-                        <div className="stat-label">상승</div>
-                        <div className="stat-value-lg" style={{ color: '#22c55e' }}>
-                            ↗ {totalAscent.toFixed(0)}m
-                        </div>
-                    </div>
-                    <div className="running-stat-card">
-                        <div className="stat-label">하강</div>
-                        <div className="stat-value-lg" style={{ color: '#ef4444' }}>
-                            ↘ {totalDescent.toFixed(0)}m
-                        </div>
-                    </div>
+                {/* 고도 정보 - UI에서 숨김, 데이터는 계속 수집 */}
+                <div style={{ display: 'none' }}>
+                    <div>{currentElevation.toFixed(0)}m</div>
+                    <div>{totalAscent.toFixed(0)}m</div>
+                    <div>{totalDescent.toFixed(0)}m</div>
                 </div>
             </div>
 
