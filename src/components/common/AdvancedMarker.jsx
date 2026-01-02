@@ -10,21 +10,13 @@ const AdvancedMarker = ({ map, position, onClick, children, title, zIndex }) => 
     const markerRef = useRef(null);
 
     useEffect(() => {
-        if (!map || !position || !window.google) return;
+        if (!map || !window.google || !window.google.maps.marker) return;
 
-        // Ensure the marker library is loaded
-        if (!window.google.maps.marker || !window.google.maps.marker.AdvancedMarkerElement) {
-            console.warn('AdvancedMarkerElement not found. Checking if "marker" library is correctly loaded...');
-            return;
-        }
-
-        // Create the advanced marker
         const marker = new window.google.maps.marker.AdvancedMarkerElement({
             map,
-            position,
+            content: children ? contentDiv : null,
             title: title || '',
             zIndex: zIndex || 0,
-            content: children ? contentDiv : null
         });
 
         if (onClick) {
@@ -34,11 +26,25 @@ const AdvancedMarker = ({ map, position, onClick, children, title, zIndex }) => 
         markerRef.current = marker;
 
         return () => {
-            if (marker) {
-                marker.map = null;
+            if (markerRef.current) {
+                markerRef.current.map = null;
+                markerRef.current = null;
             }
         };
-    }, [map, position, title, zIndex, onClick, children, contentDiv]);
+    }, [map, contentDiv]);
+
+    useEffect(() => {
+        if (markerRef.current && position) {
+            markerRef.current.position = position;
+        }
+    }, [position]);
+
+    useEffect(() => {
+        if (markerRef.current) {
+            markerRef.current.title = title || '';
+            markerRef.current.zIndex = zIndex || 0;
+        }
+    }, [title, zIndex]);
 
     // Render children into the contentDiv using a Portal
     return children ? createPortal(children, contentDiv) : null;

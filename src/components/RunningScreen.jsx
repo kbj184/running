@@ -663,7 +663,7 @@ function RunningScreen({ onStop, sessionId, user }) {
                 {currentPosition ? (
                     <GoogleMap
                         mapContainerStyle={containerStyle}
-                        center={currentPosition}
+                        center={markerPosition || currentPosition}
                         zoom={16}
                         onLoad={onLoad}
                         onUnmount={onUnmount}
@@ -680,7 +680,7 @@ function RunningScreen({ onStop, sessionId, user }) {
 
                             return (
                                 <PolylineF
-                                    key={idx}
+                                    key={`segment-${idx}-${segment.path.length}`}
                                     path={segment.path}
                                     options={{
                                         strokeColor: segment.color, // 급수 구간이면 이미 하늘색(#06b6d4)으로 설정됨
@@ -730,94 +730,84 @@ function RunningScreen({ onStop, sessionId, user }) {
                         )}
 
                         {window.google && markerPosition && (
-
-
-
-
-
-
-
-
-
-
                             <AdvancedMarker
                                 map={map}
                                 position={markerPosition}
                             >
                                 <div style={{
-                                    width: '80px',
-                                    height: '80px',
+                                    width: '0px',
+                                    height: '0px',
                                     position: 'relative',
-                                    transform: `rotate(${heading}deg)`,
-                                    transition: 'transform 0.3s ease-out'
                                 }}>
-                                    {/* 방사형 방향 빔 */}
                                     <div style={{
+                                        width: '80px',
+                                        height: '80px',
                                         position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        width: '60px',
-                                        height: '60px',
-                                        background: 'radial-gradient(ellipse 60px 80px at 50% 100%, rgba(96, 165, 250, 0.4) 0%, rgba(96, 165, 250, 0.2) 40%, transparent 70%)',
-                                        transform: 'translate(-50%, -100%) translateY(30px)',
-                                        borderRadius: '50% 50% 0 0',
-                                        filter: 'blur(3px)'
-                                    }} />
+                                        top: '0px',
+                                        left: '0px',
+                                        transform: `translate(-50%, -50%) rotate(${heading}deg)`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        {/* 방사형 방향 빔 */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '50%',
+                                            width: '60px',
+                                            height: '60px',
+                                            background: 'radial-gradient(ellipse 60px 80px at 50% 100%, rgba(96, 165, 250, 0.4) 0%, rgba(96, 165, 250, 0.2) 40%, transparent 70%)',
+                                            transformOrigin: '50% 100%',
+                                            transform: 'translateY(15px)',
+                                            borderRadius: '50% 50% 0 0',
+                                            filter: 'blur(3px)'
+                                        }} />
 
-                                    {/* 빔 중심선 (더 진한 색) */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        width: '30px',
-                                        height: '50px',
-                                        background: 'linear-gradient(to top, rgba(59, 130, 246, 0.6) 0%, rgba(96, 165, 250, 0.3) 50%, transparent 100%)',
-                                        transform: 'translate(-50%, -100%)',
-                                        borderRadius: '50% 50% 0 0'
-                                    }} />
+                                        {/* 빔 중심선 (더 진한 색) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '50%',
+                                            width: '30px',
+                                            height: '50px',
+                                            background: 'linear-gradient(to top, rgba(59, 130, 246, 0.6) 0%, rgba(96, 165, 250, 0.3) 50%, transparent 100%)',
+                                            transformOrigin: '50% 100%',
+                                            borderRadius: '50% 50% 0 0'
+                                        }} />
 
-                                    {/* 외곽 펄스 링 */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        width: '32px',
-                                        height: '32px',
-                                        backgroundColor: 'rgba(96, 165, 250, 0.3)',
-                                        borderRadius: '50%',
-                                        animation: 'pulse-ring 2s ease-out infinite'
-                                    }} />
+                                        {/* 외곽 펄스 링 */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            width: '32px',
+                                            height: '32px',
+                                            backgroundColor: 'rgba(96, 165, 250, 0.3)',
+                                            borderRadius: '50%',
+                                            animation: 'pulse-ring 2s ease-out infinite'
+                                        }} />
 
-                                    {/* 메인 원 (중심점) */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        width: '20px',
-                                        height: '20px',
-                                        backgroundColor: '#3b82f6',
-                                        borderRadius: '50%',
-                                        border: '3px solid white',
-                                        boxShadow: '0 2px 8px rgba(59, 130, 246, 0.5)',
-                                        zIndex: 10
-                                    }} />
+                                        {/* 메인 원 (중심점) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            width: '20px',
+                                            height: '20px',
+                                            backgroundColor: '#3b82f6',
+                                            borderRadius: '50%',
+                                            border: '3px solid white',
+                                            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.5)',
+                                            zIndex: 10
+                                        }} />
 
-                                    {/* 내부 하이라이트 */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        width: '8px',
-                                        height: '8px',
-                                        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                                        borderRadius: '50%',
-                                        marginTop: '-4px',
-                                        marginLeft: '-2px',
-                                        zIndex: 11
-                                    }} />
+                                        {/* 내부 하이라이트 */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            width: '8px',
+                                            height: '8px',
+                                            backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                                            borderRadius: '50%',
+                                            marginTop: '-4px',
+                                            marginLeft: '-2px',
+                                            zIndex: 11
+                                        }} />
+                                    </div>
                                 </div>
                             </AdvancedMarker>
                         )}
