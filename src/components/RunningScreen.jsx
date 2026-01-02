@@ -615,22 +615,24 @@ function RunningScreen({ onStop, sessionId, user }) {
             )}
 
             <div className="running-stats-panel">
+                {/* 시간 - 상단 중앙 */}
+                <div className="running-time-display">
+                    {formatTime(duration)}
+                </div>
+
+                {/* 거리, 평균페이스, 칼로리 - 하단 */}
                 <div className="running-stats-compact">
                     <div className="stat-item">
-                        <div className="stat-label">시간</div>
-                        <div className="stat-value">{formatTime(duration)}</div>
-                    </div>
-                    <div className="stat-item">
-                        <div className="stat-label">거리</div>
                         <div className="stat-value">{formatDistance(distance)}</div>
+                        <div className="stat-label">거리</div>
                     </div>
                     <div className="stat-item">
-                        <div className="stat-label">속도</div>
-                        <div className="stat-value">{speed.toFixed(1)} km/h</div>
+                        <div className="stat-value">{pace > 0 ? `${Math.floor(pace)}'${String(Math.floor((pace % 1) * 60)).padStart(2, '0')}"` : `0'00"`}</div>
+                        <div className="stat-label">평균 페이스</div>
                     </div>
                     <div className="stat-item">
-                        <div className="stat-label">칼로리</div>
-                        <div className="stat-value">{Math.floor(distance * 60)} kcal</div>
+                        <div className="stat-value">{Math.floor(distance * 60)}</div>
+                        <div className="stat-label">kcal</div>
                     </div>
                 </div>
 
