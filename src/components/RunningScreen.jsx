@@ -735,19 +735,17 @@ function RunningScreen({ onStop, sessionId, user }) {
                                         transform: `rotate(${heading}deg)`,
                                         transition: 'transform 0.3s ease-out'
                                     }}>
-                                        {/* 방향 빔 (원뿔형 - 외곽) */}
+                                        {/* 방사형 방향 빔 */}
                                         <div style={{
                                             position: 'absolute',
                                             top: '50%',
                                             left: '50%',
-                                            width: 0,
-                                            height: 0,
-                                            borderLeft: '20px solid transparent',
-                                            borderRight: '20px solid transparent',
-                                            borderBottom: '50px solid rgba(102, 126, 234, 0.35)',
-                                            transform: 'translate(-50%, -100%)',
-                                            transformOrigin: 'bottom center',
-                                            filter: 'blur(2px)'
+                                            width: '60px',
+                                            height: '60px',
+                                            background: 'radial-gradient(ellipse 60px 80px at 50% 100%, rgba(96, 165, 250, 0.4) 0%, rgba(96, 165, 250, 0.2) 40%, transparent 70%)',
+                                            transform: 'translate(-50%, -100%) translateY(30px)',
+                                            borderRadius: '50% 50% 0 0',
+                                            filter: 'blur(3px)'
                                         }} />
 
                                         {/* 빔 중심선 (더 진한 색) */}
@@ -755,13 +753,11 @@ function RunningScreen({ onStop, sessionId, user }) {
                                             position: 'absolute',
                                             top: '50%',
                                             left: '50%',
-                                            width: 0,
-                                            height: 0,
-                                            borderLeft: '10px solid transparent',
-                                            borderRight: '10px solid transparent',
-                                            borderBottom: '45px solid rgba(102, 126, 234, 0.5)',
+                                            width: '30px',
+                                            height: '50px',
+                                            background: 'linear-gradient(to top, rgba(59, 130, 246, 0.6) 0%, rgba(96, 165, 250, 0.3) 50%, transparent 100%)',
                                             transform: 'translate(-50%, -100%)',
-                                            transformOrigin: 'bottom center'
+                                            borderRadius: '50% 50% 0 0'
                                         }} />
 
                                         {/* 외곽 펄스 링 */}
@@ -772,7 +768,7 @@ function RunningScreen({ onStop, sessionId, user }) {
                                             transform: 'translate(-50%, -50%)',
                                             width: '32px',
                                             height: '32px',
-                                            backgroundColor: 'rgba(102, 126, 234, 0.3)',
+                                            backgroundColor: 'rgba(96, 165, 250, 0.3)',
                                             borderRadius: '50%',
                                             animation: 'pulse-ring 2s ease-out infinite'
                                         }} />
@@ -785,10 +781,10 @@ function RunningScreen({ onStop, sessionId, user }) {
                                             transform: 'translate(-50%, -50%)',
                                             width: '20px',
                                             height: '20px',
-                                            backgroundColor: '#667eea',
+                                            backgroundColor: '#3b82f6',
                                             borderRadius: '50%',
                                             border: '3px solid white',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                                            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.5)',
                                             zIndex: 10
                                         }} />
 
