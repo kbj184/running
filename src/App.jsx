@@ -427,20 +427,18 @@ function App() {
         return <CountdownScreen onComplete={handleCountdownComplete} />;
     }
 
-    // Running Screen
-    if (screenMode === 'running') {
-        return <RunningScreen onStop={handleRunningStop} sessionId={sessionId} user={user} />;
-    }
-
-    // Main App Screen (including Result Screen inside LoadScript)
+    // Main App Screen (including Running Screen and Result Screen inside LoadScript)
     return (
         <LoadScript
             googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
             libraries={GOOGLE_MAPS_LIBRARIES}
             loadingElement={<div>Loading Maps...</div>}
         >
-            {/* Result Screen - shown when viewing records */}
-            {(screenMode === 'result' || screenMode === 'view_record') && runningResult ? (
+            {/* Running Screen */}
+            {screenMode === 'running' ? (
+                <RunningScreen onStop={handleRunningStop} sessionId={sessionId} user={user} />
+            ) : (screenMode === 'result' || screenMode === 'view_record') && runningResult ? (
+                /* Result Screen - shown when viewing records */
                 <ResultScreen
                     result={runningResult}
                     onSave={handleSave}

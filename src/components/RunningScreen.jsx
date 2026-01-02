@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { GoogleMap, PolylineF, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, PolylineF } from '@react-google-maps/api';
 import AdvancedMarker from './common/AdvancedMarker';
 import {
     calculateDistance,
@@ -44,13 +44,6 @@ const getSpeedColor = (speedKmh) => {
 function RunningScreen({ onStop, sessionId, user }) {
     // 서울 중심 좌표
     const SEOUL_CENTER = { lat: 37.5665, lng: 126.9780 };
-
-    const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-        language: 'ko',
-        libraries: LIBRARIES
-    });
 
     const [map, setMap] = useState(null);
     const [currentPosition, setCurrentPosition] = useState(null);
@@ -587,8 +580,6 @@ function RunningScreen({ onStop, sessionId, user }) {
 
         return segments;
     }, [route, wateringSegments, isWatering, wateringStartIndex]);
-
-    if (!isLoaded) return <div className="loading-container"><div className="loading-spinner"></div></div>;
 
     return (
         <div className="running-screen">
