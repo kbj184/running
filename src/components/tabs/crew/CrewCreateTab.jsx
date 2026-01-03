@@ -209,19 +209,23 @@ function CrewCreateTab({ user, onCreate }) {
             // 활동 지역 데이터에서 임시 ID 제거
             const areasToSend = activityAreas.map(({ id, ...area }) => area);
 
+            const requestBody = {
+                name,
+                description,
+                imageUrl,
+                joinType,
+                activityAreas: areasToSend
+            };
+
+            console.log('🚀 Crew creation request:', requestBody);
+
             const response = await api.request(`${import.meta.env.VITE_API_URL}/crew`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
                 },
-                body: JSON.stringify({
-                    name,
-                    description,
-                    imageUrl,
-                    joinType,
-                    activityAreas: areasToSend
-                })
+                body: JSON.stringify(requestBody)
             });
 
             if (response.ok) {
@@ -237,10 +241,12 @@ function CrewCreateTab({ user, onCreate }) {
                 setUploadedImage(null);
                 setSelectedImageId(CREW_IMAGES[0].id);
                 setActivityAreas([]);
+                setJoinType('AUTO');
 
                 alert('크루가 성공적으로 생성되었습니다!');
             } else {
                 const errorText = await response.text();
+                console.error('❌ Crew creation failed:', response.status, errorText);
                 setError(errorText || '크루 생성에 실패했습니다.');
             }
         } catch (err) {
