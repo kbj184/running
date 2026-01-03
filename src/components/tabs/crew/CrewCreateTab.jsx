@@ -549,15 +549,16 @@ function CrewCreateTab({ user, onCreate }) {
                                             width: '100%',
                                             aspectRatio: '1',
                                             borderRadius: '12px',
-                                            border: selectedImageId === img.id ? '3px solid #1a1a1a' : '1px solid transparent',
+                                            border: selectedImageId === img.id ? '3px solid #1a1a1a' : '2px solid #e0e0e0',
                                             background: img.bg,
                                             fontSize: '24px',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             justifyContent: 'center',
                                             alignItems: 'center',
-                                            transition: 'transform 0.2s',
-                                            transform: selectedImageId === img.id ? 'scale(1.1)' : 'scale(1)'
+                                            transition: 'all 0.2s',
+                                            transform: selectedImageId === img.id ? 'scale(1.05)' : 'scale(1)',
+                                            boxShadow: selectedImageId === img.id ? '0 4px 12px rgba(0,0,0,0.15)' : '0 2px 4px rgba(0,0,0,0.05)'
                                         }}
                                     >
                                         {img.emoji}
