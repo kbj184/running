@@ -6,6 +6,7 @@ function CrewDetailModal({ isOpen, onClose, crew, user, onUpdateUser }) {
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
     const [userRole, setUserRole] = useState(null); // 'captain', 'member', or null (not joined)
+    const [userStatus, setUserStatus] = useState(null); // 'PENDING', 'APPROVED', 'REJECTED'
 
     useEffect(() => {
         if (isOpen && crew && user) {
@@ -28,9 +29,10 @@ function CrewDetailModal({ isOpen, onClose, crew, user, onUpdateUser }) {
                 const data = await response.json();
                 setMembers(data);
 
-                // Determine user's role
+                // Determine user's role and status
                 const myMemberInfo = data.find(m => m.userId === user.id);
                 setUserRole(myMemberInfo ? myMemberInfo.role : null);
+                setUserStatus(myMemberInfo ? myMemberInfo.status : null);
             }
         } catch (error) {
             console.error('Failed to fetch members:', error);
@@ -50,9 +52,17 @@ function CrewDetailModal({ isOpen, onClose, crew, user, onUpdateUser }) {
             });
 
             if (response.ok) {
+                const memberData = await response.json();
                 // Refresh members
                 fetchMembers();
                 if (onUpdateUser) onUpdateUser();
+
+                // Show appropriate message based on join type
+                if (memberData.status === 'PENDING') {
+                    alert('가입 신청이 완료되었습니다. 크루장의 승인을 기다려주세요.');
+                } else {
+                    alert('크루에 가입되었습니다!');
+                }
             } else {
                 const error = await response.text();
                 alert('가입 실패: ' + error);
@@ -91,6 +101,58 @@ function CrewDetailModal({ isOpen, onClose, crew, user, onUpdateUser }) {
         } catch (error) {
             console.error('Leave error:', error);
             alert('탈퇴 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleApprove = async (memberId) => {
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members/${memberId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                alert('멤버를 승인했습니다.');
+                fetchMembers();
+            } else {
+                const error = await response.text();
+                alert('승인 실패: ' + error);
+            }
+        } catch (error) {
+            console.error('Approve error:', error);
+            alert('승인 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleReject = async (memberId) => {
+        if (!window.confirm('정말 이 가입 신청을 거부하시겠습니까?')) return;
+
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members/${memberId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                alert('가입 신청을 거부했습니다.');
+                fetchMembers();
+            } else {
+                const error = await response.text();
+                alert('거부 실패: ' + error);
+            }
+        } catch (error) {
+            console.error('Reject error:', error);
+            alert('거부 중 오류가 발생했습니다.');
         } finally {
             setActionLoading(false);
         }
@@ -234,23 +296,39 @@ function CrewDetailModal({ isOpen, onClose, crew, user, onUpdateUser }) {
                     {/* Action Button */}
                     <div>
                         {userRole ? (
-                            <button
-                                onClick={handleLeave}
-                                disabled={actionLoading || userRole === 'captain'}
-                                style={{
-                                    padding: '8px 16px',
-                                    borderRadius: '8px',
-                                    border: '1px solid #fee2e2',
-                                    backgroundColor: '#fff',
-                                    color: userRole === 'captain' ? '#ccc' : '#ef4444',
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    cursor: userRole === 'captain' ? 'not-allowed' : 'pointer',
-                                    transition: 'all 0.2s'
-                                }}
-                            >
-                                {actionLoading ? '처리 중...' : (userRole === 'captain' ? '크루장' : '탈퇴하기')}
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {userStatus === 'PENDING' && (
+                                    <span style={{
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        backgroundColor: '#fef3c7',
+                                        color: '#92400e',
+                                        fontSize: '14px',
+                                        fontWeight: '600'
+                                    }}>
+                                        승인 대기중
+                                    </span>
+                                )}
+                                {userStatus === 'APPROVED' && (
+                                    <button
+                                        onClick={handleLeave}
+                                        disabled={actionLoading || userRole === 'captain'}
+                                        style={{
+                                            padding: '8px 16px',
+                                            borderRadius: '8px',
+                                            border: '1px solid #fee2e2',
+                                            backgroundColor: '#fff',
+                                            color: userRole === 'captain' ? '#ccc' : '#ef4444',
+                                            fontSize: '14px',
+                                            fontWeight: '600',
+                                            cursor: userRole === 'captain' ? 'not-allowed' : 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {actionLoading ? '처리 중...' : (userRole === 'captain' ? '크루장' : '탈퇴하기')}
+                                    </button>
+                                )}
+                            </div>
                         ) : (
                             <button
                                 onClick={handleJoin}
@@ -268,7 +346,7 @@ function CrewDetailModal({ isOpen, onClose, crew, user, onUpdateUser }) {
                                     transition: 'all 0.2s'
                                 }}
                             >
-                                {actionLoading ? '가입 중...' : '가입하기'}
+                                {actionLoading ? '가입 중...' : `가입하기 ${crew.joinType === 'APPROVAL' ? '(승인 필요)' : ''}`}
                             </button>
                         )}
                     </div>
@@ -322,11 +400,56 @@ function CrewDetailModal({ isOpen, onClose, crew, user, onUpdateUser }) {
                                             </div>
                                         </div>
                                     </div>
-                                    {member.role === 'captain' && (
-                                        <span style={{ fontSize: '11px', fontWeight: '600', color: '#fa8231', background: '#fff0e6', padding: '4px 8px', borderRadius: '8px' }}>
-                                            LEADER
-                                        </span>
-                                    )}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        {member.role === 'captain' && (
+                                            <span style={{ fontSize: '11px', fontWeight: '600', color: '#fa8231', background: '#fff0e6', padding: '4px 8px', borderRadius: '8px' }}>
+                                                LEADER
+                                            </span>
+                                        )}
+                                        {member.status === 'PENDING' && (
+                                            <>
+                                                <span style={{ fontSize: '11px', fontWeight: '600', color: '#92400e', background: '#fef3c7', padding: '4px 8px', borderRadius: '8px' }}>
+                                                    대기중
+                                                </span>
+                                                {userRole === 'captain' && member.userId !== user.id && (
+                                                    <div style={{ display: 'flex', gap: '4px' }}>
+                                                        <button
+                                                            onClick={() => handleApprove(member.id)}
+                                                            disabled={actionLoading}
+                                                            style={{
+                                                                padding: '4px 12px',
+                                                                borderRadius: '6px',
+                                                                border: 'none',
+                                                                backgroundColor: '#10b981',
+                                                                color: 'white',
+                                                                fontSize: '12px',
+                                                                fontWeight: '600',
+                                                                cursor: 'pointer'
+                                                            }}
+                                                        >
+                                                            승인
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleReject(member.id)}
+                                                            disabled={actionLoading}
+                                                            style={{
+                                                                padding: '4px 12px',
+                                                                borderRadius: '6px',
+                                                                border: 'none',
+                                                                backgroundColor: '#ef4444',
+                                                                color: 'white',
+                                                                fontSize: '12px',
+                                                                fontWeight: '600',
+                                                                cursor: 'pointer'
+                                                            }}
+                                                        >
+                                                            거부
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>

@@ -29,6 +29,7 @@ function CrewCreateTab({ user, onCreate }) {
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [joinType, setJoinType] = useState('AUTO'); // 'AUTO' or 'APPROVAL'
 
     // 활동 지역 관련 상태
     const [activityAreas, setActivityAreas] = useState([]);
@@ -218,6 +219,7 @@ function CrewCreateTab({ user, onCreate }) {
                     name,
                     description,
                     imageUrl,
+                    joinType,
                     activityAreas: areasToSend
                 })
             });
@@ -309,6 +311,60 @@ function CrewCreateTab({ user, onCreate }) {
                             boxSizing: 'border-box'
                         }}
                     />
+                </div>
+
+                {/* 가입 방식 */}
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
+                        가입 방식 *
+                    </label>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <label style={{
+                            flex: 1,
+                            padding: '16px',
+                            borderRadius: '10px',
+                            border: joinType === 'AUTO' ? '2px solid #1a1a1a' : '1px solid #e0e0e0',
+                            backgroundColor: joinType === 'AUTO' ? '#f8f9fa' : 'white',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}>
+                            <input
+                                type="radio"
+                                name="joinType"
+                                value="AUTO"
+                                checked={joinType === 'AUTO'}
+                                onChange={(e) => setJoinType(e.target.value)}
+                                style={{ marginRight: '8px' }}
+                            />
+                            <span style={{ fontWeight: '600' }}>자동 가입</span>
+                            <p style={{ fontSize: '13px', color: '#666', margin: '4px 0 0 24px' }}>
+                                누구나 바로 크루에 가입할 수 있습니다
+                            </p>
+                        </label>
+
+                        <label style={{
+                            flex: 1,
+                            padding: '16px',
+                            borderRadius: '10px',
+                            border: joinType === 'APPROVAL' ? '2px solid #1a1a1a' : '1px solid #e0e0e0',
+                            backgroundColor: joinType === 'APPROVAL' ? '#f8f9fa' : 'white',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}>
+                            <input
+                                type="radio"
+                                name="joinType"
+                                value="APPROVAL"
+                                checked={joinType === 'APPROVAL'}
+                                onChange={(e) => setJoinType(e.target.value)}
+                                style={{ marginRight: '8px' }}
+                            />
+                            <span style={{ fontWeight: '600' }}>승인 후 가입</span>
+                            <p style={{ fontSize: '13px', color: '#666', margin: '4px 0 0 24px' }}>
+                                크루장이 승인한 후에 가입됩니다
+                            </p>
+                        </label>
+                    </div>
                 </div>
 
                 {/* 크루 활동 지역 */}
