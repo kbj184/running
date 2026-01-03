@@ -198,11 +198,11 @@ function CrewCreateTab({ user, onCreate }) {
 
         try {
             // 이미지 URL 생성 (업로드된 이미지 우선, 없으면 기본 이미지)
+            const selectedImage = CREW_IMAGES.find(img => img.id === selectedImageId) || CREW_IMAGES[0];
             let imageUrl;
             if (uploadedImage) {
                 imageUrl = uploadedImage;
             } else {
-                const selectedImage = CREW_IMAGES.find(img => img.id === selectedImageId) || CREW_IMAGES[0];
                 imageUrl = JSON.stringify(selectedImage);
             }
 
