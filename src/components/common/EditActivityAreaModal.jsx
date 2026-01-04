@@ -53,13 +53,29 @@ function EditActivityAreaModal({ isOpen, onClose, onSave, user, currentArea }) {
                         if (component.types.includes('administrative_area_level_1')) {
                             data.adminLevel1 = component.long_name;
                         }
-                        if (component.types.includes('administrative_area_level_2') ||
-                            component.types.includes('locality')) {
+                    });
+
+                    // 두 번째 패스: adminLevel3 (동/읍/면) 먼저 찾기
+                    addressComponents.forEach(component => {
+                        if (component.types.includes('sublocality_level_2')) {
+                            data.adminLevel3 = component.long_name;
+                        }
+                    });
+
+                    // 세 번째 패스: adminLevel2 (시/군/구) 찾기
+                    addressComponents.forEach(component => {
+                        if (component.types.includes('locality')) {
                             data.adminLevel2 = component.long_name;
                         }
-                        if (component.types.includes('sublocality_level_1') ||
-                            component.types.includes('sublocality')) {
-                            data.adminLevel3 = component.long_name;
+                        if (component.types.includes('sublocality_level_1')) {
+                            if (!data.adminLevel2) {
+                                data.adminLevel2 = component.long_name;
+                            } else if (!data.adminLevel3) {
+                                data.adminLevel3 = component.long_name;
+                            }
+                        }
+                        if (component.types.includes('sublocality') && !data.adminLevel2 && !data.adminLevel3) {
+                            data.adminLevel2 = component.long_name;
                         }
                     });
 
