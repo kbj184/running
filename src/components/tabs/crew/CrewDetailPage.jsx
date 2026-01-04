@@ -10,6 +10,16 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     // ... handleJoin/Leave/Approve/Reject ...
 
     // ... image parsing ...
+    if (!crew) return null;
+
+    let crewImage = crew.image;
+    if (!crewImage || (!crewImage.emoji && !crewImage.url)) {
+        try {
+            crewImage = JSON.parse(crew.imageUrl);
+        } catch {
+            crewImage = { url: crew.imageUrl || '', bg: '#ddd', emoji: '🏃' };
+        }
+    }
 
     return (
         <div className="crew-detail-page" style={{
