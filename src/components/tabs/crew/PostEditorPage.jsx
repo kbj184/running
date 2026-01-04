@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../../utils/api';
-import ReactQuill, { Quill } from 'react-quill';
+import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import ImageResize from 'quill-image-resize-module-react';
-
-// ImageResize 모듈 등록
-Quill.register('modules/imageResize', ImageResize);
 
 function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
     const [title, setTitle] = useState('');
@@ -112,10 +108,6 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
             handlers: {
                 image: imageHandler
             }
-        },
-        imageResize: {
-            parchment: Quill.import('parchment'),
-            modules: ['Resize', 'DisplaySize']
         }
     }), []);
 
