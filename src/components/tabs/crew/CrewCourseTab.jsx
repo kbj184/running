@@ -200,26 +200,24 @@ function CrewCourseTab({ crew, user, userRole }) {
                                 </div>
                             </div>
                         </div>
-                        </div>
-            ))}
-        </div>
-    )
-}
+                    ))}
+                </div>
+            )}
 
-{/* Register Modal */ }
-{
-    showRegisterModal && (
-        <CourseRegistrationModal
-            user={user}
-            crewId={crew.id}
-            onClose={() => setShowRegisterModal(false)}
-            onSuccess={() => {
-                setShowRegisterModal(false);
-                fetchCourses();
-            }}
-        />
-    )
-}
+            {/* Register Modal */}
+            {
+                showRegisterModal && (
+                    <CourseRegistrationModal
+                        user={user}
+                        crewId={crew.id}
+                        onClose={() => setShowRegisterModal(false)}
+                        onSuccess={() => {
+                            setShowRegisterModal(false);
+                            fetchCourses();
+                        }}
+                    />
+                )
+            }
         </div >
     );
 }
