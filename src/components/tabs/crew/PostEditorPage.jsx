@@ -164,6 +164,32 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
 
     return (
         <div style={{ padding: '20px', paddingBottom: '80px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+            <style>{`
+                .ql-container.ql-snow {
+                    border: 1px solid #e0e0e0;
+                    border-bottom-left-radius: 8px;
+                    border-bottom-right-radius: 8px;
+                    background-color: #fff;
+                }
+                .ql-toolbar.ql-snow {
+                    border: 1px solid #e0e0e0;
+                    border-bottom: none;
+                    border-top-left-radius: 8px;
+                    border-top-right-radius: 8px;
+                    background-color: #fff;
+                }
+                .ql-editor {
+                    min-height: 300px;
+                    font-size: 16px;
+                    color: #1a1a1a;
+                    font-family: inherit;
+                    line-height: 1.6;
+                }
+                .ql-editor.ql-blank::before {
+                    color: #999;
+                    font-style: normal;
+                }
+            `}</style>
             <h2 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '800', color: '#1a1a1a' }}>
                 {isEditMode ? '게시글 수정' : '게시글 작성'}
             </h2>
@@ -199,7 +225,8 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
                             fontSize: '16px',
                             boxSizing: 'border-box',
                             outline: 'none',
-                            fontFamily: 'inherit'
+                            fontFamily: 'inherit',
+                            color: '#1a1a1a'
                         }}
                         required
                     />
@@ -209,7 +236,7 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a', fontSize: '14px' }}>
                         내용
                     </label>
-                    <div style={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+                    <div style={{}}>
                         <ReactQuill
                             theme="snow"
                             value={content}
@@ -217,7 +244,6 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
                             modules={modules}
                             formats={formats}
                             placeholder="내용을 입력하세요. 이미지를 추가하려면 툴바의 이미지 아이콘을 클릭하세요."
-                            style={{ minHeight: '300px' }}
                         />
                     </div>
                     <div style={{ marginTop: '8px', fontSize: '12px', color: '#999' }}>
