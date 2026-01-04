@@ -231,12 +231,15 @@ function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
     const fetchRunningRecords = async () => {
         try {
             setLoading(true);
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/my/records`, {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/running/sessions/completed?userId=${user.id}`, {
                 headers: getAuthHeaders()
             });
             if (response.ok) {
                 const data = await response.json();
+                console.log('Fetched running records:', data);
                 setRunningRecords(data);
+            } else {
+                console.error('Failed to fetch records, status:', response.status);
             }
         } catch (error) {
             console.error('Failed to fetch running records:', error);
@@ -304,8 +307,22 @@ function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
                 display: 'flex',
                 flexDirection: 'column'
             }}>
-                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '700' }}>
-                    나의 러닝 활동에서 선택
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>나의 러닝 활동에서 선택</span>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            fontSize: '24px',
+                            cursor: 'pointer',
+                            color: '#999',
+                            padding: 0,
+                            lineHeight: 1
+                        }}
+                    >
+                        ×
+                    </button>
                 </h3>
 
                 {loading ? (
