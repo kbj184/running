@@ -33,6 +33,7 @@ function CrewCreateTab({ user, onCreate }) {
 
     // 활동 지역 관련 상태
     const [activityAreas, setActivityAreas] = useState([]);
+    const [selectedAddress, setSelectedAddress] = useState('');
     const [mapCenter, setMapCenter] = useState({ lat: 37.5665, lng: 126.9780 }); // 서울 기본값
     const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
@@ -131,7 +132,9 @@ function CrewCreateTab({ user, onCreate }) {
                         longitude: lng
                     };
 
-                    setActivityAreas([...activityAreas, newArea]);
+                    // 단일 활동 지역만 허용 (기존 지역 교체)
+                    setActivityAreas([newArea]);
+                    setSelectedAddress(adminLevelFull);
                 } else {
                     setError('주소 정보를 가져올 수 없습니다.');
                 }
@@ -439,49 +442,17 @@ function CrewCreateTab({ user, onCreate }) {
                         ))}
                     </GoogleMap>
 
-                    {/* 선택된 지역 목록 */}
-                    {activityAreas.length > 0 && (
-                        <div style={{ marginTop: '16px' }}>
-                            <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: '#1a1a1a' }}>
-                                선택된 지역 ({activityAreas.length}/1)
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {activityAreas.map((area) => (
-                                    <div
-                                        key={area.id}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            padding: '12px',
-                                            backgroundColor: '#f8f9fa',
-                                            borderRadius: '8px',
-                                            border: '1px solid #e0e0e0'
-                                        }}
-                                    >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span>📍</span>
-                                            <span style={{ fontSize: '14px', color: '#333' }}>
-                                                {area.adminLevelFull}
-                                            </span>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeActivityArea(area.id)}
-                                            style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                color: '#dc2626',
-                                                cursor: 'pointer',
-                                                fontSize: '18px',
-                                                padding: '4px 8px'
-                                            }}
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
+                    {/* 선택된 지역 표시 */}
+                    {selectedAddress && (
+                        <div style={{
+                            marginTop: '16px',
+                            padding: '12px',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            color: '#333'
+                        }}>
+                            <strong>선택된 지역:</strong> {selectedAddress}
                         </div>
                     )}
                 </div>
