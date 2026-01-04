@@ -141,6 +141,52 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
         }
     };
 
+    const handleApproveMember = async (userId) => {
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members/${userId}/approve`, {
+                method: 'POST',
+                headers: getAuthHeaders()
+            });
+
+            if (response.ok) {
+                alert('멤버를 승인했습니다.');
+                fetchMembers(); // Assuming fetchMembers will update the crew details
+            } else {
+                alert('승인에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Failed to approve member:', error);
+            alert('승인 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleRejectMember = async (userId) => {
+        if (!window.confirm('정말 가입 요청을 거절하시겠습니까?')) return;
+
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members/${userId}/reject`, {
+                method: 'POST',
+                headers: getAuthHeaders()
+            });
+
+            if (response.ok) {
+                alert('가입 요청을 거절했습니다.');
+                fetchMembers(); // Assuming fetchMembers will update the crew details
+            } else {
+                alert('거절에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Failed to reject member:', error);
+            alert('거절 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     // 게시판 핸들러
     const handlePostClick = (post) => {
         setSelectedPost(post);
@@ -615,13 +661,54 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                                     )}
                                                 </div>
                                                 {member.status === 'PENDING' && (
-                                                    <span style={{
-                                                        fontSize: '12px',
-                                                        color: '#f59e0b',
-                                                        fontWeight: '600'
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        gap: '8px',
+                                                        alignItems: 'center'
                                                     }}>
-                                                        승인 대기중
-                                                    </span>
+                                                        {userRole === 'CAPTAIN' ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleApproveMember(member.userId)}
+                                                                    style={{
+                                                                        padding: '6px 12px',
+                                                                        backgroundColor: '#10b981',
+                                                                        color: 'white',
+                                                                        border: 'none',
+                                                                        borderRadius: '6px',
+                                                                        fontSize: '12px',
+                                                                        fontWeight: '600',
+                                                                        cursor: 'pointer'
+                                                                    }}
+                                                                >
+                                                                    승인
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleRejectMember(member.userId)}
+                                                                    style={{
+                                                                        padding: '6px 12px',
+                                                                        backgroundColor: '#ef4444',
+                                                                        color: 'white',
+                                                                        border: 'none',
+                                                                        borderRadius: '6px',
+                                                                        fontSize: '12px',
+                                                                        fontWeight: '600',
+                                                                        cursor: 'pointer'
+                                                                    }}
+                                                                >
+                                                                    거절
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <span style={{
+                                                                fontSize: '12px',
+                                                                color: '#f59e0b',
+                                                                fontWeight: '600'
+                                                            }}>
+                                                                승인 대기중
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
