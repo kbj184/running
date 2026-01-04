@@ -66,15 +66,58 @@ function CrewHomeTab({ allCrews, onCrewClick }) {
                                     )}
                                 </div>
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                                         <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>{crew.name}</h3>
-                                        <span style={{ fontSize: '12px', color: '#888', backgroundColor: '#f5f5f5', padding: '2px 6px', borderRadius: '4px' }}>
-                                            {crew.memberCount || 0}명
-                                        </span>
                                     </div>
-                                    <p style={{ margin: 0, fontSize: '14px', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>
-                                        {crew.description || '설명이 없습니다.'}
-                                    </p>
+
+                                    {/* 크루 메타 정보 */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                        <span style={{
+                                            fontSize: '12px',
+                                            color: '#666',
+                                            backgroundColor: '#f0f0f0',
+                                            padding: '3px 8px',
+                                            borderRadius: '12px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '4px'
+                                        }}>
+                                            <span>👥</span>
+                                            <span>{crew.memberCount || 0}명</span>
+                                        </span>
+
+                                        {crew.activityAreaLevel2 && (
+                                            <span style={{
+                                                fontSize: '12px',
+                                                color: '#666',
+                                                backgroundColor: '#f0f0f0',
+                                                padding: '3px 8px',
+                                                borderRadius: '12px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '4px'
+                                            }}>
+                                                <span>📍</span>
+                                                <span>{crew.activityAreaLevel2}</span>
+                                            </span>
+                                        )}
+
+                                        {crew.totalDistance !== undefined && crew.totalDistance > 0 && (
+                                            <span style={{
+                                                fontSize: '12px',
+                                                color: '#666',
+                                                backgroundColor: '#f0f0f0',
+                                                padding: '3px 8px',
+                                                borderRadius: '12px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '4px'
+                                            }}>
+                                                <span>🏃</span>
+                                                <span>{crew.totalDistance.toFixed(1)}km</span>
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div style={{ fontSize: '24px', color: '#ccc' }}>›</div>
                             </div>
