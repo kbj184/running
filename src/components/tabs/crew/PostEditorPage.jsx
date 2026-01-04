@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../../utils/api';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
     const [title, setTitle] = useState('');
@@ -7,8 +9,6 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
     const [isPinned, setIsPinned] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
-    const [uploadingImage, setUploadingImage] = useState(false);
-    const textareaRef = useRef(null);
 
     const isEditMode = !!post;
     const isCaptain = crew && crew.captainId === user.id;
@@ -21,69 +21,88 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
         }
     }, [post]);
 
-    const handleImageUpload = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    // Quill 이미지 핸들러
+    const imageHandler = () => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
 
-        // 이미지 파일 검증
-        if (!file.type.startsWith('image/')) {
-            alert('이미지 파일만 업로드 가능합니다.');
-            return;
-        }
+        input.onchange = async () => {
+            const file = input.files[0];
+            if (!file) return;
 
-        // 파일 크기 제한 (5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            alert('이미지 크기는 5MB 이하여야 합니다.');
-            return;
-        }
-
-        setUploadingImage(true);
-        setError('');
-
-        try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-
-            const response = await fetch(
-                `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-                {
-                    method: 'POST',
-                    body: formData
-                }
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                const imageUrl = data.secure_url;
-
-                // 커서 위치에 이미지 마크다운 삽입
-                const textarea = textareaRef.current;
-                const cursorPos = textarea.selectionStart;
-                const textBefore = content.substring(0, cursorPos);
-                const textAfter = content.substring(cursorPos);
-                const imageMarkdown = `\n![이미지](${imageUrl})\n`;
-
-                setContent(textBefore + imageMarkdown + textAfter);
-
-                // 커서를 삽입된 이미지 뒤로 이동
-                setTimeout(() => {
-                    textarea.focus();
-                    const newCursorPos = cursorPos + imageMarkdown.length;
-                    textarea.setSelectionRange(newCursorPos, newCursorPos);
-                }, 0);
-            } else {
-                throw new Error('이미지 업로드 실패');
+            // 이미지 파일 검증
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
             }
-        } catch (err) {
-            console.error('Image upload error:', err);
-            setError('이미지 업로드 중 오류가 발생했습니다.');
-        } finally {
-            setUploadingImage(false);
-            // 파일 input 초기화
-            e.target.value = '';
-        }
+
+            // 파일 크기 제한 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('이미지 크기는 5MB 이하여야 합니다.');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+
+                const response = await fetch(
+                    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                    {
+                        method: 'POST',
+                        body: formData
+                    }
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const imageUrl = data.secure_url;
+
+                    // Quill 에디터에 이미지 삽입
+                    const quill = document.querySelector('.ql-editor');
+                    const range = window.getSelection().getRangeAt(0);
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    range.insertNode(img);
+                } else {
+                    throw new Error('이미지 업로드 실패');
+                }
+            } catch (err) {
+                console.error('Image upload error:', err);
+                alert('이미지 업로드 중 오류가 발생했습니다.');
+            }
+        };
     };
+
+    // Quill 모듈 설정
+    const modules = useMemo(() => ({
+        toolbar: {
+            container: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'align': [] }],
+                ['link', 'image'],
+                ['clean']
+            ],
+            handlers: {
+                image: imageHandler
+            }
+        }
+    }), []);
+
+    const formats = [
+        'header',
+        'bold', 'italic', 'underline', 'strike',
+        'list', 'bullet',
+        'color', 'background',
+        'align',
+        'link', 'image'
+    ];
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -92,7 +111,7 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
             setError('제목을 입력해주세요.');
             return;
         }
-        if (!content.trim()) {
+        if (!content.trim() || content === '<p><br></p>') {
             setError('내용을 입력해주세요.');
             return;
         }
@@ -187,59 +206,22 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
                 </div>
 
                 <div style={{ marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <label style={{ fontWeight: '600', color: '#1a1a1a', fontSize: '14px' }}>
-                            내용
-                        </label>
-                        <label
-                            htmlFor="image-upload"
-                            style={{
-                                padding: '6px 12px',
-                                backgroundColor: uploadingImage ? '#9ca3af' : '#fff',
-                                border: '1px solid #e0e0e0',
-                                borderRadius: '6px',
-                                fontSize: '13px',
-                                fontWeight: '600',
-                                cursor: uploadingImage ? 'not-allowed' : 'pointer',
-                                color: '#666',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px'
-                            }}
-                        >
-                            📷 {uploadingImage ? '업로드 중...' : '이미지 추가'}
-                        </label>
-                        <input
-                            id="image-upload"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                            disabled={uploadingImage}
-                            style={{ display: 'none' }}
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a', fontSize: '14px' }}>
+                        내용
+                    </label>
+                    <div style={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+                        <ReactQuill
+                            theme="snow"
+                            value={content}
+                            onChange={setContent}
+                            modules={modules}
+                            formats={formats}
+                            placeholder="내용을 입력하세요. 이미지를 추가하려면 툴바의 이미지 아이콘을 클릭하세요."
+                            style={{ minHeight: '300px' }}
                         />
                     </div>
-                    <textarea
-                        ref={textareaRef}
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        placeholder="내용을 입력하세요&#10;&#10;이미지를 추가하려면 위의 '이미지 추가' 버튼을 클릭하세요."
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            borderRadius: '8px',
-                            border: '1px solid #e0e0e0',
-                            fontSize: '15px',
-                            minHeight: '300px',
-                            resize: 'vertical',
-                            boxSizing: 'border-box',
-                            outline: 'none',
-                            fontFamily: 'inherit',
-                            lineHeight: 1.6
-                        }}
-                        required
-                    />
                     <div style={{ marginTop: '8px', fontSize: '12px', color: '#999' }}>
-                        💡 이미지는 마크다운 형식으로 삽입됩니다. (예: ![이미지](URL))
+                        💡 텍스트 서식, 이미지, 링크 등을 자유롭게 추가할 수 있습니다.
                     </div>
                 </div>
 
@@ -288,17 +270,17 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
                     </button>
                     <button
                         type="submit"
-                        disabled={isSubmitting || uploadingImage}
+                        disabled={isSubmitting}
                         style={{
                             flex: 2,
                             padding: '14px',
-                            backgroundColor: (isSubmitting || uploadingImage) ? '#9ca3af' : '#1a1a1a',
+                            backgroundColor: isSubmitting ? '#9ca3af' : '#1a1a1a',
                             color: 'white',
                             border: 'none',
                             borderRadius: '8px',
                             fontSize: '16px',
                             fontWeight: '700',
-                            cursor: (isSubmitting || uploadingImage) ? 'not-allowed' : 'pointer'
+                            cursor: isSubmitting ? 'not-allowed' : 'pointer'
                         }}
                     >
                         {isSubmitting ? '저장 중...' : (isEditMode ? '수정하기' : '작성하기')}
