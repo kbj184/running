@@ -320,18 +320,20 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                             {userStatus === 'APPROVED' && (
                                 <button
                                     onClick={handleLeave}
-                                    disabled={actionLoading || userRole === 'captain'}
+                                    disabled={actionLoading}
                                     style={{
                                         padding: '8px 16px',
+                                        backgroundColor: 'white',
+                                        border: '1px solid #dc2626',
                                         borderRadius: '8px',
-                                        border: '1px solid #fee2e2',
-                                        backgroundColor: '#fff',
-                                        color: userRole === 'captain' ? '#ccc' : '#ef4444',
+                                        color: '#dc2626',
+                                        fontSize: '14px',
                                         fontWeight: '600',
-                                        cursor: userRole === 'captain' ? 'not-allowed' : 'pointer'
+                                        cursor: actionLoading ? 'not-allowed' : 'pointer',
+                                        opacity: actionLoading ? 0.6 : 1
                                     }}
                                 >
-                                    {userRole === 'captain' ? '탈퇴 불가' : '탈퇴하기'}
+                                    {actionLoading ? '처리 중...' : '탈퇴'}
                                 </button>
                             )}
                         </div>
@@ -342,21 +344,45 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                             style={{
                                 width: '100%',
                                 padding: '16px',
-                                borderRadius: '12px',
-                                border: 'none',
-                                backgroundColor: '#4318FF',
+                                backgroundColor: actionLoading ? '#9ca3af' : '#1a1a1a',
                                 color: 'white',
+                                border: 'none',
+                                borderRadius: '12px',
                                 fontSize: '16px',
                                 fontWeight: '700',
-                                cursor: 'pointer',
-                                boxShadow: '0 4px 12px rgba(67, 24, 255, 0.3)',
-                                transition: 'all 0.2s'
+                                cursor: actionLoading ? 'not-allowed' : 'pointer'
                             }}
                         >
-                            {actionLoading ? '처리 중...' : `크루 가입하기 ${crew.joinType === 'APPROVAL' ? '(승인 필요)' : ''}`}
+                            {actionLoading ? '처리 중...' : '크루 가입하기'}
                         </button>
                     )}
                 </div>
+
+                {/* Board Access Button - 승인된 멤버만 */}
+                {userStatus === 'APPROVED' && onViewBoard && (
+                    <div style={{ marginBottom: '32px' }}>
+                        <button
+                            onClick={onViewBoard}
+                            style={{
+                                width: '100%',
+                                padding: '16px',
+                                backgroundColor: '#fff',
+                                border: '2px solid #1a1a1a',
+                                borderRadius: '12px',
+                                fontSize: '16px',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                color: '#1a1a1a',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            📝 크루 게시판 보기
+                        </button>
+                    </div>
+                )}
 
                 {/* Members List */}
                 <div>
@@ -457,10 +483,11 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                         </div>
                     )}
                 </div>
-            </div>
+            </div >
             {/* 하단 여백 */}
-            <div style={{ height: '80px' }}></div>
-        </div>
+            < div style={{ height: '80px' }
+            }></div >
+        </div >
     );
 }
 
