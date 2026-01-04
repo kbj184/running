@@ -423,11 +423,6 @@ function App() {
         return <LoginScreen onLogin={handleLogin} />;
     }
 
-    // Nickname & Activity Area Registration Screen
-    if (!user.nickname || !user.activityAreaRegistered) {
-        return <NicknameRegistration user={user} onComplete={handleLogin} />;
-    }
-
     // Countdown Screen
     if (screenMode === 'countdown') {
         return <CountdownScreen onComplete={handleCountdownComplete} />;
@@ -441,116 +436,122 @@ function App() {
             libraries={GOOGLE_MAPS_LIBRARIES}
             loadingElement={<div>Loading Maps...</div>}
         >
-            {/* Running Screen */}
-            {screenMode === 'running' ? (
-                <RunningScreen onStop={handleRunningStop} sessionId={sessionId} user={user} />
-            ) : (screenMode === 'result' || screenMode === 'view_record') && runningResult ? (
-                /* Result Screen - shown when viewing records */
-                <ResultScreen
-                    result={runningResult}
-                    onSave={handleSave}
-                    onDelete={handleDelete}
-                    mode={screenMode === 'view_record' ? 'view' : 'finish'}
-                />
+            {/* Nickname & Activity Area Registration Screen */}
+            {(!user.nickname || !user.activityAreaRegistered) ? (
+                <NicknameRegistration user={user} onComplete={handleLogin} />
             ) : (
-                <div className="main-app-container">
-                    {/* Fixed Header Container (MainHeader + optional ProfileSubHeader) */}
-                    <div style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        zIndex: 1000,
-                        display: 'flex',
-                        flexDirection: 'column'
-                    }}>
-                        <MainHeader
-                            user={user}
-                            onProfileClick={handleProfileClick}
-                            onGradeClick={() => setShowRunnerGradeModal(true)}
-                        />
-
-
-                        {showProfileMenu && (
-                            <ProfileSubHeader
-                                profileTab={profileTab}
-                                onTabChange={handleProfileTabChange}
-                            />
-                        )}
-                    </div>
-
-                    {/* Scrollable Content Area */}
-                    <div className="main-content" style={{
-                        marginTop: showProfileMenu ? 'calc(var(--header-height) + 60px)' : 'var(--header-height)'
-                    }}>
-                        {/* Home Tab */}
-                        {activeTab === 'home' && !showProfileMenu && <HomeTab />}
-
-                        {/* Profile Menu Content */}
-                        {showProfileMenu && (
-                            <ProfileMenu
-                                profileTab={profileTab}
-                                user={user}
-                                refreshRecords={refreshRecords}
-                                onRecordClick={handleRecordClick}
-                                onLogout={handleLogout}
-                                onUserUpdate={handleUserUpdate}
-                            />
-                        )}
-
-                        {/* Running Center Tab */}
-                        {activeTab === 'running' && !showProfileMenu && (
-                            <RunningTab
-                                runners={runners}
-                                stats={stats}
-                                selectedRunner={selectedRunner}
-                                isRunning={isRunning}
-                                showLabels={showLabels}
-                                onRunnerClick={handleRunnerClick}
-                                onRefresh={handleRefresh}
-                                onStartToggle={handleStartToggle}
-                                onToggleLabels={handleToggleLabels}
-                                onClosePanel={handleClosePanel}
-                            />
-                        )}
-
-                        {/* Crew Tab */}
-                        {activeTab === 'crew' && !showProfileMenu && (
-                            <CrewTab
-                                user={user}
-                                allCrews={allCrews}
-                                onRefreshCrews={fetchCrews}
-                                crewTab={user.crewTab || 'home'}
-                                onCrewTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
-                            />
-                        )}
-
-                        {/* MyRun Tab */}
-                        {activeTab === 'myrun' && !showProfileMenu && (
-                            <MyRunTab
-                                refreshRecords={refreshRecords}
-                                onRecordClick={handleRecordClick}
-                                user={user}
-                            />
-                        )}
-
-                        {/* Runner Grade Modal */}
-                        {showRunnerGradeModal && (
-                            <RunnerGradeModal
-                                user={user}
-                                onClose={() => setShowRunnerGradeModal(false)}
-                            />
-                        )}
-                    </div>
-
-                    {/* Fixed Bottom Navigation */}
-                    <BottomNavigation
-                        activeTab={activeTab}
-                        onTabChange={handleTabChange}
-                        onStartRunning={handleStartToggle}
-                        onProfileClick={handleProfileClick}
+                /* Running Screen */
+                screenMode === 'running' ? (
+                    <RunningScreen onStop={handleRunningStop} sessionId={sessionId} user={user} />
+                ) : (screenMode === 'result' || screenMode === 'view_record') && runningResult ? (
+                    /* Result Screen - shown when viewing records */
+                    <ResultScreen
+                        result={runningResult}
+                        onSave={handleSave}
+                        onDelete={handleDelete}
+                        mode={screenMode === 'view_record' ? 'view' : 'finish'}
                     />
-                </div>
+                ) : (
+                    <div className="main-app-container">
+                        {/* Fixed Header Container (MainHeader + optional ProfileSubHeader) */}
+                        <div style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 1000,
+                            display: 'flex',
+                            flexDirection: 'column'
+                        }}>
+                            <MainHeader
+                                user={user}
+                                onProfileClick={handleProfileClick}
+                                onGradeClick={() => setShowRunnerGradeModal(true)}
+                            />
+
+
+                            {showProfileMenu && (
+                                <ProfileSubHeader
+                                    profileTab={profileTab}
+                                    onTabChange={handleProfileTabChange}
+                                />
+                            )}
+                        </div>
+
+                        {/* Scrollable Content Area */}
+                        <div className="main-content" style={{
+                            marginTop: showProfileMenu ? 'calc(var(--header-height) + 60px)' : 'var(--header-height)'
+                        }}>
+                            {/* Home Tab */}
+                            {activeTab === 'home' && !showProfileMenu && <HomeTab />}
+
+                            {/* Profile Menu Content */}
+                            {showProfileMenu && (
+                                <ProfileMenu
+                                    profileTab={profileTab}
+                                    user={user}
+                                    refreshRecords={refreshRecords}
+                                    onRecordClick={handleRecordClick}
+                                    onLogout={handleLogout}
+                                    onUserUpdate={handleUserUpdate}
+                                />
+                            )}
+
+                            {/* Running Center Tab */}
+                            {activeTab === 'running' && !showProfileMenu && (
+                                <RunningTab
+                                    runners={runners}
+                                    stats={stats}
+                                    selectedRunner={selectedRunner}
+                                    isRunning={isRunning}
+                                    showLabels={showLabels}
+                                    onRunnerClick={handleRunnerClick}
+                                    onRefresh={handleRefresh}
+                                    onStartToggle={handleStartToggle}
+                                    onToggleLabels={handleToggleLabels}
+                                    onClosePanel={handleClosePanel}
+                                />
+                            )}
+
+                            {/* Crew Tab */}
+                            {activeTab === 'crew' && !showProfileMenu && (
+                                <CrewTab
+                                    user={user}
+                                    allCrews={allCrews}
+                                    onRefreshCrews={fetchCrews}
+                                    crewTab={user.crewTab || 'home'}
+                                    onCrewTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
+                                />
+                            )}
+
+                            {/* MyRun Tab */}
+                            {activeTab === 'myrun' && !showProfileMenu && (
+                                <MyRunTab
+                                    refreshRecords={refreshRecords}
+                                    onRecordClick={handleRecordClick}
+                                    user={user}
+                                />
+                            )}
+
+                            {/* Runner Grade Modal */}
+                            {showRunnerGradeModal && (
+                                <RunnerGradeModal
+                                    user={user}
+                                    onClose={() => setShowRunnerGradeModal(false)}
+                                />
+                            )}
+                        </div>
+
+                        {/* Fixed Bottom Navigation */}
+                        <BottomNavigation
+                            activeTab={activeTab}
+                            onTabChange={handleTabChange}
+                            onStartRunning={handleStartToggle}
+                            onProfileClick={handleProfileClick}
+                        />
+                    </div>
+                )}
+            )}
             )}
         </LoadScript>
     );
