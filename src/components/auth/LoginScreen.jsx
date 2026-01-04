@@ -75,7 +75,7 @@ const LoginScreen = ({ onLogin }) => {
                 const { authProvider } = result;
                 if (authProvider === 'local') {
                     setStep(5);
-                } else if (authProvider === 'naver' || authProvider === 'google') {
+                } else if (authProvider === 'naver' || authProvider === 'google' || authProvider === 'kakao') {
                     setSocialProvider(authProvider);
                 } else {
                     // Fallback for other providers or unknown states
@@ -291,7 +291,7 @@ const LoginScreen = ({ onLogin }) => {
                     <div className="social-login-buttons">
                         <button
                             className="social-btn kakao"
-                            onClick={() => handleSocialLogin('Kakao')}
+                            onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/kakao`}
                         >
                             <svg viewBox="0 0 24 24" width="20" height="20" className="social-icon">
                                 <path fill="currentColor" d="M12 3C7.58 3 4 5.79 4 9.24c0 2.12 1.35 4 3.42 5.09l-.75 2.76c-.06.27.15.52.41.49l3.22-2.14c.55.08 1.12.12 1.7.12 4.42 0 8-2.79 8-6.24S16.42 3 12 3z" />
@@ -349,7 +349,7 @@ const LoginScreen = ({ onLogin }) => {
                     <div className="terms-modal-overlay">
                         <div className="terms-modal" style={{ height: 'auto', minHeight: 'auto', textAlign: 'center', padding: '2rem' }}>
                             <h3 style={{ marginBottom: '1rem', lineHeight: '1.4' }}>
-                                {socialProvider === 'naver' ? '네이버' : 'Google'} 간편 로그인 회원입니다.
+                                {socialProvider === 'naver' ? '네이버' : socialProvider === 'google' ? 'Google' : '카카오'} 간편 로그인 회원입니다.
                             </h3>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                                 <button
@@ -358,8 +358,8 @@ const LoginScreen = ({ onLogin }) => {
                                         padding: '0.8rem 2rem',
                                         borderRadius: '8px',
                                         border: 'none',
-                                        background: socialProvider === 'naver' ? '#03C75A' : '#4285F4',
-                                        color: 'white',
+                                        background: socialProvider === 'naver' ? '#03C75A' : socialProvider === 'google' ? '#4285F4' : '#FEE500',
+                                        color: socialProvider === 'kakao' ? '#000' : 'white',
                                         cursor: 'pointer',
                                         fontWeight: '600',
                                         fontSize: '1rem'
