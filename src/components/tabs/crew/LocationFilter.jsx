@@ -1,202 +1,191 @@
 import React, { useState, useEffect } from 'react';
 
-// 대한민국 주요 행정 구역 데이터 (예시)
-const KOREA_ADMIN_AREAS = {
-    '서울특별시': {
-        districts: ['강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구', '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구', '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구']
+// 대한민국 행정구역 모의 데이터
+// 실제로는 백엔드에서 가져오거나 더 완전한 데이터셋이 필요함
+const KOREA_ADMIN_DIVISIONS = [
+    {
+        name: '서울특별시',
+        subDivisions: ['강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구', '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구', '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구']
     },
-    '부산광역시': {
-        districts: ['강서구', '금정구', '기장군', '남구', '동구', '동래구', '부산진구', '북구', '사상구', '사하구', '서구', '수영구', '연제구', '영도구', '중구', '해운대구']
+    {
+        name: '경기도',
+        subDivisions: ['수원시', '성남시', '의정부시', '안양시', '부천시', '광명시', '평택시', '동두천시', '안산시', '고양시', '과천시', '구리시', '남양주시', '오산시', '시흥시', '군포시', '의왕시', '하남시', '용인시', '파주시', '이천시', '안성시', '김포시', '화성시', '광주시', '양주시', '포천시', '여주시', '연천군', '가평군', '양평군']
     },
-    '대구광역시': {
-        districts: ['군위군', '남구', '달서구', '달성군', '동구', '북구', '서구', '수성구', '중구']
+    {
+        name: '부산광역시',
+        subDivisions: ['중구', '서구', '동구', '영도구', '부산진구', '동래구', '남구', '북구', '해운대구', '사하구', '금정구', '강서구', '연제구', '수영구', '사상구', '기장군']
     },
-    '인천광역시': {
-        districts: ['강화군', '계양구', '남동구', '동구', '미추홀구', '부평구', '서구', '연수구', '옹진군', '중구']
-    },
-    '광주광역시': {
-        districts: ['광산구', '남구', '동구', '북구', '서구']
-    },
-    '대전광역시': {
-        districts: ['대덕구', '동구', '서구', '유성구', '중구']
-    },
-    '울산광역시': {
-        districts: ['남구', '동구', '북구', '울주군', '중구']
-    },
-    '세종특별자치시': { districts: [] },
-    '경기도': {
-        districts: ['가평군', '고양시', '과천시', '광명시', '광주시', '구리시', '군포시', '김포시', '남양주시', '동두천시', '부천시', '성남시', '수원시', '시흥시', '안산시', '안성시', '안양시', '양주시', '양평군', '여주시', '연천군', '오산시', '용인시', '의왕시', '의정부시', '이천시', '파주시', '평택시', '포천시', '하남시', '화성시']
-    },
-    '강원특별자치도': {
-        districts: ['강릉시', '고성군', '동해시', '삼척시', '속초시', '양구군', '양양군', '영월군', '원주시', '인제군', '정선군', '철원군', '춘천시', '태백시', '평창군', '홍천군', '화천군', '횡성군']
-    },
-    // 나머지 도 제외 (필요시 추가)
-};
+    { name: '대구광역시', subDivisions: ['중구', '동구', '서구', '남구', '북구', '수성구', '달서구', '달성군', '군위군'] },
+    { name: '인천광역시', subDivisions: ['중구', '동구', '미추홀구', '연수구', '남동구', '부평구', '계양구', '서구', '강화군', '옹진군'] },
+    { name: '광주광역시', subDivisions: ['동구', '서구', '남구', '북구', '광산구'] },
+    { name: '대전광역시', subDivisions: ['동구', '중구', '서구', '유성구', '대덕구'] },
+    { name: '울산광역시', subDivisions: ['중구', '남구', '동구', '북구', '울주군'] },
+    { name: '세종특별자치시', subDivisions: ['세종시'] },
+    { name: '강원특별자치도', subDivisions: ['춘천시', '원주시', '강릉시', '동해시', '태백시', '속초시', '삼척시', '홍천군', '횡성군', '영월군', '평창군', '정선군', '철원군', '화천군', '양구군', '인제군', '고성군', '양양군'] },
+    { name: '충청북도', subDivisions: ['청주시', '충주시', '제천시', '보은군', '옥천군', '영동군', '증평군', '진천군', '괴산군', '음성군', '단양군'] },
+    { name: '충청남도', subDivisions: ['천안시', '공주시', '보령시', '아산시', '서산시', '논산시', '계룡시', '당진시', '금산군', '부여군', '서천군', '청양군', '홍성군', '예산군', '태안군'] },
+    { name: '전북특별자치도', subDivisions: ['전주시', '군산시', '익산시', '정읍시', '남원시', '김제시', '완주군', '진안군', '무주군', '장수군', '임실군', '순창군', '고창군', '부안군'] },
+    { name: '전라남도', subDivisions: ['목포시', '여수시', '순천시', '나주시', '광양시', '담양군', '곡성군', '구례군', '고흥군', '보성군', '화순군', '장흥군', '강진군', '해남군', '영암군', '무안군', '함평군', '영광군', '장성군', '완도군', '진도군', '신안군'] },
+    { name: '경상북도', subDivisions: ['포항시', '경주시', '김천시', '안동시', '구미시', '영주시', '영천시', '상주시', '문경시', '경산시', '의성군', '청송군', '영양군', '영덕군', '청도군', '고령군', '성주군', '칠곡군', '예천군', '봉화군', '울진군', '울릉군'] },
+    { name: '경상남도', subDivisions: ['창원시', '진주시', '통영시', '사천시', '김해시', '밀양시', '거제시', '양산시', '의령군', '함안군', '창녕군', '고성군', '남해군', '하동군', '산청군', '함양군', '거창군', '합천군'] },
+    { name: '제주특별자치도', subDivisions: ['제주시', '서귀포시'] }
+];
 
-function LocationFilter({ onFilterChange, activeFilter }) {
-    const [level1, setLevel1] = useState(activeFilter?.level1 || null); // 시/도
-    const [level2, setLevel2] = useState(activeFilter?.level2 || null); // 시/군/구
-    const [showFilters, setShowFilters] = useState(false);
+function LocationFilter({ onFilterChange, activeFilter, user }) {
+    const [initialized, setInitialized] = useState(false);
 
-    // 필터 변경 핸들러
-    const handleLevel1Click = (area) => {
-        if (level1 === area) {
-            // 이미 선택된 지역 클릭 시 해제 (전국으로)
-            setLevel1(null);
-            setLevel2(null);
-            onFilterChange({ level1: null, level2: null });
-        } else {
-            setLevel1(area);
-            setLevel2(null); // 상위 지역 변경 시 하위 지역 초기화
-            onFilterChange({ level1: area, level2: null });
+    // 유저 정보로 초기 필터 설정 (최초 1회만)
+    useEffect(() => {
+        if (!initialized && user && user.activityAreas && user.activityAreas.length > 0) {
+            const userArea = user.activityAreas[0];
+            const initialFilter = {
+                level1: userArea.adminLevel1,
+                level2: userArea.adminLevel2
+            };
+            // 초기 변경은 부모에게 알리기보다, UI 초기 상태만 설정하는 게 좋을 수 있으나
+            // onFilterChange를 호출해야 CrewList가 필터링되므로 호출함.
+            // 단, 무한 루프 방지를 위해 activeFilter와 다를 때만 호출하거나 체크 필요.
+            // 여기서는 `initialized` 플래그로 1회만 실행.
+            onFilterChange(initialFilter);
+            setInitialized(true);
+        } else if (!initialized && user) {
+            // 유저 정보는 있는데 지역 정보가 없으면 그냥 초기화 완료 처리
+            setInitialized(true);
         }
+    }, [user, initialized, onFilterChange]);
+
+    const handleLevel1Click = (level1) => {
+        if (activeFilter.level1 === level1) return; // 이미 선택됨
+        onFilterChange({ level1: level1, level2: null });
     };
 
-    const handleLevel2Click = (district) => {
-        if (level2 === district) {
-            setLevel2(null);
-            onFilterChange({ level1, level2: null });
-        } else {
-            setLevel2(district);
-            onFilterChange({ level1, level2: district });
-        }
+    const handleLevel2Click = (level2) => {
+        onFilterChange({ ...activeFilter, level2: level2 });
     };
 
     const handleReset = () => {
-        setLevel1(null);
-        setLevel2(null);
         onFilterChange({ level1: null, level2: null });
-        setShowFilters(false);
     };
 
-    // 현재 선택된 필터 텍스트 생성
-    const getFilterText = () => {
-        if (!level1) return '전국';
-        if (!level2) return level1;
-        return `${level1} > ${level2}`;
+    // 현재 선택된 시/도의 하위 행정구역 목록 가져오기
+    const getSubDivisions = () => {
+        if (!activeFilter.level1) return [];
+        const division = KOREA_ADMIN_DIVISIONS.find(d => d.name === activeFilter.level1);
+        return division ? division.subDivisions : [];
     };
 
     return (
-        <div className="location-filter">
-            {/* 필터 헤더 (선택된 지역 표시 & 토글) */}
-            <div
-                onClick={() => setShowFilters(!showFilters)}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 16px',
-                    backgroundColor: '#fff',
-                    borderRadius: '12px',
-                    marginBottom: '10px',
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                    border: showFilters ? '1px solid #4318FF' : '1px solid transparent'
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '18px' }}>📍</span>
-                    <span style={{ fontWeight: '600', color: level1 ? '#4318FF' : '#1a1a1a' }}>
-                        {getFilterText()}
-                    </span>
-                </div>
-                <span style={{
-                    fontSize: '12px',
-                    color: '#888',
-                    transform: showFilters ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.2s'
-                }}>▼</span>
-            </div>
+        <div style={{ marginBottom: '20px' }}>
+            {/* Breadcrumb Navigation - 텍스트 형태, 포커스는 밑줄 */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#888',
+                marginBottom: '16px'
+            }}>
+                {/* 전국 */}
+                <span
+                    onClick={handleReset}
+                    style={{
+                        cursor: 'pointer',
+                        color: !activeFilter.level1 ? '#1a1a1a' : '#888',
+                        borderBottom: !activeFilter.level1 ? '2px solid #1a1a1a' : 'none',
+                        paddingBottom: '2px'
+                    }}
+                >
+                    전국
+                </span>
 
-            {/* 필터 옵션 영역 */}
-            {showFilters && (
-                <div style={{
-                    backgroundColor: '#fff',
-                    borderRadius: '12px',
-                    padding: '16px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    marginBottom: '16px',
-                    animation: 'slideDown 0.2s ease-out'
-                }}>
-                    <style>{`
-                        @keyframes slideDown {
-                            from { opacity: 0; transform: translateY(-10px); }
-                            to { opacity: 1; transform: translateY(0); }
-                        }
-                    `}</style>
-
-                    {/* 상단: 초기화 버튼 */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-                        <button
-                            onClick={handleReset}
+                {/* 시/도 */}
+                {activeFilter.level1 && (
+                    <>
+                        <span>&gt;</span>
+                        <span
+                            onClick={() => onFilterChange({ level1: activeFilter.level1, level2: null })}
                             style={{
-                                background: 'none',
-                                border: 'none',
-                                color: '#888',
-                                fontSize: '12px',
                                 cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px'
+                                color: (activeFilter.level1 && !activeFilter.level2) ? '#1a1a1a' : '#888',
+                                borderBottom: (activeFilter.level1 && !activeFilter.level2) ? '2px solid #1a1a1a' : 'none',
+                                paddingBottom: '2px'
                             }}
                         >
-                            <span>↺</span> 초기화
+                            {activeFilter.level1}
+                        </span>
+                    </>
+                )}
+
+                {/* 시/군/구 */}
+                {activeFilter.level2 && (
+                    <>
+                        <span>&gt;</span>
+                        <span
+                            style={{
+                                color: '#1a1a1a',
+                                borderBottom: '2px solid #1a1a1a',
+                                paddingBottom: '2px'
+                            }}
+                        >
+                            {activeFilter.level2}
+                        </span>
+                    </>
+                )}
+            </div>
+
+            {/* Selection List (Context-aware) */}
+            <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                maxHeight: '200px',
+                overflowY: 'auto'
+            }}>
+                {!activeFilter.level1 ? (
+                    // 시/도 선택 목록
+                    KOREA_ADMIN_DIVISIONS.map((division) => (
+                        <button
+                            key={division.name}
+                            onClick={() => handleLevel1Click(division.name)}
+                            style={{
+                                padding: '8px 16px',
+                                borderRadius: '20px',
+                                border: '1px solid #eee',
+                                backgroundColor: '#fff',
+                                color: '#666',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                marginBottom: '4px'
+                            }}
+                        >
+                            {division.name}
                         </button>
-                    </div>
-
-                    {/* Level 1: 시/도 선택 */}
-                    <div style={{ marginBottom: '16px' }}>
-                        <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px' }}>시 / 도</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                            {Object.keys(KOREA_ADMIN_AREAS).map(area => (
-                                <button
-                                    key={area}
-                                    onClick={() => handleLevel1Click(area)}
-                                    style={{
-                                        padding: '6px 12px',
-                                        borderRadius: '20px',
-                                        border: level1 === area ? '1px solid #4318FF' : '1px solid #eee',
-                                        backgroundColor: level1 === area ? '#4318FF' : '#f8f9fa',
-                                        color: level1 === area ? '#fff' : '#666',
-                                        fontSize: '13px',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    {area}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Level 2: 시/군/구 선택 (Level 1 선택 시 표시) */}
-                    {level1 && KOREA_ADMIN_AREAS[level1] && KOREA_ADMIN_AREAS[level1].districts.length > 0 && (
-                        <div style={{ borderTop: '1px solid #eee', paddingTop: '16px' }}>
-                            <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px' }}>시 / 군 / 구</div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                {KOREA_ADMIN_AREAS[level1].districts.map(district => (
-                                    <button
-                                        key={district}
-                                        onClick={() => handleLevel2Click(district)}
-                                        style={{
-                                            padding: '6px 12px',
-                                            borderRadius: '20px',
-                                            border: level2 === district ? '1px solid #4318FF' : '1px solid #eee',
-                                            backgroundColor: level2 === district ? '#e0e7ff' : '#f8f9fa',
-                                            color: level2 === district ? '#4318FF' : '#666',
-                                            fontSize: '13px',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s'
-                                        }}
-                                    >
-                                        {district}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
+                    ))
+                ) : !activeFilter.level2 ? (
+                    // 시/군/구 선택 목록 (level1은 선택되었으나 level2가 없을 때)
+                    getSubDivisions().map((subDivision) => (
+                        <button
+                            key={subDivision}
+                            onClick={() => handleLevel2Click(subDivision)}
+                            style={{
+                                padding: '8px 16px',
+                                borderRadius: '20px',
+                                border: '1px solid #eee',
+                                backgroundColor: '#fff',
+                                color: '#666',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                marginBottom: '4px'
+                            }}
+                        >
+                            {subDivision}
+                        </button>
+                    ))
+                ) : null}
+            </div>
         </div>
     );
 }

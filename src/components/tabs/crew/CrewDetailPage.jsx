@@ -1,171 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../utils/api';
 
-function CrewDetailPage({ crew, user, onBack, onUpdateUser }) {
-    const [members, setMembers] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [actionLoading, setActionLoading] = useState(false);
-    const [userRole, setUserRole] = useState(null); // 'captain', 'member', or null (not joined)
-    const [userStatus, setUserStatus] = useState(null); // 'PENDING', 'APPROVED', 'REJECTED'
 
-    useEffect(() => {
-        if (crew && user) {
-            fetchMembers();
-            // 스크롤 상단 이동
-            window.scrollTo(0, 0);
-        }
-    }, [crew, user]);
+function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
+    // ... states ...
 
-    const fetchMembers = async () => {
-        if (!crew) return;
-        setLoading(true);
-        try {
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
-                }
-            });
+    // ... useEffect & fetchMembers ...
 
-            if (response.ok) {
-                const data = await response.json();
-                setMembers(data);
+    // ... handleJoin/Leave/Approve/Reject ...
 
-                // Determine user's role and status
-                const myMemberInfo = data.find(m => m.userId === user.id);
-                setUserRole(myMemberInfo ? myMemberInfo.role : null);
-                setUserStatus(myMemberInfo ? myMemberInfo.status : null);
-            }
-        } catch (error) {
-            console.error('Failed to fetch members:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleJoin = async () => {
-        setActionLoading(true);
-        try {
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/join`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
-                }
-            });
-
-            if (response.ok) {
-                const memberData = await response.json();
-                fetchMembers();
-                if (onUpdateUser) onUpdateUser();
-
-                if (memberData.status === 'PENDING') {
-                    alert('가입 신청이 완료되었습니다. 크루장의 승인을 기다려주세요.');
-                } else {
-                    alert('크루에 가입되었습니다!');
-                }
-            } else {
-                const error = await response.text();
-                alert('가입 실패: ' + error);
-            }
-        } catch (error) {
-            console.error('Join error:', error);
-            alert('가입 중 오류가 발생했습니다.');
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleLeave = async () => {
-        if (!window.confirm('정말 크루를 탈퇴하시겠습니까?')) return;
-
-        setActionLoading(true);
-        try {
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/leave`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
-                }
-            });
-
-            if (response.ok) {
-                fetchMembers();
-                setUserRole(null);
-                if (onUpdateUser) onUpdateUser();
-                alert('크루를 탈퇴했습니다.');
-            } else {
-                const error = await response.text();
-                alert('탈퇴 실패: ' + error);
-            }
-        } catch (error) {
-            console.error('Leave error:', error);
-            alert('탈퇴 중 오류가 발생했습니다.');
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleApprove = async (memberId) => {
-        setActionLoading(true);
-        try {
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members/${memberId}/approve`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
-                }
-            });
-
-            if (response.ok) {
-                alert('멤버를 승인했습니다.');
-                fetchMembers();
-            } else {
-                const error = await response.text();
-                alert('승인 실패: ' + error);
-            }
-        } catch (error) {
-            console.error('Approve error:', error);
-            alert('승인 중 오류가 발생했습니다.');
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleReject = async (memberId) => {
-        if (!window.confirm('정말 이 가입 신청을 거부하시겠습니까?')) return;
-
-        setActionLoading(true);
-        try {
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members/${memberId}/reject`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
-                }
-            });
-
-            if (response.ok) {
-                alert('가입 신청을 거부했습니다.');
-                fetchMembers();
-            } else {
-                const error = await response.text();
-                alert('거부 실패: ' + error);
-            }
-        } catch (error) {
-            console.error('Reject error:', error);
-            alert('거부 중 오류가 발생했습니다.');
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    if (!crew) return null;
-
-    let crewImage = crew.image;
-    if (!crewImage || (!crewImage.emoji && !crewImage.url)) {
-        try {
-            crewImage = JSON.parse(crew.imageUrl);
-        } catch {
-            crewImage = { url: crew.imageUrl || '', bg: '#ddd', emoji: '🏃' };
-        }
-    }
+    // ... image parsing ...
 
     return (
         <div className="crew-detail-page" style={{
@@ -190,29 +34,25 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser }) {
                 flexDirection: 'column',
                 justifyContent: 'flex-end'
             }}>
-                {/* Back Button */}
-                <button
+                {/* Back Button - Text Type */}
+                <div
                     onClick={onBack}
                     style={{
                         position: 'absolute',
-                        top: '80px', // 헤더 아래 적절한 위치
+                        top: '80px',
                         left: '20px',
-                        background: 'rgba(0,0,0,0.3)',
-                        border: 'none',
                         color: 'white',
-                        padding: '8px 16px',
-                        borderRadius: '20px',
                         cursor: 'pointer',
-                        fontSize: '14px',
+                        fontSize: '16px',
                         fontWeight: '600',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
-                        backdropFilter: 'blur(4px)'
+                        gap: '4px',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.5)' // 가독성 확보
                     }}
                 >
-                    <span>←</span> 목록으로
-                </button>
+                    <span>&lt;</span> 목록으로
+                </div>
 
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: '20px' }}>
                     <div style={{
@@ -234,7 +74,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser }) {
                             crewImage.emoji || '🏃'
                         )}
                     </div>
-                    <div style={{ marginBottom: '8px' }}>
+                    <div style={{ marginBottom: '8px', flex: 1 }}>
                         <div style={{
                             fontSize: '12px',
                             fontWeight: '600',
@@ -243,7 +83,30 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser }) {
                             textTransform: 'uppercase',
                             letterSpacing: '1px'
                         }}>Crew</div>
-                        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '800', lineHeight: 1.2 }}>{crew.name}</h1>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '800', lineHeight: 1.2 }}>{crew.name}</h1>
+                            {userRole === 'captain' && (
+                                <button
+                                    onClick={onEdit}
+                                    style={{
+                                        background: 'rgba(0,0,0,0.3)',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '32px',
+                                        height: '32px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        color: 'white',
+                                        fontSize: '18px',
+                                        backdropFilter: 'blur(4px)'
+                                    }}
+                                >
+                                    ⚙️
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

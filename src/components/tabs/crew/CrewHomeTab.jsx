@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import LocationFilter from './LocationFilter';
 
-function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews }) {
+
+function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews, user }) {
     const [activeFilter, setActiveFilter] = useState({ level1: null, level2: null });
 
     const handleFilterChange = (filter) => {
@@ -14,10 +15,12 @@ function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews }) {
 
     return (
         <div style={{ padding: '20px' }}>
-            <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', fontWeight: '700' }}>크루 목록</h2>
-
             {/* 지역 필터 추가 */}
-            <LocationFilter onFilterChange={handleFilterChange} activeFilter={activeFilter} />
+            <LocationFilter
+                onFilterChange={handleFilterChange}
+                activeFilter={activeFilter}
+                user={user}
+            />
 
             {allCrews.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>

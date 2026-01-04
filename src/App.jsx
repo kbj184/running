@@ -470,26 +470,18 @@ function App() {
                             onGradeClick={() => setShowRunnerGradeModal(true)}
                         />
 
+
                         {showProfileMenu && (
                             <ProfileSubHeader
                                 profileTab={profileTab}
                                 onTabChange={handleProfileTabChange}
                             />
                         )}
-
-                        {activeTab === 'crew' && !showProfileMenu && (
-                            <CrewSubHeader
-                                crewTab={user.crewTab || 'home'}
-                                onTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
-                            />
-                        )}
                     </div>
 
                     {/* Scrollable Content Area */}
                     <div className="main-content" style={{
-                        marginTop: showProfileMenu ? 'calc(var(--header-height) + 60px)' :
-                            (activeTab === 'crew' && !showProfileMenu) ? 'calc(var(--header-height) + 60px)' :
-                                'var(--header-height)'
+                        marginTop: showProfileMenu ? 'calc(var(--header-height) + 60px)' : 'var(--header-height)'
                     }}>
                         {/* Home Tab */}
                         {activeTab === 'home' && !showProfileMenu && <HomeTab />}
