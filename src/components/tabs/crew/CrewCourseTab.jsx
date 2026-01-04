@@ -475,19 +475,20 @@ function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
                                     {/* Content */}
                                     <div style={{ flex: 1 }}>
                                         <div style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        marginBottom: '4px'
-                                    }}>
-                                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
-                                            {record.startAddress || '러닝 코스'}
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            marginBottom: '4px'
+                                        }}>
+                                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
+                                                {record.startAddress || '러닝 코스'}
+                                            </div>
+                                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#FF9A56' }}>
+                                                {record.distance?.toFixed(2)} km
+                                            </div>
                                         </div>
-                                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#FF9A56' }}>
-                                            {record.distance?.toFixed(2)} km
+                                        <div style={{ fontSize: '12px', color: '#999' }}>
+                                            {new Date(record.timestamp || Date.now()).toLocaleDateString()} • {Math.floor(record.duration / 60)}분
                                         </div>
-                                    </div>
-                                    <div style={{ fontSize: '12px', color: '#999' }}>
-                                        {new Date(record.timestamp || Date.now()).toLocaleDateString()} • {Math.floor(record.duration / 60)}분
                                     </div>
                                 </div>
                             ))}
@@ -530,9 +531,9 @@ function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
                         </div>
                     </>
                 )}
-                    </div>
             </div>
-            );
+        </div>
+    );
 }
 
-            export default CrewCourseTab;
+export default CrewCourseTab;
