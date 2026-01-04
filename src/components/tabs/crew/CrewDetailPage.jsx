@@ -329,6 +329,23 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                     소개
                 </button>
                 <button
+                    onClick={() => setActiveTab('members')}
+                    style={{
+                        flex: 1,
+                        padding: '14px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        borderBottom: activeTab === 'members' ? '3px solid #FF9A56' : '3px solid transparent',
+                        fontSize: '15px',
+                        fontWeight: activeTab === 'members' ? '700' : '600',
+                        color: activeTab === 'members' ? '#FF9A56' : '#666',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    멤버
+                </button>
+                <button
                     onClick={() => setActiveTab('notice')}
                     style={{
                         flex: 1,
@@ -433,6 +450,103 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                 </button>
                             )}
                         </div>
+                    </div>
+                )}
+
+                {activeTab === 'members' && (
+                    <div style={{ padding: '20px' }}>
+                        <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#1a1a1a' }}>
+                            크루 멤버 ({members.length})
+                        </h3>
+                        {loading ? (
+                            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+                                로딩 중...
+                            </div>
+                        ) : members.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+                                아직 멤버가 없습니다.
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {members.map(member => {
+                                    // 프로필 이미지 파싱
+                                    let profileImage = null;
+                                    try {
+                                        if (member.profileImageUrl) {
+                                            const parsed = JSON.parse(member.profileImageUrl);
+                                            profileImage = parsed.url || null;
+                                        }
+                                    } catch {
+                                        if (member.profileImageUrl && member.profileImageUrl.startsWith('http')) {
+                                            profileImage = member.profileImageUrl;
+                                        }
+                                    }
+
+                                    return (
+                                        <div
+                                            key={member.id}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '12px',
+                                                padding: '12px',
+                                                backgroundColor: '#f8f9fa',
+                                                borderRadius: '12px'
+                                            }}
+                                        >
+                                            {/* 프로필 이미지 */}
+                                            <div style={{
+                                                width: '48px',
+                                                height: '48px',
+                                                borderRadius: '50%',
+                                                overflow: 'hidden',
+                                                backgroundColor: '#e0e0e0',
+                                                flexShrink: 0,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}>
+                                                {profileImage ? (
+                                                    <img src={profileImage} alt={member.nickname} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <span style={{ fontSize: '24px' }}>👤</span>
+                                                )}
+                                            </div>
+
+                                            {/* 멤버 정보 */}
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                                    <span style={{ fontSize: '15px', fontWeight: '600', color: '#1a1a1a' }}>
+                                                        {member.nickname}
+                                                    </span>
+                                                    {member.role === 'captain' && (
+                                                        <span style={{
+                                                            fontSize: '11px',
+                                                            fontWeight: '700',
+                                                            color: '#FF9A56',
+                                                            backgroundColor: 'rgba(255, 154, 86, 0.15)',
+                                                            padding: '2px 8px',
+                                                            borderRadius: '10px'
+                                                        }}>
+                                                            크루장
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {member.status === 'PENDING' && (
+                                                    <span style={{
+                                                        fontSize: '12px',
+                                                        color: '#f59e0b',
+                                                        fontWeight: '600'
+                                                    }}>
+                                                        승인 대기중
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 )}
 
