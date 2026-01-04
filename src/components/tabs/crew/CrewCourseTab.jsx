@@ -231,7 +231,7 @@ function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
     const fetchRunningRecords = async () => {
         try {
             setLoading(true);
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/running/sessions/completed?userId=${user.id}`, {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/sessions/completed?userId=${user.id}`, {
                 headers: getAuthHeaders()
             });
             if (response.ok) {
