@@ -84,6 +84,8 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
         if (members.length > 0 && user) {
             const myInfo = members.find(m => m.userId === user.id);
             if (myInfo) {
+                console.log('DEBUG: My member info:', myInfo);
+                console.log('DEBUG: Role value:', myInfo.role);
                 setUserStatus(myInfo.status);
                 setUserRole(myInfo.role);
             } else {
