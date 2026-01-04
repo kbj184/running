@@ -164,7 +164,7 @@ function App() {
     const fetchCrews = async () => {
         if (!user) return;
         try {
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/nearby?radiusKm=3`, {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/all`, {
                 method: 'GET',
                 headers: {
                     'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
