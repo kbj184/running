@@ -550,8 +550,7 @@ function App() {
                             onProfileClick={handleProfileClick}
                         />
                     </div>
-                )}
-            )}
+                )
             )}
         </LoadScript>
     );
