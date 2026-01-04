@@ -4,14 +4,98 @@ import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import ImageResize from 'quill-image-resize-module-react';
 
+// ImageResize 모듈 등록
 Quill.register('modules/imageResize', ImageResize);
 
 function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
-    // ... (state lines 6-12)
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [isPinned, setIsPinned] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
 
-    // ... (useEffect lines 16-22)
+    const isEditMode = !!post;
+    const isCaptain = crew && crew.captainId === user.id;
 
-    // ... (imageHandler lines 25-78)
+    useEffect(() => {
+        if (post) {
+            setTitle(post.title);
+            setContent(post.content);
+            setIsPinned(post.isPinned || false);
+        }
+    }, [post]);
+
+    // Quill 이미지 핸들러
+    const imageHandler = () => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files[0];
+            if (!file) return;
+
+            // 이미지 파일 검증
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+
+            // 파일 크기 제한 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('이미지 크기는 5MB 이하여야 합니다.');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+
+                const response = await fetch(
+                    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                    {
+                        method: 'POST',
+                        body: formData
+                    }
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const imageUrl = data.secure_url;
+
+                    // Quill 에디터에 이미지 삽입
+                    const quill = document.querySelector('.ql-editor');
+                    // 현재 선택된 위치가 없으면 에디터 끝에 삽입하거나 포커스 후 처리해야 함
+                    // 리액트 state로 관리되는 에디터에서는 ref를 쓰는게 좋지만,
+                    // 간단히 현재 selection을 가져오거나 실패 시 content에 추가
+                    let range = window.getSelection().getRangeAt(0);
+
+                    // 에디터 내부가 아니면(툴바 클릭 등으로 포커스 잃음) 에디터 포커스 유도 필요
+                    // ReactQuill instance 접근이 어려우므로 DOM 조작으로 삽입 시도
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+
+                    // range 위치에 삽입
+                    range.insertNode(img);
+
+                    // 텍스트 커서 위치 업데이트 (이미지 뒤로)
+                    range.setStartAfter(img);
+                    range.setEndAfter(img);
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+
+                } else {
+                    throw new Error('이미지 업로드 실패');
+                }
+            } catch (err) {
+                console.error('Image upload error:', err);
+                alert('이미지 업로드 중 오류가 발생했습니다.');
+            }
+        };
+    };
 
     // Quill 모듈 설정
     const modules = useMemo(() => ({
@@ -26,7 +110,6 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
                 ['clean']
             ],
             handlers: {
-                // image: imageHandler // 이미지 핸들러 잠시 비활성화 (테스트) -> 다시 활성화 필요 시 주석 해제
                 image: imageHandler
             }
         },
@@ -188,7 +271,7 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
                         />
                     </div>
                     <div style={{ marginTop: '8px', fontSize: '12px', color: '#999' }}>
-                        💡 텍스트 서식, 이미지, 링크 등을 자유롭게 추가할 수 있습니다.
+                        💡 텍스트 서식, 이미지, 링크 등을 자유롭게 추가할 수 있습니다. 이미지를 클릭하면 크기를 조절할 수 있습니다.
                     </div>
                 </div>
 
