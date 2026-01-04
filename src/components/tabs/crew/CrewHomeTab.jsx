@@ -1,12 +1,6 @@
 import React from 'react';
 
 function CrewHomeTab({ allCrews, onCrewClick }) {
-    // 디버깅: 크루 데이터 확인
-    console.log('CrewHomeTab - allCrews:', allCrews);
-    if (allCrews.length > 0) {
-        console.log('First crew data:', allCrews[0]);
-    }
-
     return (
         <div style={{ padding: '20px' }}>
             <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', fontWeight: '700' }}>크루 목록</h2>
