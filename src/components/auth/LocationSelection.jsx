@@ -1,18 +1,20 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { GoogleMap, useJsApiLoader, Autocomplete } from '@react-google-maps/api';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { GoogleMap, Autocomplete } from '@react-google-maps/api';
 import AdvancedMarker from '../common/AdvancedMarker';
 
 const SEOUL_CENTER = { lat: 37.5665, lng: 126.9780 };
-const LIBRARIES = ['places', 'marker'];
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
 function LocationSelection({ onSelect, onBack, isLoading }) {
-    const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-        language: 'ko',
-        libraries: LIBRARIES
-    });
+    // App.jsx의 LoadScript에서 이미 로드되었으므로 useJsApiLoader 제거
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    useEffect(() => {
+        // Google Maps API가 로드되었는지 확인
+        if (window.google && window.google.maps) {
+            setIsLoaded(true);
+        }
+    }, []);
 
     const [map, setMap] = useState(null);
     const [markerPos, setMarkerPos] = useState(null);
