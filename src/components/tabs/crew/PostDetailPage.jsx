@@ -77,7 +77,10 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
                             ? user.accessToken
                             : `Bearer ${user.accessToken}`
                     },
-                    body: JSON.stringify({ content: commentContent })
+                    body: JSON.stringify({
+                        content: commentContent,
+                        postId: postId
+                    })
                 }
             );
 
