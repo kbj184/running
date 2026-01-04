@@ -117,97 +117,110 @@ function CrewCourseTab({ crew, user, userRole }) {
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
-                            <div style={{ display: 'flex' }}>
-                                {/* Thumbnail */}
-                                {course.mapThumbnailUrl && (
+                            {/* Thumbnail - Always show on left */}
+                            <div style={{
+                                width: '120px',
+                                height: '120px',
+                                flexShrink: 0,
+                                backgroundColor: '#f0f0f0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden'
+                            }}>
+                                {course.mapThumbnailUrl ? (
+                                    <img
+                                        src={course.mapThumbnailUrl}
+                                        alt={course.name}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover'
+                                        }}
+                                    />
+                                ) : (
                                     <div style={{
-                                        width: '120px',
-                                        height: '120px',
-                                        flexShrink: 0,
-                                        backgroundColor: '#f0f0f0'
+                                        fontSize: '40px',
+                                        color: '#ccc'
                                     }}>
-                                        <img
-                                            src={course.mapThumbnailUrl}
-                                            alt={course.name}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover'
-                                            }}
-                                        />
+                                        🗺️
                                     </div>
                                 )}
+                            </div>
 
-                                {/* Content */}
-                                <div style={{
-                                    flex: 1,
-                                    padding: '16px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'space-between'
-                                }}>
-                                    <div>
-                                        <div style={{
-                                            fontSize: '16px',
-                                            fontWeight: '700',
-                                            color: '#333',
-                                            marginBottom: '8px'
-                                        }}>
-                                            {course.name}
-                                        </div>
-                                        {course.description && (
-                                            <div style={{
-                                                fontSize: '13px',
-                                                color: '#666',
-                                                marginBottom: '12px',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap'
-                                            }}>
-                                                {course.description}
-                                            </div>
-                                        )}
-                                    </div>
-
+                            {/* Content */}
+                            <div style={{
+                                flex: 1,
+                                padding: '16px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between'
+                            }}>
+                                <div>
                                     <div style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center'
+                                        fontSize: '16px',
+                                        fontWeight: '700',
+                                        color: '#333',
+                                        marginBottom: '8px'
                                     }}>
+                                        {course.name}
+                                    </div>
+                                    {course.description && (
                                         <div style={{
-                                            fontSize: '14px',
-                                            fontWeight: '600',
-                                            color: '#FF9A56'
+                                            fontSize: '13px',
+                                            color: '#666',
+                                            marginBottom: '12px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
                                         }}>
-                                            {course.distance?.toFixed(2)} km
+                                            {course.description}
                                         </div>
-                                        <div style={{
-                                            fontSize: '12px',
-                                            color: '#999'
-                                        }}>
-                                            {course.creatorNickname}
-                                        </div>
+                                    )}
+                                </div>
+
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        color: '#FF9A56'
+                                    }}>
+                                        {course.distance?.toFixed(2)} km
+                                    </div>
+                                    <div style={{
+                                        fontSize: '12px',
+                                        color: '#999'
+                                    }}>
+                                        {course.creatorNickname}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
-
-            {/* Register Modal */}
-            {showRegisterModal && (
-                <CourseRegistrationModal
-                    user={user}
-                    crewId={crew.id}
-                    onClose={() => setShowRegisterModal(false)}
-                    onSuccess={() => {
-                        setShowRegisterModal(false);
-                        fetchCourses();
-                    }}
-                />
-            )}
+                        </div>
+            ))}
         </div>
+    )
+}
+
+{/* Register Modal */ }
+{
+    showRegisterModal && (
+        <CourseRegistrationModal
+            user={user}
+            crewId={crew.id}
+            onClose={() => setShowRegisterModal(false)}
+            onSuccess={() => {
+                setShowRegisterModal(false);
+                fetchCourses();
+            }}
+        />
+    )
+}
+        </div >
     );
 }
 
