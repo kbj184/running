@@ -666,7 +666,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                                         gap: '8px',
                                                         alignItems: 'center'
                                                     }}>
-                                                        {userRole === 'CAPTAIN' ? (
+                                                        {userRole?.toUpperCase() === 'CAPTAIN' ? (
                                                             <>
                                                                 <button
                                                                     onClick={() => handleApproveMember(member.userId)}
