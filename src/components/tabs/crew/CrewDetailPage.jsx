@@ -1,0 +1,457 @@
+import React, { useState, useEffect } from 'react';
+import { api } from '../../../utils/api';
+
+function CrewDetailPage({ crew, user, onBack, onUpdateUser }) {
+    const [members, setMembers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [userRole, setUserRole] = useState(null); // 'captain', 'member', or null (not joined)
+    const [userStatus, setUserStatus] = useState(null); // 'PENDING', 'APPROVED', 'REJECTED'
+
+    useEffect(() => {
+        if (crew && user) {
+            fetchMembers();
+            // 스크롤 상단 이동
+            window.scrollTo(0, 0);
+        }
+    }, [crew, user]);
+
+    const fetchMembers = async () => {
+        if (!crew) return;
+        setLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setMembers(data);
+
+                // Determine user's role and status
+                const myMemberInfo = data.find(m => m.userId === user.id);
+                setUserRole(myMemberInfo ? myMemberInfo.role : null);
+                setUserStatus(myMemberInfo ? myMemberInfo.status : null);
+            }
+        } catch (error) {
+            console.error('Failed to fetch members:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleJoin = async () => {
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/join`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                const memberData = await response.json();
+                fetchMembers();
+                if (onUpdateUser) onUpdateUser();
+
+                if (memberData.status === 'PENDING') {
+                    alert('가입 신청이 완료되었습니다. 크루장의 승인을 기다려주세요.');
+                } else {
+                    alert('크루에 가입되었습니다!');
+                }
+            } else {
+                const error = await response.text();
+                alert('가입 실패: ' + error);
+            }
+        } catch (error) {
+            console.error('Join error:', error);
+            alert('가입 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleLeave = async () => {
+        if (!window.confirm('정말 크루를 탈퇴하시겠습니까?')) return;
+
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/leave`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                fetchMembers();
+                setUserRole(null);
+                if (onUpdateUser) onUpdateUser();
+                alert('크루를 탈퇴했습니다.');
+            } else {
+                const error = await response.text();
+                alert('탈퇴 실패: ' + error);
+            }
+        } catch (error) {
+            console.error('Leave error:', error);
+            alert('탈퇴 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleApprove = async (memberId) => {
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members/${memberId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                alert('멤버를 승인했습니다.');
+                fetchMembers();
+            } else {
+                const error = await response.text();
+                alert('승인 실패: ' + error);
+            }
+        } catch (error) {
+            console.error('Approve error:', error);
+            alert('승인 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleReject = async (memberId) => {
+        if (!window.confirm('정말 이 가입 신청을 거부하시겠습니까?')) return;
+
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members/${memberId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                alert('가입 신청을 거부했습니다.');
+                fetchMembers();
+            } else {
+                const error = await response.text();
+                alert('거부 실패: ' + error);
+            }
+        } catch (error) {
+            console.error('Reject error:', error);
+            alert('거부 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    if (!crew) return null;
+
+    let crewImage = crew.image;
+    if (!crewImage || (!crewImage.emoji && !crewImage.url)) {
+        try {
+            crewImage = JSON.parse(crew.imageUrl);
+        } catch {
+            crewImage = { url: crew.imageUrl || '', bg: '#ddd', emoji: '🏃' };
+        }
+    }
+
+    return (
+        <div className="crew-detail-page" style={{
+            minHeight: '100%',
+            backgroundColor: '#fff',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10
+        }}>
+            {/* Header / Banner Area */}
+            <div style={{
+                background: crewImage.bg || '#333',
+                padding: '24px',
+                paddingTop: 'calc(var(--header-height) + 24px)', // 헤더 높이만큼 패딩 추가
+                color: 'white',
+                position: 'relative',
+                minHeight: '200px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end'
+            }}>
+                {/* Back Button */}
+                <button
+                    onClick={onBack}
+                    style={{
+                        position: 'absolute',
+                        top: '80px', // 헤더 아래 적절한 위치
+                        left: '20px',
+                        background: 'rgba(0,0,0,0.3)',
+                        border: 'none',
+                        color: 'white',
+                        padding: '8px 16px',
+                        borderRadius: '20px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        backdropFilter: 'blur(4px)'
+                    }}
+                >
+                    <span>←</span> 목록으로
+                </button>
+
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '20px' }}>
+                    <div style={{
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '20px',
+                        background: 'rgba(255,255,255,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '40px',
+                        boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+                        overflow: 'hidden',
+                        flexShrink: 0
+                    }}>
+                        {crewImage.url ? (
+                            <img src={crewImage.url} alt={crew.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                            crewImage.emoji || '🏃'
+                        )}
+                    </div>
+                    <div style={{ marginBottom: '8px' }}>
+                        <div style={{
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            opacity: 0.9,
+                            marginBottom: '4px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px'
+                        }}>Crew</div>
+                        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '800', lineHeight: 1.2 }}>{crew.name}</h1>
+                    </div>
+                </div>
+            </div>
+
+            {/* Content Area */}
+            <div style={{ padding: '24px' }}>
+                <div style={{ marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '8px', color: '#1a1a1a' }}>소개</h3>
+                    <p style={{ color: '#4b5563', lineHeight: 1.6, fontSize: '15px' }}>
+                        {crew.description || '크루 소개글이 없습니다.'}
+                    </p>
+                </div>
+
+                {/* Stats Grid */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '12px',
+                    marginBottom: '24px'
+                }}>
+                    <div style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>멤버</div>
+                        <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>{members.length}명</div>
+                    </div>
+                    <div style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>누적 거리</div>
+                        <div style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>
+                            {crew.totalDistance ? crew.totalDistance.toFixed(0) : 0}km
+                        </div>
+                    </div>
+                </div>
+
+                {/* Join/Leave Action Area */}
+                <div style={{ marginBottom: '32px' }}>
+                    {userRole ? (
+                        <div style={{
+                            padding: '16px',
+                            backgroundColor: userStatus === 'PENDING' ? '#fffbeb' : '#f0fdf4',
+                            border: `1px solid ${userStatus === 'PENDING' ? '#fcd34d' : '#86efac'}`,
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }}>
+                            <div>
+                                <div style={{ fontWeight: '600', color: userStatus === 'PENDING' ? '#92400e' : '#166534' }}>
+                                    {userStatus === 'PENDING' ? '가입 승인 대기중' : '멤버입니다'}
+                                </div>
+                                <div style={{ fontSize: '12px', color: userStatus === 'PENDING' ? '#b45309' : '#15803d', marginTop: '2px' }}>
+                                    {userRole === 'captain' ? '당신은 크루장입니다' : `가입일: ${new Date().toLocaleDateString()}`}
+                                </div>
+                            </div>
+
+                            {userStatus === 'APPROVED' && (
+                                <button
+                                    onClick={handleLeave}
+                                    disabled={actionLoading || userRole === 'captain'}
+                                    style={{
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #fee2e2',
+                                        backgroundColor: '#fff',
+                                        color: userRole === 'captain' ? '#ccc' : '#ef4444',
+                                        fontWeight: '600',
+                                        cursor: userRole === 'captain' ? 'not-allowed' : 'pointer'
+                                    }}
+                                >
+                                    {userRole === 'captain' ? '탈퇴 불가' : '탈퇴하기'}
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <button
+                            onClick={handleJoin}
+                            disabled={actionLoading}
+                            style={{
+                                width: '100%',
+                                padding: '16px',
+                                borderRadius: '12px',
+                                border: 'none',
+                                backgroundColor: '#4318FF',
+                                color: 'white',
+                                fontSize: '16px',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 12px rgba(67, 24, 255, 0.3)',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {actionLoading ? '처리 중...' : `크루 가입하기 ${crew.joinType === 'APPROVAL' ? '(승인 필요)' : ''}`}
+                        </button>
+                    )}
+                </div>
+
+                {/* Members List */}
+                <div>
+                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '16px', color: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span>멤버 목록</span>
+                    </h3>
+
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>로딩 중...</div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {members.map((member) => (
+                                <div key={member.userId} style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    padding: '12px',
+                                    borderRadius: '12px',
+                                    backgroundColor: '#fff',
+                                    border: '1px solid #f0f0f0'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '50%',
+                                            backgroundColor: '#f3f4f6',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            overflow: 'hidden'
+                                        }}>
+                                            {member.nicknameImage ? (
+                                                <img src={member.nicknameImage} alt={member.nickname} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <span style={{ fontSize: '20px' }}>🏃</span>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div style={{ fontWeight: '600', color: '#1a1a1a', fontSize: '15px' }}>
+                                                {member.nickname}
+                                                {member.userId === user.id && <span style={{ fontSize: '12px', color: '#666', marginLeft: '4px' }}>(나)</span>}
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                                                {member.role === 'captain' && (
+                                                    <span style={{ fontSize: '10px', fontWeight: '700', color: '#fa8231', background: '#fff0e6', padding: '2px 6px', borderRadius: '4px' }}>
+                                                        LEADER
+                                                    </span>
+                                                )}
+                                                {member.status === 'PENDING' && (
+                                                    <span style={{ fontSize: '10px', fontWeight: '700', color: '#92400e', background: '#fef3c7', padding: '2px 6px', borderRadius: '4px' }}>
+                                                        승인 대기
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 승인/거절 버튼 (크루장만) */}
+                                    {userRole === 'captain' && member.status === 'PENDING' && (
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button
+                                                onClick={() => handleApprove(member.id)}
+                                                disabled={actionLoading}
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    borderRadius: '6px',
+                                                    border: 'none',
+                                                    backgroundColor: '#10b981',
+                                                    color: 'white',
+                                                    fontSize: '12px',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                승인
+                                            </button>
+                                            <button
+                                                onClick={() => handleReject(member.id)}
+                                                disabled={actionLoading}
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    borderRadius: '6px',
+                                                    border: 'none',
+                                                    backgroundColor: '#ef4444',
+                                                    color: 'white',
+                                                    fontSize: '12px',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                거절
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+            {/* 하단 여백 */}
+            <div style={{ height: '80px' }}></div>
+        </div>
+    );
+}
+
+export default CrewDetailPage;

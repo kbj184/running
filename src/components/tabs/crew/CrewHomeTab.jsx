@@ -1,15 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
+import LocationFilter from './LocationFilter';
 
-function CrewHomeTab({ allCrews, onCrewClick }) {
+function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews }) {
+    const [activeFilter, setActiveFilter] = useState({ level1: null, level2: null });
+
+    const handleFilterChange = (filter) => {
+        setActiveFilter(filter);
+        if (onRefreshCrews) {
+            // 필터 변경 시 크루 목록 새로고침 (API 호출)
+            onRefreshCrews(filter);
+        }
+    };
+
     return (
         <div style={{ padding: '20px' }}>
             <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', fontWeight: '700' }}>크루 목록</h2>
 
+            {/* 지역 필터 추가 */}
+            <LocationFilter onFilterChange={handleFilterChange} activeFilter={activeFilter} />
+
             {allCrews.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
                     <div style={{ fontSize: '48px', marginBottom: '16px' }}>👥</div>
-                    <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>아직 생성된 크루가 없습니다</p>
-                    <p style={{ fontSize: '14px' }}>크루 만들기 탭에서 새로운 크루를 만들어보세요!</p>
+                    <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
+                        {activeFilter.level1 ? '해당 지역에 크루가 없습니다' : '아직 생성된 크루가 없습니다'}
+                    </p>
+                    <p style={{ fontSize: '14px' }}>
+                        {activeFilter.level1 ? '다른 지역을 선택하거나\n' : ''}
+                        크루 만들기 탭에서 새로운 크루를 만들어보세요!
+                    </p>
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

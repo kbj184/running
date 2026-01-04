@@ -36,7 +36,7 @@ import LoginScreen from './components/auth/LoginScreen';
 import NicknameRegistration from './components/auth/NicknameRegistration';
 
 // Existing Modals
-import CrewDetailModal from './components/common/CrewDetailModal';
+
 
 function App() {
     // User & Auth State
@@ -161,10 +161,19 @@ function App() {
     }, []);
 
     // Fetch Crews
-    const fetchCrews = async () => {
+    const fetchCrews = async (filters = {}) => {
         if (!user) return;
         try {
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/all`, {
+            // 필터 파라미터 구성
+            const queryParams = new URLSearchParams();
+            if (filters.level1) queryParams.append('adminLevel1', filters.level1);
+            if (filters.level2) queryParams.append('adminLevel2', filters.level2);
+            if (filters.level3) queryParams.append('adminLevel3', filters.level3);
+
+            const queryString = queryParams.toString();
+            const url = `${import.meta.env.VITE_API_URL}/crew/all${queryString ? `?${queryString}` : ''}`;
+
+            const response = await api.request(url, {
                 method: 'GET',
                 headers: {
                     'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
@@ -376,10 +385,7 @@ function App() {
         setProfileTab(tab);
     };
 
-    const handleCrewClick = (crew) => {
-        setSelectedCrew(crew);
-        setShowCrewDetailModal(true);
-    };
+
 
     // Loading Screen
     if (isAuthChecking) {
@@ -521,7 +527,6 @@ function App() {
                             <CrewTab
                                 user={user}
                                 allCrews={allCrews}
-                                onCrewClick={handleCrewClick}
                                 onRefreshCrews={fetchCrews}
                                 crewTab={user.crewTab || 'home'}
                                 onCrewTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
@@ -536,22 +541,6 @@ function App() {
                                 user={user}
                             />
                         )}
-
-
-
-                        <CrewDetailModal
-                            isOpen={showCrewDetailModal}
-                            onClose={() => {
-                                setShowCrewDetailModal(false);
-                                setSelectedCrew(null);
-                            }}
-                            crew={selectedCrew}
-                            user={user}
-                            onUpdateUser={() => {
-                                checkAuth();
-                                fetchCrews();
-                            }}
-                        />
 
                         {/* Runner Grade Modal */}
                         {showRunnerGradeModal && (
