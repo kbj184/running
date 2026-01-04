@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../../utils/api';
 import CrewBoardTab from './CrewBoardTab';
+import PostDetailPage from './PostDetailPage';
+import PostEditorPage from './PostEditorPage';
 
 function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const [members, setMembers] = useState([]);
@@ -12,6 +14,11 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const [isTabFixed, setIsTabFixed] = useState(false);
     const tabRef = useRef(null);
     const tabOffsetRef = useRef(0);
+
+    // 게시판 상태
+    const [boardView, setBoardView] = useState('list'); // 'list', 'detail', 'editor'
+    const [selectedPost, setSelectedPost] = useState(null);
+    const [editingPost, setEditingPost] = useState(null);
 
     useEffect(() => {
         if (crew) {
@@ -124,6 +131,34 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
         }
     };
 
+    // 게시판 핸들러
+    const handlePostClick = (post) => {
+        setSelectedPost(post);
+        setBoardView('detail');
+    };
+
+    const handleCreatePost = () => {
+        setEditingPost(null);
+        setBoardView('editor');
+    };
+
+    const handleEditPost = (post) => {
+        setEditingPost(post);
+        setBoardView('editor');
+    };
+
+    const handleBackToBoard = () => {
+        setBoardView('list');
+        setSelectedPost(null);
+        setEditingPost(null);
+    };
+
+    const handlePostComplete = () => {
+        setBoardView('list');
+        setSelectedPost(null);
+        setEditingPost(null);
+    };
+
     // 크루 이미지 파싱
     let crewImage = { emoji: '🏃', bg: 'linear-gradient(135deg, #FF6B6B 0%, #C44569 100%)' };
     try {
@@ -139,9 +174,34 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
 
     const isCaptain = (userRole === 'captain' || (crew.captainId && user && crew.captainId === user.id));
 
+    // 게시판 상세/에디터 뷰
+    if (activeTab === 'board' && boardView === 'detail' && selectedPost) {
+        return (
+            <PostDetailPage
+                postId={selectedPost.id}
+                crew={crew}
+                user={user}
+                onBack={handleBackToBoard}
+                onEdit={handleEditPost}
+            />
+        );
+    }
+
+    if (activeTab === 'board' && boardView === 'editor') {
+        return (
+            <PostEditorPage
+                crew={crew}
+                user={user}
+                post={editingPost}
+                onCancel={handleBackToBoard}
+                onComplete={handlePostComplete}
+            />
+        );
+    }
+
     return (
         <div style={{ backgroundColor: '#fff', minHeight: '100vh', paddingBottom: '80px' }}>
-            {/* 상단 네비게이션 - 여백 제거 */}
+            {/* 상단 네비게이션 */}
             <div style={{
                 backgroundColor: '#fff',
                 padding: '12px 16px',
@@ -166,12 +226,11 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 </div>
             </div>
 
-            {/* 오렌지 그라데이션 헤더 - 여백 없이, 높이 최소화 */}
+            {/* 오렌지 그라데이션 헤더 */}
             <div style={{
                 background: 'linear-gradient(135deg, #FF9A56 0%, #FF6B45 100%)',
                 padding: '20px 16px'
             }}>
-                {/* 크루 이미지와 이름 - 가로 배치 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                     <div style={{
                         width: '60px',
@@ -204,7 +263,6 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                             {crew.name}
                         </h1>
                     </div>
-                    {/* 설정 버튼을 닉네임 옆으로 이동 */}
                     {isCaptain && (
                         <button
                             onClick={onEdit}
@@ -229,7 +287,6 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                     )}
                 </div>
 
-                {/* 멤버 및 누적거리 - 검정 텍스트 */}
                 <div style={{ display: 'flex', gap: '16px' }}>
                     <span style={{ fontSize: '13px', color: '#1a1a1a', fontWeight: '600' }}>
                         멤버 {members.length}
@@ -240,7 +297,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 </div>
             </div>
 
-            {/* 탭 메뉴 - 스크롤 시 상단 고정 */}
+            {/* 탭 메뉴 */}
             <div
                 ref={tabRef}
                 style={{
@@ -289,7 +346,10 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                     공지사항
                 </button>
                 <button
-                    onClick={() => setActiveTab('board')}
+                    onClick={() => {
+                        setActiveTab('board');
+                        setBoardView('list');
+                    }}
                     style={{
                         flex: 1,
                         padding: '14px',
@@ -307,7 +367,6 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 </button>
             </div>
 
-            {/* 탭이 고정될 때 공간 확보 */}
             {isTabFixed && <div style={{ height: '50px' }} />}
 
             {/* 탭 내용 */}
@@ -319,7 +378,6 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                             {crew.description || '크루 소개가 없습니다.'}
                         </p>
 
-                        {/* 가입/탈퇴 버튼 */}
                         <div style={{ marginTop: '24px' }}>
                             {userRole ? (
                                 userStatus === 'APPROVED' ? (
@@ -388,13 +446,13 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                     </div>
                 )}
 
-                {activeTab === 'board' && (
+                {activeTab === 'board' && boardView === 'list' && (
                     <div>
                         <CrewBoardTab
                             crew={crew}
                             user={user}
-                            onPostClick={() => { }}
-                            onCreatePost={() => { }}
+                            onPostClick={handlePostClick}
+                            onCreatePost={handleCreatePost}
                             onBack={() => setActiveTab('intro')}
                         />
                     </div>
