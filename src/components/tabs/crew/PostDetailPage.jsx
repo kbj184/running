@@ -7,6 +7,8 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
     const [loading, setLoading] = useState(true);
     const [commentContent, setCommentContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
+    const [likeCount, setLikeCount] = useState(0);
 
     useEffect(() => {
         if (postId) {
@@ -31,6 +33,8 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
             if (response.ok) {
                 const data = await response.json();
                 setPost(data);
+                setIsLiked(data.isLikedByCurrentUser || false);
+                setLikeCount(data.likeCount || 0);
             }
         } catch (error) {
             console.error('Failed to fetch post:', error);
@@ -94,6 +98,34 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
             alert('댓글 작성 중 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleLike = async () => {
+        try {
+            const url = isLiked
+                ? `${import.meta.env.VITE_API_URL}/board/posts/${postId}/like`
+                : `${import.meta.env.VITE_API_URL}/board/posts/${postId}/like`;
+
+            const method = isLiked ? 'DELETE' : 'POST';
+
+            const response = await api.request(url, {
+                method: method,
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ')
+                        ? user.accessToken
+                        : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setIsLiked(data.isLiked);
+                setLikeCount(data.likeCount);
+            }
+        } catch (error) {
+            console.error('Failed to toggle like:', error);
+            alert('좋아요 처리 중 오류가 발생했습니다.');
         }
     };
 
@@ -253,6 +285,37 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
                         }
                     `}</style>
                     <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                </div>
+
+                {/* 좋아요 버튼 */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '24px',
+                    paddingBottom: '16px',
+                    borderBottom: '1px solid #f0f0f0'
+                }}>
+                    <button
+                        onClick={handleLike}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '8px 16px',
+                            backgroundColor: isLiked ? '#fee2e2' : '#f3f4f6',
+                            border: isLiked ? '1px solid #fca5a5' : '1px solid #e0e0e0',
+                            borderRadius: '20px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            color: isLiked ? '#dc2626' : '#666',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <span style={{ fontSize: '16px' }}>{isLiked ? '❤️' : '🤍'}</span>
+                        <span>{likeCount}</span>
+                    </button>
                 </div>
 
                 {canEdit && (
