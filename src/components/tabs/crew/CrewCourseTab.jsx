@@ -487,7 +487,7 @@ function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
                                         </div>
                                     </div>
                                     <div style={{ fontSize: '12px', color: '#999' }}>
-                                        {new Date(record.createdAt).toLocaleDateString()} • {Math.floor(record.duration / 60)}분
+                                        {new Date(record.timestamp || Date.now()).toLocaleDateString()} • {Math.floor(record.duration / 60)}분
                                     </div>
                                 </div>
                             ))}
