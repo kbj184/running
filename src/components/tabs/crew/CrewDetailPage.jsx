@@ -3,6 +3,7 @@ import { api } from '../../../utils/api';
 import CrewBoardTab from './CrewBoardTab';
 import PostDetailPage from './PostDetailPage';
 import PostEditorPage from './PostEditorPage';
+import CrewCourseTab from './CrewCourseTab';
 
 function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const [members, setMembers] = useState([]);
@@ -336,6 +337,23 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                     }}
                 >
                     소개
+                </button>
+                <button
+                    onClick={() => setActiveTab('course')}
+                    style={{
+                        flex: 1,
+                        padding: '14px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        borderBottom: activeTab === 'course' ? '3px solid #FF9A56' : '3px solid transparent',
+                        fontSize: '15px',
+                        fontWeight: activeTab === 'course' ? '700' : '600',
+                        color: activeTab === 'course' ? '#FF9A56' : '#666',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    코스
                 </button>
                 <button
                     onClick={() => setActiveTab('members')}
