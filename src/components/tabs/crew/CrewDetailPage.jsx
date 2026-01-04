@@ -22,6 +22,12 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
 
     useEffect(() => {
         if (crew) {
+            console.log('Crew data:', crew);
+            console.log('Activity area:', {
+                lat: crew.activityAreaLatitude,
+                lng: crew.activityAreaLongitude,
+                address: crew.activityAreaAddress
+            });
             fetchMembers();
         }
     }, [crew]);
