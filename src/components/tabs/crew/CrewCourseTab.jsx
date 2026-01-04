@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../../utils/api';
+import { generateRouteThumbImage } from '../../../utils/mapThumbnail';
 
 function CrewCourseTab({ crew, user, userRole }) {
     const [courses, setCourses] = useState([]);
@@ -128,24 +129,7 @@ function CrewCourseTab({ crew, user, userRole }) {
                                 justifyContent: 'center',
                                 overflow: 'hidden'
                             }}>
-                                {course.mapThumbnailUrl ? (
-                                    <img
-                                        src={course.mapThumbnailUrl}
-                                        alt={course.name}
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover'
-                                        }}
-                                    />
-                                ) : (
-                                    <div style={{
-                                        fontSize: '40px',
-                                        color: '#ccc'
-                                    }}>
-                                        🗺️
-                                    </div>
-                                )}
+                                <CourseThumbnail course={course} />
                             </div>
 
                             {/* Content */}
@@ -219,6 +203,55 @@ function CrewCourseTab({ crew, user, userRole }) {
                 )
             }
         </div >
+    );
+}
+
+function CourseThumbnail({ course }) {
+    const thumbnailUrl = useMemo(() => {
+        if (course.routeData) {
+            try {
+                const route = JSON.parse(course.routeData);
+                if (route && route.length > 0) {
+                    return generateRouteThumbImage(route);
+                }
+            } catch (e) {
+                console.error('Failed to parse route data:', e);
+            }
+        }
+        return course.mapThumbnailUrl;
+    }, [course.routeData, course.mapThumbnailUrl]);
+
+    if (!thumbnailUrl) {
+        return (
+            <div style={{
+                fontSize: '40px',
+                color: '#ccc'
+            }}>
+                🗺️
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={thumbnailUrl}
+            alt={course.name}
+            style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+            }}
+            onError={(e) => {
+                e.target.style.display = 'none';
+                const fallback = document.createElement('div');
+                Object.assign(fallback.style, {
+                    fontSize: '40px',
+                    color: '#ccc'
+                });
+                fallback.textContent = '🗺️';
+                e.target.parentElement.appendChild(fallback);
+            }}
+        />
     );
 }
 
