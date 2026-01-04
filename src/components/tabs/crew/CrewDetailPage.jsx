@@ -527,6 +527,14 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                     </div>
                 )}
 
+                {activeTab === 'course' && (
+                    <CrewCourseTab
+                        crew={crew}
+                        user={user}
+                        userRole={userRole}
+                    />
+                )}
+
                 {activeTab === 'members' && (
                     <div style={{ padding: '20px' }}>
                         <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#1a1a1a' }}>
