@@ -183,17 +183,7 @@ function CrewBoardTab({ crew, user, onPostClick, onCreatePost, onBack }) {
                                             {post.title}
                                         </h3>
                                     </div>
-                                    <div style={{
-                                        fontSize: '13px',
-                                        color: '#666',
-                                        marginBottom: '8px',
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: 2,
-                                        WebkitBoxOrient: 'vertical',
-                                        overflow: 'hidden'
-                                    }}>
-                                        {post.content}
-                                    </div>
+                                    {/* Content preview removed */}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', color: '#999' }}>
                                         <span>{post.authorNickname || '익명'}</span>
                                         <span>•</span>

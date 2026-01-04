@@ -237,9 +237,20 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
                 </div>
 
                 <div
+                    className="post-content"
                     style={{ fontSize: '15px', lineHeight: 1.8, color: '#1a1a1a', marginBottom: '24px' }}
-                    dangerouslySetInnerHTML={{ __html: post.content }}
-                />
+                >
+                    <style>{`
+                        .post-content img {
+                            max-width: 100%;
+                            height: auto;
+                            border-radius: 8px;
+                            margin: 12px 0;
+                            display: block;
+                        }
+                    `}</style>
+                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                </div>
 
                 {canEdit && (
                     <div style={{ display: 'flex', gap: '8px', paddingTop: '16px', borderTop: '1px solid #f0f0f0' }}>
