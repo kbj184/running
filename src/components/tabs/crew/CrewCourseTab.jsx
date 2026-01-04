@@ -56,7 +56,7 @@ function CrewCourseTab({ crew, user, userRole }) {
                 <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700' }}>
                     러닝 코스 ({courses.length})
                 </h3>
-                {isMember && (
+                {user && (
                     <button
                         onClick={() => setShowRegisterModal(true)}
                         style={{
