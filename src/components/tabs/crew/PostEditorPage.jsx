@@ -1,81 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../../utils/api';
-import ReactQuill from 'react-quill';
+import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import ImageResize from 'quill-image-resize-module-react';
+
+Quill.register('modules/imageResize', ImageResize);
 
 function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
-    const [isPinned, setIsPinned] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState('');
+    // ... (state lines 6-12)
 
-    const isEditMode = !!post;
-    const isCaptain = crew && crew.captainId === user.id;
+    // ... (useEffect lines 16-22)
 
-    useEffect(() => {
-        if (post) {
-            setTitle(post.title);
-            setContent(post.content);
-            setIsPinned(post.isPinned || false);
-        }
-    }, [post]);
-
-    // Quill 이미지 핸들러
-    const imageHandler = () => {
-        const input = document.createElement('input');
-        input.setAttribute('type', 'file');
-        input.setAttribute('accept', 'image/*');
-        input.click();
-
-        input.onchange = async () => {
-            const file = input.files[0];
-            if (!file) return;
-
-            // 이미지 파일 검증
-            if (!file.type.startsWith('image/')) {
-                alert('이미지 파일만 업로드 가능합니다.');
-                return;
-            }
-
-            // 파일 크기 제한 (5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('이미지 크기는 5MB 이하여야 합니다.');
-                return;
-            }
-
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-
-                const response = await fetch(
-                    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-                    {
-                        method: 'POST',
-                        body: formData
-                    }
-                );
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const imageUrl = data.secure_url;
-
-                    // Quill 에디터에 이미지 삽입
-                    const quill = document.querySelector('.ql-editor');
-                    const range = window.getSelection().getRangeAt(0);
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    range.insertNode(img);
-                } else {
-                    throw new Error('이미지 업로드 실패');
-                }
-            } catch (err) {
-                console.error('Image upload error:', err);
-                alert('이미지 업로드 중 오류가 발생했습니다.');
-            }
-        };
-    };
+    // ... (imageHandler lines 25-78)
 
     // Quill 모듈 설정
     const modules = useMemo(() => ({
@@ -90,8 +26,13 @@ function PostEditorPage({ crew, user, post, onCancel, onComplete }) {
                 ['clean']
             ],
             handlers: {
+                // image: imageHandler // 이미지 핸들러 잠시 비활성화 (테스트) -> 다시 활성화 필요 시 주석 해제
                 image: imageHandler
             }
+        },
+        imageResize: {
+            parchment: Quill.import('parchment'),
+            modules: ['Resize', 'DisplaySize']
         }
     }), []);
 
