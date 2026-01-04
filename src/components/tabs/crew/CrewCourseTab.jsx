@@ -253,13 +253,18 @@ function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
 
         try {
             setRegistering(true);
+
+            console.log('Selected record:', selectedRecord);
+
             const courseData = {
-                name: `${selectedRecord.startAddress || '러닝 코스'} - ${new Date(selectedRecord.createdAt).toLocaleDateString()}`,
+                name: `러닝 코스 - ${new Date(selectedRecord.timestamp || Date.now()).toLocaleDateString()}`,
                 description: `거리: ${selectedRecord.distance?.toFixed(2)}km, 시간: ${Math.floor(selectedRecord.duration / 60)}분`,
                 distance: selectedRecord.distance,
-                routeData: selectedRecord.routeData,
-                mapThumbnailUrl: selectedRecord.mapThumbnailUrl
+                routeData: selectedRecord.route,
+                mapThumbnailUrl: selectedRecord.thumbnail
             };
+
+            console.log('Course data to send:', courseData);
 
             const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crewId}/courses`, {
                 method: 'POST',
@@ -273,6 +278,8 @@ function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
             if (response.ok) {
                 onSuccess();
             } else {
+                const errorText = await response.text();
+                console.error('Failed to register course:', response.status, errorText);
                 alert('코스 등록에 실패했습니다.');
             }
         } catch (error) {
