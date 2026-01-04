@@ -1,23 +1,160 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../utils/api';
 
-
 function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
-    // ... states ...
+    const [members, setMembers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [userStatus, setUserStatus] = useState(null); // 'APPROVED', 'PENDING', null
+    const [userRole, setUserRole] = useState(null); // 'captain', 'member', null
+    const [actionLoading, setActionLoading] = useState(false);
 
-    // ... useEffect & fetchMembers ...
+    useEffect(() => {
+        if (crew) {
+            fetchMembers();
+            checkMyStatus();
+        }
+    }, [crew]);
 
-    // ... handleJoin/Leave/Approve/Reject ...
+    const fetchMembers = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get(`/crew/${crew.id}/members`);
+            if (response.ok) {
+                const data = await response.json();
+                setMembers(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch members:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    // ... image parsing ...
+    const checkMyStatus = async () => {
+        // userStatus와 userRole은 members 목록에서 찾을 수도 있지만,
+        // member 목록이 refresh되기 전이나 api가 분리된 경우를 대비해 
+        // members를 fetch한 후 거기서 내 정보를 찾습니다.
+        // 여기서는 fetchMembers 내에서 members state가 업데이트된 후가 아니라
+        // 별도 로직으로 members 데이터를 가져와서 확인하거나, 
+        // fetchMembers 호출 직후 response 데이터로 확인하는게 좋지만
+        // useEffect 의존성 루프를 피하기 위해 fetchMembers에서 setMembers한 데이터를 이용하거나
+        // 별도 API 호출 혹은 members state 변경 감지 로직을 씁니다.
+
+        // 편의상 fetchMembers가 완료된 후 members state를 이용하는 방식보다
+        // fetchMembers 안에서 처리하거나 아래와 같이 members가 업데이트될 때 확인합니다.
+    };
+
+    // members가 변경될 때 내 상태 확인
+    useEffect(() => {
+        if (members.length > 0 && user) {
+            const myInfo = members.find(m => m.userId === user.id);
+            if (myInfo) {
+                setUserStatus(myInfo.status);
+                setUserRole(myInfo.role);
+            } else {
+                setUserStatus(null);
+                setUserRole(null);
+            }
+        }
+    }, [members, user]);
+
+
+    const handleJoin = async () => {
+        if (!confirm(`${crew.name} 크루에 가입하시겠습니까?`)) return;
+
+        try {
+            setActionLoading(true);
+            const response = await api.post(`/crew/${crew.id}/join`);
+            if (response.ok) {
+                alert('가입 신청이 완료되었습니다.');
+                fetchMembers();
+                if (onUpdateUser) onUpdateUser();
+            } else {
+                const error = await response.text();
+                alert(error);
+            }
+        } catch (error) {
+            console.error('Join error:', error);
+            alert('가입 신청 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleLeave = async () => {
+        if (!confirm('정말로 크루를 탈퇴하시겠습니까?')) return;
+
+        try {
+            setActionLoading(true);
+            const response = await api.post(`/crew/${crew.id}/leave`);
+            if (response.ok) {
+                alert('탈퇴되었습니다.');
+                fetchMembers();
+                if (onUpdateUser) onUpdateUser();
+            } else {
+                const error = await response.text();
+                alert(error);
+            }
+        } catch (error) {
+            console.error('Leave error:', error);
+            alert('탈퇴 중 오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleApprove = async (memberId) => {
+        try {
+            setActionLoading(true);
+            const response = await api.post(`/crew/${crew.id}/members/${memberId}/approve`);
+            if (response.ok) {
+                fetchMembers();
+            }
+        } catch (error) {
+            console.error('Approve error:', error);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleReject = async (memberId) => {
+        if (!confirm('가입 요청을 거절하시겠습니까?')) return;
+        try {
+            setActionLoading(true);
+            const response = await api.post(`/crew/${crew.id}/members/${memberId}/reject`);
+            if (response.ok) {
+                fetchMembers();
+            }
+        } catch (error) {
+            console.error('Reject error:', error);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Image Parsing Logic
     if (!crew) return null;
 
     let crewImage = crew.image;
-    if (!crewImage || (!crewImage.emoji && !crewImage.url)) {
+    // 백엔드에서 넘어온 crew 데이터 형태에 따라 image가 없을 수도 있고, imageUrl 문자열만 있을 수도 있음
+    if (!crewImage) {
+        if (crew.imageUrl) {
+            try {
+                crewImage = JSON.parse(crew.imageUrl);
+            } catch {
+                crewImage = { url: crew.imageUrl, bg: '#333', emoji: '🏃' };
+            }
+        } else {
+            // Fallback
+            crewImage = { bg: '#333', emoji: '🏃' };
+        }
+    } else if (!crewImage.emoji && !crewImage.url) {
+        // 이미지가 객체지만 속성이 비어있는 경우 (드문 케이스)
         try {
-            crewImage = JSON.parse(crew.imageUrl);
+            const parsed = JSON.parse(crew.imageUrl);
+            crewImage = parsed;
         } catch {
-            crewImage = { url: crew.imageUrl || '', bg: '#ddd', emoji: '🏃' };
+            // do nothing
         }
     }
 
