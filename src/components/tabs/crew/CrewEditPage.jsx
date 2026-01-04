@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { GoogleMap, Marker } from '@react-google-maps/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { GoogleMap, Autocomplete } from '@react-google-maps/api';
+import AdvancedMarker from '../../common/AdvancedMarker';
 import { api } from '../../../utils/api';
 
 const CREW_IMAGES = [
@@ -15,11 +16,7 @@ const CREW_IMAGES = [
     { id: 10, emoji: '👑', bg: 'linear-gradient(135deg, #5352ed 0%, #70a1ff 100%)' },
 ];
 
-const mapContainerStyle = {
-    width: '100%',
-    height: '400px',
-    borderRadius: '12px'
-};
+const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
 function CrewEditPage({ crew, user, onCancel, onComplete }) {
     const [name, setName] = useState('');
@@ -30,11 +27,11 @@ function CrewEditPage({ crew, user, onCancel, onComplete }) {
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // 활동 지역 상태
-    const [activityAreas, setActivityAreas] = useState([]);
+    const [map, setMap] = useState(null);
+    const [markerPos, setMarkerPos] = useState(null);
     const [selectedAddress, setSelectedAddress] = useState('');
     const [mapCenter, setMapCenter] = useState({ lat: 37.5665, lng: 126.9780 });
-    const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+    const autocompleteRef = useRef(null);
 
     useEffect(() => {
         if (crew) {
@@ -44,20 +41,16 @@ function CrewEditPage({ crew, user, onCancel, onComplete }) {
             // 이미지 설정
             try {
                 const imgData = JSON.parse(crew.imageUrl);
-                // CREW_IMAGES에 있는 emoji와 bg가 일치하는지 확인하거나, 그냥 url/emoji/bg 직접 사용
-                // 여기서는 간단히 url이 있으면 uploadedImage로, 없으면 emoji 매칭 시도 또는 기본값 사용
                 if (imgData.url) {
                     setUploadedImage(imgData.url);
                 } else if (imgData.emoji) {
-                    // emoji로 ID 찾기 (간단매칭)
                     const matched = CREW_IMAGES.find(ci => ci.emoji === imgData.emoji);
                     if (matched) setSelectedImageId(matched.id);
-                    else setSelectedImageId(CREW_IMAGES[0].id); // fallback
+                    else setSelectedImageId(CREW_IMAGES[0].id);
                 } else {
                     setSelectedImageId(CREW_IMAGES[0].id);
                 }
             } catch {
-                // 파싱 실패 시 url로 간주
                 if (crew.imageUrl && crew.imageUrl.startsWith('http')) {
                     setUploadedImage(crew.imageUrl);
                 } else {
@@ -67,72 +60,89 @@ function CrewEditPage({ crew, user, onCancel, onComplete }) {
 
             // 활동 지역 설정
             if (crew.activityAreas && crew.activityAreas.length > 0) {
-                setActivityAreas(crew.activityAreas);
                 const area = crew.activityAreas[0];
+                const pos = { lat: area.latitude, lng: area.longitude };
+                setMarkerPos(pos);
+                setMapCenter(pos);
                 setSelectedAddress(area.adminLevelFull || `${area.adminLevel1} ${area.adminLevel2} ${area.adminLevel3}`);
-                setMapCenter({ lat: area.latitude, lng: area.longitude });
-            } else if (crew.activityAreaLevel1) {
-                // 좌표 없이 텍스트만 있는 경우 (구버전 호환)
-                setSelectedAddress(`${crew.activityAreaLevel1} ${crew.activityAreaLevel2 || ''} ${crew.activityAreaLevel3 || ''}`);
-                // 좌표가 없으면 유저 위치나 기본 위치 사용됨
             }
         }
     }, [crew]);
 
-    const handleMapClick = async (event) => {
-        const lat = event.latLng.lat();
-        const lng = event.latLng.lng();
+    const getLocationData = (result, providedPos = null) => {
+        const addressComponents = result.address_components;
+        const lat = providedPos ? (typeof providedPos.lat === 'function' ? providedPos.lat() : providedPos.lat) : result.geometry.location.lat();
+        const lng = providedPos ? (typeof providedPos.lng === 'function' ? providedPos.lng() : providedPos.lng) : result.geometry.location.lng();
 
-        setIsLoadingLocation(true);
-        setError('');
+        let locationData = {
+            countryCode: '',
+            countryName: '',
+            adminLevel1: '',
+            adminLevel2: '',
+            adminLevel3: '',
+            adminLevelFull: result.formatted_address,
+            latitude: lat,
+            longitude: lng
+        };
+
+        addressComponents.forEach(component => {
+            const types = component.types;
+            const name = component.long_name;
+
+            if (types.includes('country')) {
+                locationData.countryCode = component.short_name;
+                locationData.countryName = name;
+            } else if (types.includes('administrative_area_level_1')) {
+                locationData.adminLevel1 = name;
+            } else if (types.includes('locality') || types.includes('administrative_area_level_2')) {
+                if (!locationData.adminLevel2 || name.endsWith('구') || name.endsWith('시')) {
+                    locationData.adminLevel2 = name;
+                }
+            } else if (types.includes('sublocality_level_1')) {
+                if (name.endsWith('구')) {
+                    locationData.adminLevel2 = name;
+                }
+            }
+        });
+
+        if (!locationData.adminLevel2) {
+            const guComp = addressComponents.find(c => c.long_name.endsWith('구'));
+            if (guComp) locationData.adminLevel2 = guComp.long_name;
+        }
+
+        return locationData;
+    };
+
+    const handleMapClick = async (e) => {
+        const newPos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
 
         try {
             const geocoder = new window.google.maps.Geocoder();
-            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                if (status === 'OK' && results[0]) {
-                    const addressComponents = results[0].address_components;
-                    let countryCode = '', countryName = '', adminLevel1 = '', adminLevel2 = '', adminLevel3 = '';
+            const response = await geocoder.geocode({ location: newPos });
 
-                    addressComponents.forEach(component => {
-                        if (component.types.includes('country')) {
-                            countryCode = component.short_name;
-                            countryName = component.long_name;
-                        }
-                        if (component.types.includes('administrative_area_level_1')) adminLevel1 = component.long_name;
-                    });
+            if (response.results && response.results.length > 0) {
+                const locationData = getLocationData(response.results[0], newPos);
+                setMarkerPos({ lat: locationData.latitude, lng: locationData.longitude });
+                setSelectedAddress(locationData.adminLevelFull);
+            }
+        } catch (error) {
+            console.error('Map click geocoding error:', error);
+        }
+    };
 
-                    addressComponents.forEach(component => {
-                        if (component.types.includes('sublocality_level_2')) adminLevel3 = component.long_name;
-                    });
-
-                    addressComponents.forEach(component => {
-                        if (component.types.includes('locality')) adminLevel2 = component.long_name;
-                        if (component.types.includes('sublocality_level_1')) {
-                            if (!adminLevel2) adminLevel2 = component.long_name;
-                            else if (!adminLevel3) adminLevel3 = component.long_name;
-                        }
-                        if (component.types.includes('sublocality') && !adminLevel2 && !adminLevel3) {
-                            adminLevel2 = component.long_name;
-                        }
-                    });
-
-                    const adminLevelFull = results[0].formatted_address;
-                    const newArea = {
-                        countryCode, countryName, adminLevel1, adminLevel2, adminLevel3, adminLevelFull,
-                        latitude: lat, longitude: lng
-                    };
-
-                    setActivityAreas([newArea]); // 덮어쓰기
-                    setSelectedAddress(adminLevelFull);
-                } else {
-                    setError('주소 정보를 가져올 수 없습니다.');
+    const onPlaceChanged = () => {
+        if (autocompleteRef.current !== null) {
+            const place = autocompleteRef.current.getPlace();
+            if (place.geometry && place.geometry.location) {
+                const locationData = getLocationData(place);
+                const newPos = { lat: locationData.latitude, lng: locationData.longitude };
+                setMarkerPos(newPos);
+                setSelectedAddress(locationData.adminLevelFull);
+                if (map) {
+                    map.panTo(newPos);
+                    map.setZoom(15);
                 }
-                setIsLoadingLocation(false);
-            });
-        } catch (err) {
-            console.error('Geocoding error:', err);
-            setError('주소 정보를 가져오는 중 오류가 발생했습니다.');
-            setIsLoadingLocation(false);
+            }
         }
     };
 
@@ -182,7 +192,7 @@ function CrewEditPage({ crew, user, onCancel, onComplete }) {
             setError('크루 이름을 입력해주세요.');
             return;
         }
-        if (activityAreas.length === 0) {
+        if (!markerPos) {
             setError('활동 지역을 선택해주세요.');
             return;
         }
@@ -194,21 +204,21 @@ function CrewEditPage({ crew, user, onCancel, onComplete }) {
             const selectedImage = CREW_IMAGES.find(img => img.id === selectedImageId) || CREW_IMAGES[0];
             let imageUrl;
             if (uploadedImage) {
-                imageUrl = uploadedImage; // URL string
-                // 백엔드에서 JSON 파싱 에러나지 않도록 주의. 
-                // 기존 로직: JSON.stringify({ url: ... }). 
-                // 여기서 그냥 String으로 보내면 백엔드는 그대로 저장. 읽을 때 파싱 시도하다 에러나면 fallback 로직이 CrewDetailPage에 있음.
-                // 안전하게 객체 형태로 저장하는게 좋음.
                 imageUrl = JSON.stringify({ url: uploadedImage });
             } else {
                 imageUrl = JSON.stringify(selectedImage);
             }
 
+            // 지오코딩하여 상세 지역 정보 가져오기
+            const geocoder = new window.google.maps.Geocoder();
+            const geoResponse = await geocoder.geocode({ location: markerPos });
+            const locationData = getLocationData(geoResponse.results[0], markerPos);
+
             const requestBody = {
                 name,
                 description,
                 imageUrl,
-                activityAreas
+                activityAreas: [locationData]
             };
 
             const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}`, {
@@ -238,7 +248,7 @@ function CrewEditPage({ crew, user, onCancel, onComplete }) {
 
     return (
         <div style={{ padding: '20px', paddingBottom: '80px', maxWidth: '800px', margin: '0 auto', backgroundColor: '#fff', minHeight: '100%' }}>
-            <h2 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '800' }}>크루 설정</h2>
+            <h2 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '800', color: '#1a1a1a' }}>크루 설정</h2>
 
             {error && (
                 <div style={{ padding: '12px', marginBottom: '16px', backgroundColor: '#fee2e2', color: '#dc2626', borderRadius: '8px', fontSize: '14px' }}>
@@ -248,97 +258,130 @@ function CrewEditPage({ crew, user, onCancel, onComplete }) {
 
             <form onSubmit={handleSubmit}>
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>크루 이름</label>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>크루 이름</label>
                     <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #e0e0e0', fontSize: '16px', boxSizing: 'border-box' }}
+                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #e0e0e0', fontSize: '16px', boxSizing: 'border-box', color: '#1a1a1a' }}
                         required
                     />
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>크루 설명</label>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>크루 설명</label>
                     <textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #e0e0e0', fontSize: '16px', minHeight: '80px', boxSizing: 'border-box' }}
+                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #e0e0e0', fontSize: '16px', minHeight: '80px', boxSizing: 'border-box', color: '#1a1a1a' }}
                     />
                 </div>
 
                 <div style={{ marginBottom: '24px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>활동 지역</label>
-                    <GoogleMap
-                        mapContainerStyle={mapContainerStyle}
-                        center={mapCenter}
-                        zoom={13}
-                        onClick={handleMapClick}
-                        options={{
-                            styles: [
-                                { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-                                { featureType: 'transit', stylers: [{ visibility: 'off' }] }
-                            ]
-                        }}
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>활동 지역</label>
+                    <p style={{ fontSize: '13px', color: '#666', marginBottom: '12px' }}>
+                        검색하거나 지도를 클릭하여 활동 지역을 선택하세요
+                    </p>
+
+                    {/* 검색창 */}
+                    <Autocomplete
+                        onLoad={(autocomplete) => { autocompleteRef.current = autocomplete; }}
+                        onPlaceChanged={onPlaceChanged}
                     >
-                        {activityAreas.map((area, index) => (
-                            <Marker
-                                key={index}
-                                position={{ lat: area.latitude, lng: area.longitude }}
-                                icon={{
-                                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                                        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="16" cy="16" r="14" fill="#00f2fe" stroke="#fff" stroke-width="2"/>
-                                            <text x="16" y="21" font-size="16" text-anchor="middle" fill="#fff">📍</text>
-                                        </svg>
-                                    `),
-                                    scaledSize: new window.google.maps.Size(32, 32)
-                                }}
+                        <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', background: '#f8f9fa', borderRadius: '10px', padding: '10px 14px', border: '1px solid #e0e0e0' }}>
+                            <span style={{ marginRight: '10px', fontSize: '16px' }}>🔍</span>
+                            <input
+                                type="text"
+                                placeholder="구 또는 지역명 검색 (예: 강남구, 분당구)"
+                                style={{ flex: 1, background: 'none', border: 'none', fontSize: '15px', outline: 'none', color: '#1a1a1a' }}
                             />
-                        ))}
-                    </GoogleMap>
+                        </div>
+                    </Autocomplete>
+
+                    {/* 지도 */}
+                    <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid #e0e0e0', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                        <GoogleMap
+                            mapContainerStyle={{ width: '100%', height: '350px' }}
+                            center={mapCenter}
+                            zoom={13}
+                            onClick={handleMapClick}
+                            onLoad={(mapInstance) => setMap(mapInstance)}
+                            options={{
+                                mapId: MAP_ID,
+                                disableDefaultUI: false,
+                                mapTypeControl: false,
+                                streetViewControl: false,
+                                fullscreenControl: false,
+                            }}
+                        >
+                            {markerPos && (
+                                <AdvancedMarker map={map} position={markerPos}>
+                                    <div style={{
+                                        width: '24px',
+                                        height: '24px',
+                                        backgroundColor: '#00f2fe',
+                                        borderRadius: '50%',
+                                        border: '3px solid white',
+                                        boxShadow: '0 0 10px rgba(0,242,254,0.5)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '14px'
+                                    }}>📍</div>
+                                </AdvancedMarker>
+                            )}
+                        </GoogleMap>
+                    </div>
+
                     {selectedAddress && (
-                        <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#f8f9fa', borderRadius: '8px', fontSize: '14px' }}>
+                        <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', fontSize: '14px', color: '#1a1a1a', border: '1px solid #bfdbfe' }}>
                             <strong>선택된 지역:</strong> {selectedAddress}
                         </div>
                     )}
                 </div>
 
                 <div style={{ marginBottom: '24px' }}>
-                    <label style={{ display: 'block', marginBottom: '12px', fontWeight: '600' }}>크루 이미지</label>
+                    <label style={{ display: 'block', marginBottom: '12px', fontWeight: '600', color: '#1a1a1a' }}>크루 이미지</label>
                     <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} id="edit-crew-image" disabled={isUploading} />
-                    <label htmlFor="edit-crew-image" style={{ display: 'inline-block', padding: '8px 16px', backgroundColor: '#f3f4f6', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', marginBottom: '16px' }}>
+                    <label htmlFor="edit-crew-image" style={{ display: 'inline-block', padding: '10px 18px', backgroundColor: '#f3f4f6', borderRadius: '8px', cursor: isUploading ? 'not-allowed' : 'pointer', fontSize: '14px', marginBottom: '16px', border: '1px solid #e0e0e0', color: '#1a1a1a', fontWeight: '600' }}>
                         {isUploading ? '업로드 중...' : '📷 이미지 변경'}
                     </label>
 
                     {uploadedImage ? (
-                        <div onClick={() => { setUploadedImage(null); setSelectedImageId(CREW_IMAGES[0].id); }} style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', border: '3px solid #1a1a1a', cursor: 'pointer' }}>
-                            <img src={uploadedImage} alt="Uploaded" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div>
+                            <div onClick={() => { setUploadedImage(null); setSelectedImageId(CREW_IMAGES[0].id); }} style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', border: '3px solid #1a1a1a', cursor: 'pointer', display: 'inline-block' }}>
+                                <img src={uploadedImage} alt="Uploaded" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>클릭하여 제거</p>
                         </div>
                     ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
-                            {CREW_IMAGES.map((img) => (
-                                <button
-                                    key={img.id}
-                                    type="button"
-                                    onClick={() => setSelectedImageId(img.id)}
-                                    style={{
-                                        width: '100%', aspectRatio: '1', borderRadius: '12px',
-                                        border: selectedImageId === img.id ? '3px solid #1a1a1a' : '2px solid #e0e0e0',
-                                        background: img.bg, fontSize: '24px', cursor: 'pointer',
-                                        transform: selectedImageId === img.id ? 'scale(1.05)' : 'scale(1)'
-                                    }}
-                                >
-                                    {img.emoji}
-                                </button>
-                            ))}
-                        </div>
+                        <>
+                            <div style={{ fontSize: '13px', color: '#666', marginBottom: '10px' }}>또는 기본 이미지 선택</div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+                                {CREW_IMAGES.map((img) => (
+                                    <button
+                                        key={img.id}
+                                        type="button"
+                                        onClick={() => setSelectedImageId(img.id)}
+                                        style={{
+                                            width: '100%', aspectRatio: '1', borderRadius: '12px',
+                                            border: selectedImageId === img.id ? '3px solid #1a1a1a' : '2px solid #e0e0e0',
+                                            background: img.bg, fontSize: '24px', cursor: 'pointer',
+                                            transform: selectedImageId === img.id ? 'scale(1.05)' : 'scale(1)',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {img.emoji}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
                     )}
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px' }}>
-                    <button type="button" onClick={onCancel} style={{ flex: 1, padding: '16px', backgroundColor: '#f3f4f6', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: '700', cursor: 'pointer' }}>취소</button>
-                    <button type="submit" disabled={isSubmitting} style={{ flex: 2, padding: '16px', backgroundColor: '#1a1a1a', color: 'white', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: '700', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
+                    <button type="button" onClick={onCancel} style={{ flex: 1, padding: '16px', backgroundColor: '#f3f4f6', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', color: '#1a1a1a' }}>취소</button>
+                    <button type="submit" disabled={isSubmitting} style={{ flex: 2, padding: '16px', backgroundColor: isSubmitting ? '#9ca3af' : '#1a1a1a', color: 'white', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: '700', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
                         {isSubmitting ? '저장 중...' : '저장하기'}
                     </button>
                 </div>

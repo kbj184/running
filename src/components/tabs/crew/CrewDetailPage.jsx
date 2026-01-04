@@ -232,7 +232,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                         }}>Crew</div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '800', lineHeight: 1.2 }}>{crew.name}</h1>
-                            {userRole === 'captain' && (
+                            {(userRole === 'captain' || (crew.captainId && user && crew.captainId === user.id)) && (
                                 <button
                                     onClick={onEdit}
                                     style={{
