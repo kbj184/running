@@ -86,12 +86,23 @@ function CrewCreateTab({ user, onCreate }) {
                         if (component.types.includes('administrative_area_level_1')) {
                             adminLevel1 = component.long_name;
                         }
-                        if (component.types.includes('administrative_area_level_2') ||
-                            component.types.includes('locality')) {
+                        // adminLevel2: 시/군/구
+                        // locality는 시, sublocality_level_1은 구/군
+                        if (component.types.includes('locality') && !adminLevel2) {
                             adminLevel2 = component.long_name;
                         }
                         if (component.types.includes('sublocality_level_1') ||
                             component.types.includes('sublocality')) {
+                            // 서울/부산 등 특별시/광역시의 경우 sublocality_level_1이 구
+                            if (!adminLevel2) {
+                                adminLevel2 = component.long_name;
+                            } else if (!adminLevel3) {
+                                // 이미 adminLevel2가 있으면 이것은 동/읍/면
+                                adminLevel3 = component.long_name;
+                            }
+                        }
+                        // adminLevel3: 동/읍/면
+                        if (component.types.includes('sublocality_level_2')) {
                             adminLevel3 = component.long_name;
                         }
                     });
