@@ -602,13 +602,13 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                     // 프로필 이미지 파싱
                                     let profileImage = null;
                                     try {
-                                        if (member.profileImageUrl) {
-                                            const parsed = JSON.parse(member.profileImageUrl);
+                                        if (member.nicknameImage) {
+                                            const parsed = JSON.parse(member.nicknameImage);
                                             profileImage = parsed.url || null;
                                         }
                                     } catch {
-                                        if (member.profileImageUrl && member.profileImageUrl.startsWith('http')) {
-                                            profileImage = member.profileImageUrl;
+                                        if (member.nicknameImage && member.nicknameImage.startsWith('http')) {
+                                            profileImage = member.nicknameImage;
                                         }
                                     }
 
