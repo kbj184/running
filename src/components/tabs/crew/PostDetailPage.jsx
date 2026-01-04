@@ -157,6 +157,74 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
         });
     };
 
+    // 마크다운 이미지를 HTML로 변환
+    const renderContent = (content) => {
+        if (!content) return null;
+
+        // ![alt](url) 형식의 마크다운 이미지를 찾아서 변환
+        const parts = [];
+        let lastIndex = 0;
+        const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+        let match;
+
+        while ((match = imageRegex.exec(content)) !== null) {
+            // 이미지 앞의 텍스트 추가
+            if (match.index > lastIndex) {
+                parts.push({
+                    type: 'text',
+                    content: content.substring(lastIndex, match.index)
+                });
+            }
+
+            // 이미지 추가
+            parts.push({
+                type: 'image',
+                alt: match[1],
+                url: match[2]
+            });
+
+            lastIndex = match.index + match[0].length;
+        }
+
+        // 마지막 텍스트 추가
+        if (lastIndex < content.length) {
+            parts.push({
+                type: 'text',
+                content: content.substring(lastIndex)
+            });
+        }
+
+        // 파트가 없으면 원본 텍스트 반환
+        if (parts.length === 0) {
+            return <div style={{ whiteSpace: 'pre-wrap' }}>{content}</div>;
+        }
+
+        return (
+            <div>
+                {parts.map((part, index) => {
+                    if (part.type === 'text') {
+                        return <div key={index} style={{ whiteSpace: 'pre-wrap' }}>{part.content}</div>;
+                    } else {
+                        return (
+                            <img
+                                key={index}
+                                src={part.url}
+                                alt={part.alt}
+                                style={{
+                                    maxWidth: '100%',
+                                    height: 'auto',
+                                    borderRadius: '8px',
+                                    margin: '12px 0',
+                                    display: 'block'
+                                }}
+                            />
+                        );
+                    }
+                })}
+            </div>
+        );
+    };
+
     if (loading) {
         return (
             <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
@@ -236,8 +304,8 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
                     </div>
                 </div>
 
-                <div style={{ fontSize: '15px', lineHeight: 1.8, color: '#1a1a1a', whiteSpace: 'pre-wrap', marginBottom: '24px' }}>
-                    {post.content}
+                <div style={{ fontSize: '15px', lineHeight: 1.8, color: '#1a1a1a', marginBottom: '24px' }}>
+                    {renderContent(post.content)}
                 </div>
 
                 {canEdit && (
