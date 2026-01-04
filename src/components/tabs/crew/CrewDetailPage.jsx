@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../utils/api';
 
-function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
+function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit, onViewBoard }) {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userStatus, setUserStatus] = useState(null); // 'APPROVED', 'PENDING', null
