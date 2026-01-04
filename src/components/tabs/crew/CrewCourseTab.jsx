@@ -255,6 +255,45 @@ function CourseThumbnail({ course }) {
     );
 }
 
+function RecordThumbnail({ record }) {
+    const thumbnailUrl = useMemo(() => {
+        if (record.route) {
+            try {
+                const route = JSON.parse(record.route);
+                if (route && route.length > 0) {
+                    return generateRouteThumbImage(route);
+                }
+            } catch (e) {
+                console.error('Failed to parse route:', e);
+            }
+        }
+        return record.thumbnail;
+    }, [record.route, record.thumbnail]);
+
+    if (!thumbnailUrl) {
+        return (
+            <div style={{
+                fontSize: '30px',
+                color: '#ccc'
+            }}>
+                🗺️
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={thumbnailUrl}
+            alt="Running route"
+            style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+            }}
+        />
+    );
+}
+
 function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
     const [runningRecords, setRunningRecords] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -403,7 +442,9 @@ function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
                                         borderRadius: '8px',
                                         cursor: 'pointer',
                                         backgroundColor: selectedRecord?.id === record.id ? '#fff5f0' : '#fff',
-                                        transition: 'all 0.2s'
+                                        transition: 'all 0.2s',
+                                        display: 'flex',
+                                        gap: '12px'
                                     }}
                                     onMouseEnter={(e) => {
                                         if (selectedRecord?.id !== record.id) {
@@ -416,7 +457,24 @@ function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
                                         }
                                     }}
                                 >
+                                    {/* Thumbnail */}
                                     <div style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        flexShrink: 0,
+                                        backgroundColor: '#f0f0f0',
+                                        borderRadius: '6px',
+                                        overflow: 'hidden',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <RecordThumbnail record={record} />
+                                    </div>
+
+                                    {/* Content */}
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{
                                         display: 'flex',
                                         justifyContent: 'space-between',
                                         marginBottom: '4px'
@@ -472,9 +530,9 @@ function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
                         </div>
                     </>
                 )}
+                    </div>
             </div>
-        </div>
-    );
+            );
 }
 
-export default CrewCourseTab;
+            export default CrewCourseTab;
