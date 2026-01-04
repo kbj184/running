@@ -86,24 +86,34 @@ function CrewCreateTab({ user, onCreate }) {
                         if (component.types.includes('administrative_area_level_1')) {
                             adminLevel1 = component.long_name;
                         }
+                    });
+
+                    // adminLevel2와 adminLevel3를 올바르게 매핑하기 위해 두 번째 패스
+                    // 먼저 sublocality_level_2 (동/읍/면)를 찾고, 그 다음 sublocality_level_1 (구/군)을 찾음
+                    addressComponents.forEach(component => {
+                        // adminLevel3: 동/읍/면 (가장 구체적인 레벨)
+                        if (component.types.includes('sublocality_level_2')) {
+                            adminLevel3 = component.long_name;
+                        }
+                    });
+
+                    addressComponents.forEach(component => {
                         // adminLevel2: 시/군/구
-                        // locality는 시, sublocality_level_1은 구/군
-                        if (component.types.includes('locality') && !adminLevel2) {
+                        if (component.types.includes('locality')) {
                             adminLevel2 = component.long_name;
                         }
-                        if (component.types.includes('sublocality_level_1') ||
-                            component.types.includes('sublocality')) {
-                            // 서울/부산 등 특별시/광역시의 경우 sublocality_level_1이 구
+                        // sublocality_level_1은 보통 구/군
+                        if (component.types.includes('sublocality_level_1')) {
                             if (!adminLevel2) {
                                 adminLevel2 = component.long_name;
                             } else if (!adminLevel3) {
-                                // 이미 adminLevel2가 있으면 이것은 동/읍/면
+                                // adminLevel2가 이미 있고 adminLevel3가 없으면 이것이 동
                                 adminLevel3 = component.long_name;
                             }
                         }
-                        // adminLevel3: 동/읍/면
-                        if (component.types.includes('sublocality_level_2')) {
-                            adminLevel3 = component.long_name;
+                        // sublocality는 폴백
+                        if (component.types.includes('sublocality') && !adminLevel2 && !adminLevel3) {
+                            adminLevel2 = component.long_name;
                         }
                     });
 
