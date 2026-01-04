@@ -395,6 +395,44 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                             {crew.description || '크루 소개가 없습니다.'}
                         </p>
 
+                        {/* 크루 활동 지역 */}
+                        {crew.activityAreaLatitude && crew.activityAreaLongitude && (
+                            <div style={{ marginTop: '24px' }}>
+                                <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '700', color: '#1a1a1a' }}>크루 활동 지역</h3>
+
+                                {/* 지도 이미지 */}
+                                <div style={{
+                                    width: '100%',
+                                    height: '200px',
+                                    borderRadius: '12px',
+                                    overflow: 'hidden',
+                                    marginBottom: '12px',
+                                    border: '1px solid #e0e0e0'
+                                }}>
+                                    <img
+                                        src={`https://maps.googleapis.com/maps/api/staticmap?center=${crew.activityAreaLatitude},${crew.activityAreaLongitude}&zoom=14&size=600x400&markers=color:red%7C${crew.activityAreaLatitude},${crew.activityAreaLongitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`}
+                                        alt="크루 활동 지역"
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                </div>
+
+                                {/* 주소 */}
+                                <div style={{
+                                    padding: '12px 16px',
+                                    backgroundColor: '#f8f9fa',
+                                    borderRadius: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}>
+                                    <span style={{ fontSize: '16px' }}>📍</span>
+                                    <span style={{ fontSize: '14px', color: '#1a1a1a', fontWeight: '500' }}>
+                                        {crew.activityAreaAddress || `${crew.activityAreaLatitude}, ${crew.activityAreaLongitude}`}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
                         <div style={{ marginTop: '24px' }}>
                             {userRole ? (
                                 userStatus === 'APPROVED' ? (
