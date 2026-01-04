@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../../utils/api';
+import CrewBoardTab from './CrewBoardTab';
 
-function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit, onViewBoard }) {
+function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userStatus, setUserStatus] = useState(null);
     const [userRole, setUserRole] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('intro'); // 'intro', 'notice', 'board'
+    const [activeTab, setActiveTab] = useState('intro');
     const [isTabFixed, setIsTabFixed] = useState(false);
     const tabRef = useRef(null);
     const tabOffsetRef = useRef(0);
@@ -30,7 +31,6 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit, onViewBoard 
             }
         };
 
-        // 탭 위치 계산
         if (tabRef.current) {
             tabOffsetRef.current = tabRef.current.offsetTop;
         }
@@ -140,11 +140,11 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit, onViewBoard 
     const isCaptain = (userRole === 'captain' || (crew.captainId && user && crew.captainId === user.id));
 
     return (
-        <div style={{ backgroundColor: '#f8f9fa', minHeight: '100vh', paddingBottom: '80px' }}>
-            {/* 상단 네비게이션 */}
+        <div style={{ backgroundColor: '#fff', minHeight: '100vh', paddingBottom: '80px' }}>
+            {/* 상단 네비게이션 - 여백 제거 */}
             <div style={{
                 backgroundColor: '#fff',
-                padding: '16px 20px',
+                padding: '12px 16px',
                 borderBottom: '1px solid #e0e0e0',
                 display: 'flex',
                 alignItems: 'center',
@@ -164,41 +164,27 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit, onViewBoard 
                 >
                     &lt; 목록으로
                 </div>
-                {isCaptain && (
-                    <button
-                        onClick={onEdit}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            fontSize: '20px',
-                            cursor: 'pointer',
-                            padding: '4px'
-                        }}
-                    >
-                        ⚙️
-                    </button>
-                )}
             </div>
 
-            {/* 오렌지 그라데이션 헤더 - 여백 없이 */}
+            {/* 오렌지 그라데이션 헤더 - 여백 없이, 높이 최소화 */}
             <div style={{
                 background: 'linear-gradient(135deg, #FF9A56 0%, #FF6B45 100%)',
-                padding: '32px 20px 24px 20px'
+                padding: '20px 16px'
             }}>
                 {/* 크루 이미지와 이름 - 가로 배치 */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                     <div style={{
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '16px',
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '12px',
                         background: crewImage.bg || '#fff',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '40px',
+                        fontSize: '32px',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                         overflow: 'hidden',
-                        border: '3px solid rgba(255,255,255,0.3)',
+                        border: '2px solid rgba(255,255,255,0.3)',
                         flexShrink: 0
                     }}>
                         {crewImage.url ? (
@@ -207,24 +193,48 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit, onViewBoard 
                             crewImage.emoji || '🏃'
                         )}
                     </div>
-                    <h1 style={{
-                        margin: 0,
-                        fontSize: '28px',
-                        fontWeight: '800',
-                        color: '#fff',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                        flex: 1
-                    }}>
-                        {crew.name}
-                    </h1>
+                    <div style={{ flex: 1 }}>
+                        <h1 style={{
+                            margin: 0,
+                            fontSize: '24px',
+                            fontWeight: '800',
+                            color: '#fff',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        }}>
+                            {crew.name}
+                        </h1>
+                    </div>
+                    {/* 설정 버튼을 닉네임 옆으로 이동 */}
+                    {isCaptain && (
+                        <button
+                            onClick={onEdit}
+                            style={{
+                                background: 'rgba(255,255,255,0.25)',
+                                backdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255,255,255,0.3)',
+                                borderRadius: '8px',
+                                width: '36px',
+                                height: '36px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '18px',
+                                cursor: 'pointer',
+                                padding: 0,
+                                flexShrink: 0
+                            }}
+                        >
+                            ⚙️
+                        </button>
+                    )}
                 </div>
 
-                {/* 멤버 및 누적거리 - 검정 텍스트, 테두리 없이 */}
+                {/* 멤버 및 누적거리 - 검정 텍스트 */}
                 <div style={{ display: 'flex', gap: '16px' }}>
-                    <span style={{ fontSize: '14px', color: '#1a1a1a', fontWeight: '600' }}>
+                    <span style={{ fontSize: '13px', color: '#1a1a1a', fontWeight: '600' }}>
                         멤버 {members.length}
                     </span>
-                    <span style={{ fontSize: '14px', color: '#1a1a1a', fontWeight: '600' }}>
+                    <span style={{ fontSize: '13px', color: '#1a1a1a', fontWeight: '600' }}>
                         누적거리 {crew.totalDistance ? `${crew.totalDistance.toFixed(0)}km` : '0km'}
                     </span>
                 </div>
@@ -248,7 +258,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit, onViewBoard 
                     onClick={() => setActiveTab('intro')}
                     style={{
                         flex: 1,
-                        padding: '16px',
+                        padding: '14px',
                         backgroundColor: 'transparent',
                         border: 'none',
                         borderBottom: activeTab === 'intro' ? '3px solid #FF9A56' : '3px solid transparent',
@@ -265,7 +275,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit, onViewBoard 
                     onClick={() => setActiveTab('notice')}
                     style={{
                         flex: 1,
-                        padding: '16px',
+                        padding: '14px',
                         backgroundColor: 'transparent',
                         border: 'none',
                         borderBottom: activeTab === 'notice' ? '3px solid #FF9A56' : '3px solid transparent',
@@ -279,13 +289,10 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit, onViewBoard 
                     공지사항
                 </button>
                 <button
-                    onClick={() => {
-                        setActiveTab('board');
-                        if (onViewBoard) onViewBoard();
-                    }}
+                    onClick={() => setActiveTab('board')}
                     style={{
                         flex: 1,
-                        padding: '16px',
+                        padding: '14px',
                         backgroundColor: 'transparent',
                         border: 'none',
                         borderBottom: activeTab === 'board' ? '3px solid #FF9A56' : '3px solid transparent',
@@ -301,7 +308,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit, onViewBoard 
             </div>
 
             {/* 탭이 고정될 때 공간 확보 */}
-            {isTabFixed && <div style={{ height: '53px' }} />}
+            {isTabFixed && <div style={{ height: '50px' }} />}
 
             {/* 탭 내용 */}
             <div style={{ backgroundColor: '#fff', minHeight: '400px' }}>
@@ -382,12 +389,14 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit, onViewBoard 
                 )}
 
                 {activeTab === 'board' && (
-                    <div style={{ padding: '20px' }}>
-                        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#999' }}>
-                            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📝</div>
-                            <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>게시판으로 이동합니다</div>
-                            <div style={{ fontSize: '14px' }}>잠시만 기다려주세요...</div>
-                        </div>
+                    <div>
+                        <CrewBoardTab
+                            crew={crew}
+                            user={user}
+                            onPostClick={() => { }}
+                            onCreatePost={() => { }}
+                            onBack={() => setActiveTab('intro')}
+                        />
                     </div>
                 )}
             </div>
