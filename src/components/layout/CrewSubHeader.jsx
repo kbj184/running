@@ -21,7 +21,7 @@ function CrewSubHeader({ crewTab, onTabChange }) {
                     onClick={() => onTabChange('home')}
                     style={{
                         flex: 1,
-                        padding: '14px 12px',
+                        padding: '10px 12px',
                         backgroundColor: 'transparent',
                         border: 'none',
                         borderBottom: crewTab === 'home' ? '2px solid #1a1a1a' : '2px solid transparent',
@@ -38,7 +38,7 @@ function CrewSubHeader({ crewTab, onTabChange }) {
                     onClick={() => onTabChange('ranking')}
                     style={{
                         flex: 1,
-                        padding: '14px 12px',
+                        padding: '10px 12px',
                         backgroundColor: 'transparent',
                         border: 'none',
                         borderBottom: crewTab === 'ranking' ? '2px solid #1a1a1a' : '2px solid transparent',
@@ -55,7 +55,7 @@ function CrewSubHeader({ crewTab, onTabChange }) {
                     onClick={() => onTabChange('create')}
                     style={{
                         flex: 1,
-                        padding: '14px 12px',
+                        padding: '10px 12px',
                         backgroundColor: 'transparent',
                         border: 'none',
                         borderBottom: crewTab === 'create' ? '2px solid #1a1a1a' : '2px solid transparent',
@@ -72,7 +72,7 @@ function CrewSubHeader({ crewTab, onTabChange }) {
                     onClick={() => onTabChange('more')}
                     style={{
                         flex: 1,
-                        padding: '14px 12px',
+                        padding: '10px 12px',
                         backgroundColor: 'transparent',
                         border: 'none',
                         borderBottom: crewTab === 'more' ? '2px solid #1a1a1a' : '2px solid transparent',

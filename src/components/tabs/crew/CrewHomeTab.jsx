@@ -14,7 +14,7 @@ function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews, user }) {
     };
 
     return (
-        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', minHeight: 'calc(100vh - var(--header-height) - 60px)' }}>
+        <div style={{ padding: '12px 20px 20px 20px', backgroundColor: '#f8f9fa', minHeight: 'calc(100vh - var(--header-height) - 60px)' }}>
             {/* 지역 필터 추가 */}
             <LocationFilter
                 onFilterChange={handleFilterChange}
