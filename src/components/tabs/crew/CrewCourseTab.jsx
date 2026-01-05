@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../../utils/api';
 import { generateRouteThumbImage } from '../../../utils/mapThumbnail';
+import CourseSelectionPage from './CourseSelectionPage';
+import CourseDetailPage from './CourseDetailPage';
 
 function CrewCourseTab({ crew, user, userRole }) {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [showSelectionPage, setShowSelectionPage] = useState(false);
+    const [selectedRecord, setSelectedRecord] = useState(null);
 
     useEffect(() => {
         fetchCourses();
@@ -35,6 +38,43 @@ function CrewCourseTab({ crew, user, userRole }) {
         }
     };
 
+    const handleSelectRecord = (record) => {
+        setSelectedRecord(record);
+    };
+
+    const handleCloseDetailPage = () => {
+        setSelectedRecord(null);
+    };
+
+    const handleRegistrationSuccess = () => {
+        setSelectedRecord(null);
+        setShowSelectionPage(false);
+        fetchCourses();
+    };
+
+    // Show selection page
+    if (showSelectionPage) {
+        return (
+            <>
+                <CourseSelectionPage
+                    user={user}
+                    crewId={crew.id}
+                    onBack={() => setShowSelectionPage(false)}
+                    onSelectRecord={handleSelectRecord}
+                />
+                {selectedRecord && (
+                    <CourseDetailPage
+                        user={user}
+                        crewId={crew.id}
+                        selectedRecord={selectedRecord}
+                        onClose={handleCloseDetailPage}
+                        onSuccess={handleRegistrationSuccess}
+                    />
+                )}
+            </>
+        );
+    }
+
     if (loading) {
         return (
             <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>
@@ -59,7 +99,7 @@ function CrewCourseTab({ crew, user, userRole }) {
                 </h3>
                 {user && (
                     <button
-                        onClick={() => setShowRegisterModal(true)}
+                        onClick={() => setShowSelectionPage(true)}
                         style={{
                             padding: '10px 20px',
                             backgroundColor: '#FF9A56',
@@ -106,6 +146,7 @@ function CrewCourseTab({ crew, user, userRole }) {
                                 border: '1px solid #e0e0e0',
                                 borderRadius: '12px',
                                 overflow: 'hidden',
+                                display: 'flex',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s'
                             }}
@@ -118,7 +159,7 @@ function CrewCourseTab({ crew, user, userRole }) {
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
-                            {/* Thumbnail - Always show on left */}
+                            {/* Thumbnail */}
                             <div style={{
                                 width: '120px',
                                 height: '120px',
@@ -156,7 +197,9 @@ function CrewCourseTab({ crew, user, userRole }) {
                                             marginBottom: '12px',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap'
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical'
                                         }}>
                                             {course.description}
                                         </div>
@@ -187,22 +230,7 @@ function CrewCourseTab({ crew, user, userRole }) {
                     ))}
                 </div>
             )}
-
-            {/* Register Modal */}
-            {
-                showRegisterModal && (
-                    <CourseRegistrationModal
-                        user={user}
-                        crewId={crew.id}
-                        onClose={() => setShowRegisterModal(false)}
-                        onSuccess={() => {
-                            setShowRegisterModal(false);
-                            fetchCourses();
-                        }}
-                    />
-                )
-            }
-        </div >
+        </div>
     );
 }
 
@@ -252,287 +280,6 @@ function CourseThumbnail({ course }) {
                 e.target.parentElement.appendChild(fallback);
             }}
         />
-    );
-}
-
-function RecordThumbnail({ record }) {
-    const thumbnailUrl = useMemo(() => {
-        if (record.route) {
-            try {
-                const route = JSON.parse(record.route);
-                if (route && route.length > 0) {
-                    return generateRouteThumbImage(route);
-                }
-            } catch (e) {
-                console.error('Failed to parse route:', e);
-            }
-        }
-        return record.thumbnail;
-    }, [record.route, record.thumbnail]);
-
-    if (!thumbnailUrl) {
-        return (
-            <div style={{
-                fontSize: '30px',
-                color: '#ccc'
-            }}>
-                🗺️
-            </div>
-        );
-    }
-
-    return (
-        <img
-            src={thumbnailUrl}
-            alt="Running route"
-            style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
-            }}
-        />
-    );
-}
-
-function CourseRegistrationModal({ user, crewId, onClose, onSuccess }) {
-    const [runningRecords, setRunningRecords] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedRecord, setSelectedRecord] = useState(null);
-    const [registering, setRegistering] = useState(false);
-
-    useEffect(() => {
-        fetchRunningRecords();
-    }, []);
-
-    const getAuthHeaders = () => {
-        if (!user || !user.accessToken) return {};
-        return {
-            'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
-        };
-    };
-
-    const fetchRunningRecords = async () => {
-        try {
-            setLoading(true);
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/sessions/completed?userId=${user.id}`, {
-                headers: getAuthHeaders()
-            });
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Fetched running records:', data);
-                setRunningRecords(data);
-            } else {
-                console.error('Failed to fetch records, status:', response.status);
-            }
-        } catch (error) {
-            console.error('Failed to fetch running records:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRegister = async () => {
-        if (!selectedRecord) return;
-
-        try {
-            setRegistering(true);
-
-            console.log('Selected record:', selectedRecord);
-
-            const courseData = {
-                name: `러닝 코스 - ${new Date(selectedRecord.timestamp || Date.now()).toLocaleDateString()}`,
-                description: `거리: ${selectedRecord.distance?.toFixed(2)}km, 시간: ${Math.floor(selectedRecord.duration / 60)}분`,
-                distance: selectedRecord.distance,
-                routeData: selectedRecord.route,
-                mapThumbnailUrl: selectedRecord.thumbnail
-            };
-
-            console.log('Course data to send:', courseData);
-
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crewId}/courses`, {
-                method: 'POST',
-                headers: {
-                    ...getAuthHeaders(),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(courseData)
-            });
-
-            if (response.ok) {
-                onSuccess();
-            } else {
-                const errorText = await response.text();
-                console.error('Failed to register course:', response.status, errorText);
-                alert('코스 등록에 실패했습니다.');
-            }
-        } catch (error) {
-            console.error('Failed to register course:', error);
-            alert('코스 등록 중 오류가 발생했습니다.');
-        } finally {
-            setRegistering(false);
-        }
-    };
-
-    return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px'
-        }}>
-            <div style={{
-                backgroundColor: '#fff',
-                borderRadius: '16px',
-                padding: '24px',
-                maxWidth: '500px',
-                width: '100%',
-                maxHeight: '80vh',
-                display: 'flex',
-                flexDirection: 'column'
-            }}>
-                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>나의 러닝 활동에서 선택</span>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            fontSize: '24px',
-                            cursor: 'pointer',
-                            color: '#999',
-                            padding: 0,
-                            lineHeight: 1
-                        }}
-                    >
-                        ×
-                    </button>
-                </h3>
-
-                {loading ? (
-                    <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>
-                        로딩 중...
-                    </div>
-                ) : runningRecords.length === 0 ? (
-                    <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>
-                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>🏃</div>
-                        <div style={{ fontSize: '14px' }}>러닝 기록이 없습니다</div>
-                    </div>
-                ) : (
-                    <>
-                        <div style={{
-                            flex: 1,
-                            overflowY: 'auto',
-                            marginBottom: '16px'
-                        }}>
-                            {runningRecords.map(record => (
-                                <div
-                                    key={record.id}
-                                    onClick={() => setSelectedRecord(record)}
-                                    style={{
-                                        padding: '12px',
-                                        marginBottom: '8px',
-                                        border: selectedRecord?.id === record.id ? '2px solid #FF9A56' : '1px solid #e0e0e0',
-                                        borderRadius: '8px',
-                                        cursor: 'pointer',
-                                        backgroundColor: selectedRecord?.id === record.id ? '#fff5f0' : '#fff',
-                                        transition: 'all 0.2s',
-                                        display: 'flex',
-                                        gap: '12px'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        if (selectedRecord?.id !== record.id) {
-                                            e.currentTarget.style.backgroundColor = '#f8f8f8';
-                                        }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (selectedRecord?.id !== record.id) {
-                                            e.currentTarget.style.backgroundColor = '#fff';
-                                        }
-                                    }}
-                                >
-                                    {/* Thumbnail */}
-                                    <div style={{
-                                        width: '80px',
-                                        height: '80px',
-                                        flexShrink: 0,
-                                        backgroundColor: '#f0f0f0',
-                                        borderRadius: '6px',
-                                        overflow: 'hidden',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        <RecordThumbnail record={record} />
-                                    </div>
-
-                                    {/* Content */}
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            marginBottom: '4px'
-                                        }}>
-                                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
-                                                {record.startAddress || '러닝 코스'}
-                                            </div>
-                                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#FF9A56' }}>
-                                                {record.distance?.toFixed(2)} km
-                                            </div>
-                                        </div>
-                                        <div style={{ fontSize: '12px', color: '#999' }}>
-                                            {new Date(record.timestamp || Date.now()).toLocaleDateString()} • {Math.floor(record.duration / 60)}분
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                            <button
-                                onClick={onClose}
-                                style={{
-                                    flex: 1,
-                                    padding: '12px',
-                                    backgroundColor: '#f0f0f0',
-                                    color: '#666',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                취소
-                            </button>
-                            <button
-                                onClick={handleRegister}
-                                disabled={!selectedRecord || registering}
-                                style={{
-                                    flex: 1,
-                                    padding: '12px',
-                                    backgroundColor: selectedRecord && !registering ? '#FF9A56' : '#ccc',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    cursor: selectedRecord && !registering ? 'pointer' : 'not-allowed'
-                                }}
-                            >
-                                {registering ? '등록 중...' : '등록'}
-                            </button>
-                        </div>
-                    </>
-                )}
-            </div>
-        </div>
     );
 }
 
