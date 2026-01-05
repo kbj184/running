@@ -230,7 +230,7 @@ export const generateRouteThumbnail = (route, options = {}) => {
             params.append('markers', `icon:${encodeURIComponent(MARKER_ICONS.start)}|scale:0.5|${startPoint.lat},${startPoint.lng}`);
             params.append('markers', `icon:${encodeURIComponent(MARKER_ICONS.goal)}|scale:0.5|${endPoint.lat},${endPoint.lng}`);
 
-            if (wateringSegments && wateringSegments.length > 0) {
+            if (wateringSegments && Array.isArray(wateringSegments) && wateringSegments.length > 0) {
                 wateringSegments.forEach((segment) => {
                     if (typeof segment === 'object' && 'start' in segment && 'end' in segment) {
                         const midIndex = Math.floor((segment.start + segment.end) / 2);
@@ -246,7 +246,7 @@ export const generateRouteThumbnail = (route, options = {}) => {
             params.append('markers', `color:green|size:mid|label:S|${startPoint.lat},${startPoint.lng}`);
             params.append('markers', `color:red|size:mid|label:G|${endPoint.lat},${endPoint.lng}`);
 
-            if (wateringSegments && wateringSegments.length > 0) {
+            if (wateringSegments && Array.isArray(wateringSegments) && wateringSegments.length > 0) {
                 wateringSegments.forEach((segment) => {
                     if (typeof segment === 'object' && 'start' in segment && 'end' in segment) {
                         const midIndex = Math.floor((segment.start + segment.end) / 2);
