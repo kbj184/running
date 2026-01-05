@@ -33,7 +33,13 @@ const getSpeedColorHex = (speedKmh) => {
 };
 
 export const generateRouteThumbnail = (route, options = {}) => {
-    if (!route || route.length === 0) {
+    console.log('🗺️ generateRouteThumbnail called');
+    console.log('  - route type:', typeof route);
+    console.log('  - route is Array:', Array.isArray(route));
+    console.log('  - route length:', route?.length);
+
+    if (!route || !Array.isArray(route) || route.length === 0) {
+        console.error('Invalid route data:', route);
         return null;
     }
 
