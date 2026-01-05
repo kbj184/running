@@ -8,10 +8,9 @@ function CrewSubHeader({ crewTab, onTabChange }) {
         <div style={{
             position: 'relative',
             width: '100%',
-            backgroundColor: '#fff',
+            backgroundColor: '#f8f9fa',
             borderBottom: '1px solid #e0e0e0',
-            zIndex: 999,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            zIndex: 999
         }}>
             <div style={{
                 display: 'flex',
@@ -22,13 +21,13 @@ function CrewSubHeader({ crewTab, onTabChange }) {
                     onClick={() => onTabChange('home')}
                     style={{
                         flex: 1,
-                        padding: '16px',
+                        padding: '14px 12px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        borderBottom: crewTab === 'home' ? '3px solid #1a1a1a' : '3px solid transparent',
+                        borderBottom: crewTab === 'home' ? '2px solid #1a1a1a' : '2px solid transparent',
                         color: crewTab === 'home' ? '#1a1a1a' : '#888',
                         fontWeight: crewTab === 'home' ? '700' : '500',
-                        fontSize: '15px',
+                        fontSize: '14px',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                     }}
@@ -39,13 +38,13 @@ function CrewSubHeader({ crewTab, onTabChange }) {
                     onClick={() => onTabChange('ranking')}
                     style={{
                         flex: 1,
-                        padding: '16px',
+                        padding: '14px 12px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        borderBottom: crewTab === 'ranking' ? '3px solid #1a1a1a' : '3px solid transparent',
+                        borderBottom: crewTab === 'ranking' ? '2px solid #1a1a1a' : '2px solid transparent',
                         color: crewTab === 'ranking' ? '#1a1a1a' : '#888',
                         fontWeight: crewTab === 'ranking' ? '700' : '500',
-                        fontSize: '15px',
+                        fontSize: '14px',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                     }}
@@ -56,18 +55,35 @@ function CrewSubHeader({ crewTab, onTabChange }) {
                     onClick={() => onTabChange('create')}
                     style={{
                         flex: 1,
-                        padding: '16px',
+                        padding: '14px 12px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        borderBottom: crewTab === 'create' ? '3px solid #1a1a1a' : '3px solid transparent',
+                        borderBottom: crewTab === 'create' ? '2px solid #1a1a1a' : '2px solid transparent',
                         color: crewTab === 'create' ? '#1a1a1a' : '#888',
                         fontWeight: crewTab === 'create' ? '700' : '500',
-                        fontSize: '15px',
+                        fontSize: '14px',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                     }}
                 >
                     크루 만들기
+                </button>
+                <button
+                    onClick={() => onTabChange('more')}
+                    style={{
+                        flex: 1,
+                        padding: '14px 12px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        borderBottom: crewTab === 'more' ? '2px solid #1a1a1a' : '2px solid transparent',
+                        color: crewTab === 'more' ? '#1a1a1a' : '#888',
+                        fontWeight: crewTab === 'more' ? '700' : '500',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    더보기
                 </button>
             </div>
         </div>

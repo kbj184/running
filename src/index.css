@@ -3,4 +3,7 @@
     --header-height: 56px;
 }
 
-/* Empty CSS */
+/* Hide scrollbar for location filter */
+.location-filter-scroll::-webkit-scrollbar {
+    display: none;
+}

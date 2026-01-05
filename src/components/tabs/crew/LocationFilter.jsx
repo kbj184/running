@@ -75,117 +75,137 @@ function LocationFilter({ onFilterChange, activeFilter, user }) {
     };
 
     return (
-        <div style={{ marginBottom: '20px' }}>
-            {/* Breadcrumb Navigation - 텍스트 형태, 포커스는 밑줄 */}
+        <div style={{ marginBottom: '16px' }}>
+            {/* Horizontal scrollable pill filters */}
             <div style={{
                 display: 'flex',
-                alignItems: 'center',
                 gap: '8px',
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#888',
-                marginBottom: '16px'
-            }}>
-                {/* 전국 */}
-                <span
+                overflowX: 'auto',
+                overflowY: 'hidden',
+                paddingBottom: '4px',
+                scrollbarWidth: 'none', // Firefox
+                msOverflowStyle: 'none', // IE/Edge
+                WebkitOverflowScrolling: 'touch'
+            }}
+                className="location-filter-scroll"
+            >
+                {/* 전국 버튼 */}
+                <button
                     onClick={handleReset}
                     style={{
+                        padding: '8px 16px',
+                        borderRadius: '20px',
+                        border: 'none',
+                        backgroundColor: !activeFilter.level1 ? '#1a1a1a' : '#f0f0f0',
+                        color: !activeFilter.level1 ? '#fff' : '#666',
+                        fontSize: '13px',
+                        fontWeight: '600',
                         cursor: 'pointer',
-                        color: !activeFilter.level1 ? '#1a1a1a' : '#888',
-                        borderBottom: !activeFilter.level1 ? '2px solid #1a1a1a' : 'none',
-                        paddingBottom: '2px'
+                        transition: 'all 0.2s',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0
                     }}
                 >
                     전국
-                </span>
+                </button>
 
-                {/* 시/도 */}
-                {activeFilter.level1 && (
-                    <>
-                        <span>&gt;</span>
-                        <span
-                            onClick={() => onFilterChange({ level1: activeFilter.level1, level2: null })}
-                            style={{
-                                cursor: 'pointer',
-                                color: (activeFilter.level1 && !activeFilter.level2) ? '#1a1a1a' : '#888',
-                                borderBottom: (activeFilter.level1 && !activeFilter.level2) ? '2px solid #1a1a1a' : 'none',
-                                paddingBottom: '2px'
-                            }}
-                        >
-                            {activeFilter.level1}
-                        </span>
-                    </>
-                )}
-
-                {/* 시/군/구 */}
-                {activeFilter.level2 && (
-                    <>
-                        <span>&gt;</span>
-                        <span
-                            style={{
-                                color: '#1a1a1a',
-                                borderBottom: '2px solid #1a1a1a',
-                                paddingBottom: '2px'
-                            }}
-                        >
-                            {activeFilter.level2}
-                        </span>
-                    </>
-                )}
+                {/* 시/도 목록 */}
+                {KOREA_ADMIN_DIVISIONS.map((division) => (
+                    <button
+                        key={division.name}
+                        onClick={() => handleLevel1Click(division.name)}
+                        style={{
+                            padding: '8px 16px',
+                            borderRadius: '20px',
+                            border: 'none',
+                            backgroundColor: activeFilter.level1 === division.name ? '#1a1a1a' : '#f0f0f0',
+                            color: activeFilter.level1 === division.name ? '#fff' : '#666',
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0
+                        }}
+                    >
+                        {division.name}
+                    </button>
+                ))}
             </div>
 
-            {/* Selection List (Context-aware) */}
-            <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '8px',
-                maxHeight: '200px',
-                overflowY: 'auto'
-            }}>
-                {!activeFilter.level1 ? (
-                    // 시/도 선택 목록
-                    KOREA_ADMIN_DIVISIONS.map((division) => (
-                        <button
-                            key={division.name}
-                            onClick={() => handleLevel1Click(division.name)}
-                            style={{
-                                padding: '8px 16px',
-                                borderRadius: '20px',
-                                border: '1px solid #eee',
-                                backgroundColor: '#fff',
-                                color: '#666',
-                                fontSize: '14px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                marginBottom: '4px'
-                            }}
-                        >
-                            {division.name}
-                        </button>
-                    ))
-                ) : !activeFilter.level2 ? (
-                    // 시/군/구 선택 목록 (level1은 선택되었으나 level2가 없을 때)
-                    getSubDivisions().map((subDivision) => (
+            {/* 시/군/구 필터 (level1이 선택되었을 때만 표시) */}
+            {activeFilter.level1 && !activeFilter.level2 && getSubDivisions().length > 0 && (
+                <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    paddingBottom: '4px',
+                    marginTop: '8px',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    WebkitOverflowScrolling: 'touch'
+                }}
+                    className="location-filter-scroll"
+                >
+                    {getSubDivisions().map((subDivision) => (
                         <button
                             key={subDivision}
                             onClick={() => handleLevel2Click(subDivision)}
                             style={{
                                 padding: '8px 16px',
                                 borderRadius: '20px',
-                                border: '1px solid #eee',
-                                backgroundColor: '#fff',
+                                border: 'none',
+                                backgroundColor: '#f0f0f0',
                                 color: '#666',
-                                fontSize: '14px',
+                                fontSize: '13px',
+                                fontWeight: '600',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
-                                marginBottom: '4px'
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0
                             }}
                         >
                             {subDivision}
                         </button>
-                    ))
-                ) : null}
-            </div>
+                    ))}
+                </div>
+            )}
+
+            {/* 선택된 level2 표시 */}
+            {activeFilter.level2 && (
+                <div style={{
+                    marginTop: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}>
+                    <span style={{
+                        padding: '6px 14px',
+                        borderRadius: '20px',
+                        backgroundColor: '#1a1a1a',
+                        color: '#fff',
+                        fontSize: '13px',
+                        fontWeight: '600'
+                    }}>
+                        {activeFilter.level1} &gt; {activeFilter.level2}
+                    </span>
+                    <button
+                        onClick={() => onFilterChange({ level1: activeFilter.level1, level2: null })}
+                        style={{
+                            padding: '6px 12px',
+                            borderRadius: '20px',
+                            border: 'none',
+                            backgroundColor: '#f0f0f0',
+                            color: '#666',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

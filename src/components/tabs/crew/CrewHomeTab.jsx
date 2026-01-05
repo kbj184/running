@@ -14,13 +14,24 @@ function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews, user }) {
     };
 
     return (
-        <div style={{ padding: '20px' }}>
+        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', minHeight: 'calc(100vh - var(--header-height) - 60px)' }}>
             {/* 지역 필터 추가 */}
             <LocationFilter
                 onFilterChange={handleFilterChange}
                 activeFilter={activeFilter}
                 user={user}
             />
+
+            {/* 크루 홈 섹션 헤더 */}
+            <h2 style={{
+                fontSize: '20px',
+                fontWeight: '700',
+                color: '#1a1a1a',
+                marginBottom: '16px',
+                marginTop: '24px'
+            }}>
+                크루 홈
+            </h2>
 
             {allCrews.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
@@ -34,7 +45,7 @@ function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews, user }) {
                     </p>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {allCrews.map((crew) => {
                         let crewImage;
                         try {
@@ -53,30 +64,31 @@ function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews, user }) {
                                     gap: '16px',
                                     padding: '16px',
                                     backgroundColor: '#fff',
-                                    borderRadius: '12px',
-                                    border: '1px solid #e0e0e0',
+                                    borderRadius: '16px',
+                                    border: 'none',
                                     cursor: 'pointer',
-                                    transition: 'all 0.2s'
+                                    transition: 'all 0.2s',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.transform = 'translateY(-2px)';
-                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = 'none';
+                                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
                                 }}
                             >
                                 <div
                                     style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        borderRadius: '12px',
+                                        width: '70px',
+                                        height: '70px',
+                                        borderRadius: '16px',
                                         background: crewImage.bg || '#ddd',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        fontSize: '32px',
+                                        fontSize: '36px',
                                         flexShrink: 0,
                                         overflow: 'hidden'
                                     }}
@@ -87,19 +99,25 @@ function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews, user }) {
                                         crewImage.emoji
                                     )}
                                 </div>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>{crew.name}</h3>
-                                    </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <h3 style={{
+                                        margin: 0,
+                                        fontSize: '17px',
+                                        fontWeight: '700',
+                                        color: '#1a1a1a',
+                                        marginBottom: '8px',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}>
+                                        {crew.name}
+                                    </h3>
 
                                     {/* 크루 메타 정보 */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                                         <span style={{
-                                            fontSize: '12px',
+                                            fontSize: '13px',
                                             color: '#666',
-                                            backgroundColor: '#f0f0f0',
-                                            padding: '3px 8px',
-                                            borderRadius: '12px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '4px'
@@ -108,40 +126,24 @@ function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews, user }) {
                                             <span>{crew.memberCount || 0}명</span>
                                         </span>
 
-                                        {crew.activityAreaLevel2 && (
-                                            <span style={{
-                                                fontSize: '12px',
-                                                color: '#666',
-                                                backgroundColor: '#f0f0f0',
-                                                padding: '3px 8px',
-                                                borderRadius: '12px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '4px'
-                                            }}>
-                                                <span>📍</span>
-                                                <span>{crew.activityAreaLevel2}</span>
-                                            </span>
-                                        )}
-
                                         {crew.totalDistance !== undefined && crew.totalDistance > 0 && (
-                                            <span style={{
-                                                fontSize: '12px',
-                                                color: '#666',
-                                                backgroundColor: '#f0f0f0',
-                                                padding: '3px 8px',
-                                                borderRadius: '12px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '4px'
-                                            }}>
-                                                <span>🏃</span>
-                                                <span>{crew.totalDistance.toFixed(1)}km</span>
-                                            </span>
+                                            <>
+                                                <span style={{ color: '#ddd' }}>•</span>
+                                                <span style={{
+                                                    fontSize: '13px',
+                                                    color: '#666',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}>
+                                                    <span>🏃</span>
+                                                    <span>{crew.totalDistance.toFixed(1)}km</span>
+                                                </span>
+                                            </>
                                         )}
                                     </div>
                                 </div>
-                                <div style={{ fontSize: '24px', color: '#ccc' }}>›</div>
+                                <div style={{ fontSize: '20px', color: '#ddd', flexShrink: 0 }}>›</div>
                             </div>
                         );
                     })}

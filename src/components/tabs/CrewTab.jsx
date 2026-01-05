@@ -200,6 +200,23 @@ function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabCh
                         onCrewCreated={handleCrewCreated}
                     />
                 )}
+
+                {crewTab === 'more' && (
+                    <div style={{
+                        padding: '40px 20px',
+                        textAlign: 'center',
+                        backgroundColor: '#f8f9fa',
+                        minHeight: 'calc(100vh - var(--header-height) - 60px)'
+                    }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚙️</div>
+                        <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#1a1a1a', marginBottom: '8px' }}>
+                            더보기
+                        </h2>
+                        <p style={{ fontSize: '14px', color: '#666' }}>
+                            추가 기능이 곧 제공될 예정입니다
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );
