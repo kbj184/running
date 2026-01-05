@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { GoogleMap, useJsApiLoader, Polyline } from '@react-google-maps/api';
-import AdvancedMarker from '../../common/AdvancedMarker';
+import { GoogleMap, useJsApiLoader, Polyline, Marker } from '@react-google-maps/api';
 import { generateRouteMapImage } from '../../../utils/mapThumbnail';
 
 const LIBRARIES = ['places', 'marker'];
@@ -286,54 +285,46 @@ function CourseViewPage({ course, onClose }) {
 
                                     {/* S (Start) 마커 */}
                                     {markers.start && (
-                                        <AdvancedMarker
-                                            map={map}
+                                        <Marker
                                             position={markers.start}
-                                            zIndex={100}
-                                        >
-                                            <div style={{
-                                                width: '32px',
-                                                height: '32px',
-                                                backgroundColor: '#22c55e',
-                                                borderRadius: '50%',
-                                                border: '3px solid white',
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
+                                            icon={{
+                                                path: window.google.maps.SymbolPath.CIRCLE,
+                                                fillColor: '#22c55e',
+                                                fillOpacity: 1,
+                                                strokeColor: '#ffffff',
+                                                strokeWeight: 3,
+                                                scale: 16,
+                                            }}
+                                            label={{
+                                                text: 'S',
+                                                color: '#ffffff',
                                                 fontSize: '14px',
-                                                fontWeight: '800',
-                                                color: 'white'
-                                            }}>
-                                                S
-                                            </div>
-                                        </AdvancedMarker>
+                                                fontWeight: 'bold'
+                                            }}
+                                            zIndex={100}
+                                        />
                                     )}
 
                                     {/* G (Goal) 마커 */}
                                     {markers.goal && (
-                                        <AdvancedMarker
-                                            map={map}
+                                        <Marker
                                             position={markers.goal}
-                                            zIndex={100}
-                                        >
-                                            <div style={{
-                                                width: '32px',
-                                                height: '32px',
-                                                backgroundColor: '#ef4444',
-                                                borderRadius: '50%',
-                                                border: '3px solid white',
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
+                                            icon={{
+                                                path: window.google.maps.SymbolPath.CIRCLE,
+                                                fillColor: '#ef4444',
+                                                fillOpacity: 1,
+                                                strokeColor: '#ffffff',
+                                                strokeWeight: 3,
+                                                scale: 16,
+                                            }}
+                                            label={{
+                                                text: 'G',
+                                                color: '#ffffff',
                                                 fontSize: '14px',
-                                                fontWeight: '800',
-                                                color: 'white'
-                                            }}>
-                                                G
-                                            </div>
-                                        </AdvancedMarker>
+                                                fontWeight: 'bold'
+                                            }}
+                                            zIndex={100}
+                                        />
                                     )}
                                 </GoogleMap>
                             ) : (
