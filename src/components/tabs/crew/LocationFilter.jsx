@@ -75,7 +75,7 @@ function LocationFilter({ onFilterChange, activeFilter, user }) {
     };
 
     return (
-        <div style={{ marginBottom: '16px' }}>
+        <div style={{ marginBottom: '8px' }}>
             {/* Horizontal scrollable pill filters */}
             <div style={{
                 display: 'flex',
