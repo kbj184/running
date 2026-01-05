@@ -14,11 +14,13 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
     };
 
 
+
     // 정적 지도 이미지 생성 (ResultScreen과 동일한 방식)
     const mapImageUrl = useMemo(() => {
         console.log('🗺️ CourseDetailPage - Generating map image...');
         console.log('selectedRecord:', selectedRecord);
         console.log('selectedRecord.route type:', typeof selectedRecord.route);
+        console.log('selectedRecord.route is Array:', Array.isArray(selectedRecord.route));
         console.log('selectedRecord.thumbnail:', selectedRecord.thumbnail);
 
         if (selectedRecord.route) {
@@ -32,7 +34,15 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                     console.log('Route is already an object');
                 }
 
+                console.log('Parsed route type:', typeof route);
+                console.log('Parsed route is Array:', Array.isArray(route));
                 console.log('Parsed route length:', route?.length);
+
+                // route가 배열인지 확인
+                if (!Array.isArray(route)) {
+                    console.error('Route is not an array!', route);
+                    return selectedRecord.thumbnail;
+                }
 
                 if (route && route.length > 0) {
                     const wateringSegments = selectedRecord.wateringSegments || [];
@@ -50,6 +60,7 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
         console.log('Using thumbnail fallback:', selectedRecord.thumbnail);
         return selectedRecord.thumbnail;
     }, [selectedRecord]);
+
 
 
     const handleRegister = async () => {
