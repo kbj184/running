@@ -13,46 +13,40 @@
     position: relative;
     width: 100%;
     height: var(--header-height);
-    background: linear-gradient(135deg, #4318FF 0%, #5B2FFF 100%);
+    background: #f8f9fa;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 1rem;
-    box-shadow: 0 2px 8px rgba(67, 24, 255, 0.2);
+    border-bottom: 1px solid #e0e0e0;
     z-index: 1000;
 }
 
 .main-logo {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: white;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
     font-style: italic;
-    letter-spacing: -0.5px;
+    letter-spacing: -1px;
 }
 
 .main-user-profile {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    transition: background 0.2s;
-}
-
-.main-user-profile:hover {
-    background: rgba(255, 255, 255, 0.1);
+    gap: 0.75rem;
 }
 
 .user-profile-image {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.2);
+    background: #e0e0e0;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .user-profile-image img {
@@ -62,11 +56,11 @@
 }
 
 .default-profile-icon {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
 }
 
 .user-nickname {
-    color: white;
+    color: #1a1a1a;
     font-size: 0.95rem;
     font-weight: 600;
     max-width: 100px;
@@ -386,7 +380,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 64px;
+    height: 70px;
     background: white;
     border-top: 1px solid #e0e0e0;
     display: flex;
@@ -403,7 +397,8 @@
     align-items: center;
     gap: 0.25rem;
     color: #999;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 500;
     cursor: pointer;
     transition: color 0.2s, transform 0.2s;
     padding: 0.5rem 1rem;
@@ -412,28 +407,30 @@
 }
 
 .nav-item:hover {
-    color: #4318FF;
+    color: #1a1a1a;
 }
 
 .nav-item.active {
-    color: #4318FF;
+    color: #1a1a1a;
+    font-weight: 700;
 }
 
 .nav-icon {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
 }
 
 /* Play Button in Nav */
 .nav-item.play-button {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
-    margin-top: -28px;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    margin-top: -32px;
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
     flex: 0 0 auto;
     max-width: none;
     color: white;
+    justify-content: center;
 }
 
 .nav-item.play-button:hover {
@@ -442,7 +439,7 @@
 }
 
 .play-icon {
-    font-size: 2rem;
+    font-size: 2.2rem;
 }
 
 /* Mobile Responsive */
