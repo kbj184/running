@@ -180,7 +180,7 @@ function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabCh
             </div>
 
             {/* 서브 헤더 높이만큼 여백 확보 */}
-            <div style={{ paddingTop: '60px' }}>
+            <div style={{ paddingTop: '43px' }}>
                 {crewTab === 'home' && (
                     <CrewHomeTab
                         allCrews={allCrews}
