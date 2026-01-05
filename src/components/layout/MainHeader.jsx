@@ -26,48 +26,47 @@ function MainHeader({ user, onProfileClick, onGradeClick }) {
                 llrun
             </div>
 
-            {/* Right Section: Elite Badge + Avatar */}
+            {/* Right Section: Runner Grade Badge + Avatar */}
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px'
             }}>
-                {/* Elite Badge - only show for Elite users */}
+                {/* Runner Grade Badge - show for all grades */}
                 {user.runnerGrade && (() => {
                     const gradeInfo = getGradeInfo(user.runnerGrade);
-                    if (gradeInfo.badge === 'Elite') {
-                        return (
-                            <div
-                                onClick={onGradeClick}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '5px',
-                                    padding: '6px 14px',
-                                    backgroundColor: '#ffffff',
-                                    borderRadius: '20px',
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-                                    border: '1px solid #f0f0f0'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = 'scale(1.03)';
-                                    e.currentTarget.style.boxShadow = '0 3px 10px rgba(0,0,0,0.12)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                    e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
-                                }}
-                            >
-                                <span style={{ fontSize: '16px' }}>👑</span>
-                                <span style={{ color: '#1a1a1a', fontSize: '14px' }}>Elite</span>
-                            </div>
-                        );
-                    }
-                    return null;
+                    return (
+                        <div
+                            onClick={onGradeClick}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                padding: '6px 14px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '20px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+                                border: '1px solid #f0f0f0'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.03)';
+                                e.currentTarget.style.boxShadow = '0 3px 10px rgba(0,0,0,0.12)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
+                            }}
+                        >
+                            <span style={{ fontSize: '16px' }}>{gradeInfo.emoji}</span>
+                            <span style={{ color: '#1a1a1a', fontSize: '14px' }}>
+                                {gradeInfo.badge || gradeInfo.nameKo}
+                            </span>
+                        </div>
+                    );
                 })()}
 
                 {/* User Avatar */}
