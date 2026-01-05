@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { GoogleMap, useJsApiLoader, Polyline } from '@react-google-maps/api';
 import AdvancedMarker from '../../common/AdvancedMarker';
+import { generateRouteMapImage } from '../../../utils/mapThumbnail';
 
 const LIBRARIES = ['places', 'marker'];
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
@@ -43,6 +44,14 @@ function CourseViewPage({ course, onClose }) {
         }
         return null;
     }, [course.routeData]);
+
+    // 정적 지도 이미지 생성
+    const mapImageUrl = useMemo(() => {
+        if (parsedRoute && parsedRoute.length > 0) {
+            return generateRouteMapImage(parsedRoute, []);
+        }
+        return course.mapThumbnailUrl;
+    }, [parsedRoute, course.mapThumbnailUrl]);
 
     // 지도 중심점 계산
     const mapCenter = useMemo(() => {
@@ -212,9 +221,9 @@ function CourseViewPage({ course, onClose }) {
                             }}
                             onClick={() => setShowInteractiveMap(true)}
                         >
-                            {course.mapThumbnailUrl ? (
+                            {mapImageUrl ? (
                                 <img
-                                    src={course.mapThumbnailUrl}
+                                    src={mapImageUrl}
                                     alt="러닝 경로"
                                     style={{
                                         width: '100%',
