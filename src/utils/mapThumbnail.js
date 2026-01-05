@@ -188,20 +188,25 @@ export const generateRouteThumbnail = (route, options = {}) => {
             segments.push({ path: currentPath, color: currentColor });
         }
 
+        console.log('🎨 Generated segments:', segments.length);
+        console.log('  - segments is Array:', Array.isArray(segments));
+
         // 각 세그먼트를 path 파라미터로 추가 (샘플링 적용)
-        segments.forEach((segment, idx) => {
-            const maxPoints = 50; // 세그먼트당 최대 포인트
-            const step = Math.max(1, Math.floor(segment.path.length / maxPoints));
-            const sampledPath = segment.path.filter((_, index) => index % step === 0);
+        if (Array.isArray(segments) && segments.length > 0) {
+            segments.forEach((segment, idx) => {
+                const maxPoints = 50; // 세그먼트당 최대 포인트
+                const step = Math.max(1, Math.floor(segment.path.length / maxPoints));
+                const sampledPath = segment.path.filter((_, index) => index % step === 0);
 
-            const pathPoints = sampledPath
-                .map(p => `${p.lat},${p.lng}`)
-                .join('|');
+                const pathPoints = sampledPath
+                    .map(p => `${p.lat},${p.lng}`)
+                    .join('|');
 
-            params.append('path', `color:${segment.color}|weight:${weight}|${pathPoints}`);
-        });
+                params.append('path', `color:${segment.color}|weight:${weight}|${pathPoints}`);
+            });
 
-        console.log(`🎨 Generated ${segments.length} speed-colored segments for static map`);
+            console.log(`🎨 Generated ${segments.length} speed-colored segments for static map`);
+        }
     } else {
         // 단일 색상 경로
         const maxPoints = 100;
