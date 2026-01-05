@@ -245,42 +245,22 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                             onClick={() => setShowInteractiveMap(true)}
                         >
                             {mapImageUrl ? (
-                                <>
-                                    <img
-                                        src={mapImageUrl}
-                                        alt="러닝 경로"
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover'
-                                        }}
-                                        onError={(e) => {
-                                            e.target.style.display = 'none';
-                                            const errorDiv = document.createElement('div');
-                                            errorDiv.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-size:16px;';
-                                            errorDiv.textContent = '지도 로딩 실패';
-                                            e.target.parentElement.appendChild(errorDiv);
-                                        }}
-                                    />
-                                    {/* 클릭 힌트 */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        bottom: '16px',
-                                        right: '16px',
-                                        background: 'rgba(0, 0, 0, 0.7)',
-                                        color: '#fff',
-                                        padding: '8px 16px',
-                                        borderRadius: '20px',
-                                        fontSize: '13px',
-                                        fontWeight: '600',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        backdropFilter: 'blur(4px)'
-                                    }}>
-                                        🗺️ 지도 보기
-                                    </div>
-                                </>
+                                <img
+                                    src={mapImageUrl}
+                                    alt="러닝 경로"
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover'
+                                    }}
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        const errorDiv = document.createElement('div');
+                                        errorDiv.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-size:16px;';
+                                        errorDiv.textContent = '지도 로딩 실패';
+                                        e.target.parentElement.appendChild(errorDiv);
+                                    }}
+                                />
                             ) : (
                                 <div style={{ fontSize: '40px', color: '#ccc' }}>🗺️</div>
                             )}
@@ -391,31 +371,6 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                                     지도 로딩 중...
                                 </div>
                             )}
-
-                            {/* 이미지로 돌아가기 버튼 */}
-                            <button
-                                onClick={() => setShowInteractiveMap(false)}
-                                style={{
-                                    position: 'absolute',
-                                    bottom: '16px',
-                                    right: '16px',
-                                    background: 'rgba(0, 0, 0, 0.7)',
-                                    color: '#fff',
-                                    border: 'none',
-                                    padding: '8px 16px',
-                                    borderRadius: '20px',
-                                    fontSize: '13px',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    backdropFilter: 'blur(4px)',
-                                    zIndex: 10
-                                }}
-                            >
-                                🖼️ 이미지로
-                            </button>
                         </div>
                     )}
                 </div>
