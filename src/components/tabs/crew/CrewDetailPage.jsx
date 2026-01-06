@@ -861,14 +861,16 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
             {/* Follow Course Running Screen */}
             {followRunningCourse && (
                 <FollowCourseRunningScreen
+                    key={followRunningCourse.id ? `${followRunningCourse.id}-${Date.now()}` : Date.now()}
                     course={followRunningCourse}
                     user={user}
                     onStop={(result) => {
                         setFollowRunningCourse(null);
-                        if (result.saved) {
+                        if (result && result.saved) {
                             setCourseRefreshKey(prev => prev + 1);
                         }
                     }}
+                    onClose={() => setFollowRunningCourse(null)}
                 />
             )}
         </div>

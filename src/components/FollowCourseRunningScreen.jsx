@@ -48,7 +48,7 @@ const getSpeedColor = (speedKmh) => {
     return "#7c3aed";
 };
 
-function FollowCourseRunningScreen({ course, onStop, user }) {
+function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
     const sessionId = `follow-${course.id}-${Date.now()}`;
 
     const [map, setMap] = useState(null);
@@ -406,6 +406,24 @@ function FollowCourseRunningScreen({ course, onStop, user }) {
         setShowResult(true);
     };
 
+    const handleClose = () => {
+        if (showResult) {
+            if (window.confirm("저장하지 않고 나가시겠습니까?")) {
+                if (onClose) onClose();
+                else if (onStop) onStop({ saved: false });
+            }
+        }
+        else if (hasStarted) {
+            if (window.confirm("달리기를 종료하시겠습니까?")) {
+                handleStop();
+            }
+        } else {
+            console.log("FollowCourseRunningScreen: closing (not started)");
+            if (onClose) onClose();
+            else if (onStop) onStop({ saved: false });
+        }
+    };
+
     // 저장 확인
     const handleSaveConfirm = () => {
         onStop({
@@ -654,6 +672,28 @@ function FollowCourseRunningScreen({ course, onStop, user }) {
                 display: 'flex',
                 flexDirection: 'column'
             }}>
+                <button
+                    onClick={handleClose}
+                    style={{
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        border: 'none',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        fontSize: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        zIndex: 2005
+                    }}
+                >
+                    ✕
+                </button>
                 <div style={{
                     position: 'absolute',
                     top: '20px',
@@ -841,6 +881,28 @@ function FollowCourseRunningScreen({ course, onStop, user }) {
             display: 'flex',
             flexDirection: 'column'
         }}>
+            <button
+                onClick={handleClose}
+                style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(255,255,255,0.9)',
+                    border: 'none',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    fontSize: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    zIndex: 2005
+                }}
+            >
+                ✕
+            </button>
             {splits.length > 0 && (Date.now() - (route[route.length - 1]?.timestamp || 0) < 5000) && (
                 <div style={{
                     position: 'fixed', top: '100px', left: '50%', transform: 'translateX(-50%)',
