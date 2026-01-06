@@ -136,12 +136,21 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
 
     const handleRegister = async () => {
         try {
+            if (!title.trim()) {
+                alert('코스 제목을 입력해주세요.');
+                return;
+            }
+            if (!description.trim()) {
+                alert('코스 설명을 입력해주세요.');
+                return;
+            }
+
             setRegistering(true);
 
             const courseData = {
                 name: `러닝 코스 - ${new Date(selectedRecord.timestamp || Date.now()).toLocaleDateString()}`,
                 title: title.trim(),
-                description: description.trim() || `거리: ${selectedRecord.distance?.toFixed(2)}km, 시간: ${Math.floor(selectedRecord.duration / 60)}분`,
+                description: description.trim(),
                 distance: selectedRecord.distance,
                 routeData: selectedRecord.route,
                 mapThumbnailUrl: selectedRecord.thumbnail
@@ -157,6 +166,7 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
             });
 
             if (response.ok) {
+                alert('코스가 성공적으로 등록되었습니다.');
                 onSuccess();
             } else {
                 const errorText = await response.text();
@@ -403,7 +413,7 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                         color: '#333',
                         marginBottom: '8px'
                     }}>
-                        코스 제목
+                        코스 제목 <span style={{ color: '#ef4444' }}>*</span>
                     </label>
                     <input
                         type="text"
@@ -433,12 +443,12 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                         color: '#333',
                         marginBottom: '8px'
                     }}>
-                        코스 설명
+                        코스 설명 <span style={{ color: '#ef4444' }}>*</span>
                     </label>
                     <textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        placeholder="코스에 대한 설명을 입력하세요 (선택사항)"
+                        placeholder="코스에 대한 설명을 입력하세요"
                         maxLength={500}
                         style={{
                             width: '100%',
