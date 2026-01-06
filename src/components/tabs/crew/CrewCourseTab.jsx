@@ -5,12 +5,11 @@ import CourseSelectionPage from './CourseSelectionPage';
 import CourseDetailPage from './CourseDetailPage';
 import CourseViewPage from './CourseViewPage';
 
-function CrewCourseTab({ crew, user, userRole }) {
+function CrewCourseTab({ crew, user, userRole, onCourseClick }) {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showSelectionPage, setShowSelectionPage] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState(null);
-    const [viewingCourse, setViewingCourse] = useState(null);
 
     useEffect(() => {
         fetchCourses();
@@ -143,7 +142,7 @@ function CrewCourseTab({ crew, user, userRole }) {
                     {courses.map(course => (
                         <div
                             key={course.id}
-                            onClick={() => setViewingCourse(course)}
+                            onClick={() => onCourseClick && onCourseClick(course)}
                             style={{
                                 backgroundColor: '#fff',
                                 border: '1px solid #e0e0e0',
@@ -232,14 +231,6 @@ function CrewCourseTab({ crew, user, userRole }) {
                         </div>
                     ))}
                 </div>
-            )}
-
-            {/* Course View Modal */}
-            {viewingCourse && (
-                <CourseViewPage
-                    course={viewingCourse}
-                    onClose={() => setViewingCourse(null)}
-                />
             )}
         </div>
     );

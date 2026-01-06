@@ -135,56 +135,49 @@ function CourseViewPage({ course, onClose }) {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            backgroundColor: '#fff',
             zIndex: 2000,
-            padding: '20px'
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
         }}>
+            {/* Header */}
             <div style={{
-                backgroundColor: '#fff',
-                borderRadius: '16px',
-                maxWidth: '500px',
-                width: '100%',
-                maxHeight: '90vh',
+                padding: '16px',
+                borderBottom: '1px solid #e0e0e0',
                 display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden'
+                alignItems: 'center',
+                backgroundColor: '#fff',
+                gap: '12px'
             }}>
-                {/* Header */}
-                <div style={{
-                    padding: '20px 20px 16px 20px',
-                    borderBottom: '1px solid #f0f0f0',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}>
-                    <div style={{
-                        fontSize: '14px',
-                        color: '#666'
-                    }}>
-                        {formatDate(course.createdAt)}
-                    </div>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            fontSize: '28px',
-                            cursor: 'pointer',
-                            color: '#999',
-                            padding: 0,
-                            lineHeight: 1
-                        }}
-                    >
-                        ×
-                    </button>
+                <button
+                    onClick={onClose}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '20px',
+                        cursor: 'pointer',
+                        color: '#333',
+                        padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}
+                >
+                    ←
+                </button>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
+                    {course.name}
                 </div>
+                <div style={{ marginLeft: 'auto', fontSize: '14px', color: '#666' }}>
+                    {formatDate(course.createdAt)}
+                </div>
+            </div>
 
+            {/* Content Scroll Area */}
+            <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '40px' }}>
                 {/* Distance - Big */}
                 <div style={{
-                    padding: '24px 20px',
+                    padding: '30px 20px',
                     textAlign: 'center',
                     backgroundColor: '#fff'
                 }}>
@@ -347,8 +340,7 @@ function CourseViewPage({ course, onClose }) {
                 {course.description && (
                     <div style={{
                         padding: '20px',
-                        flex: 1,
-                        overflowY: 'auto'
+                        flex: 1
                     }}>
                         <div style={{
                             fontSize: '14px',
@@ -373,7 +365,8 @@ function CourseViewPage({ course, onClose }) {
                 <div style={{
                     padding: '16px 20px',
                     borderTop: '1px solid #f0f0f0',
-                    backgroundColor: '#f8f9fa'
+                    backgroundColor: '#fff',
+                    marginTop: 'auto'
                 }}>
                     <div style={{
                         display: 'flex',
@@ -383,7 +376,6 @@ function CourseViewPage({ course, onClose }) {
                         color: '#666'
                     }}>
                         <div>등록자: {course.creatorNickname}</div>
-                        <div>{course.name}</div>
                     </div>
                 </div>
             </div>

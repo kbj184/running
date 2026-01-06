@@ -5,6 +5,7 @@ import CrewBoardTab from './CrewBoardTab';
 import PostDetailPage from './PostDetailPage';
 import PostEditorPage from './PostEditorPage';
 import CrewCourseTab from './CrewCourseTab';
+import CourseViewPage from './CourseViewPage';
 
 function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const navigate = useNavigate();
@@ -24,6 +25,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const [boardView, setBoardView] = useState('list'); // 'list', 'detail', 'editor'
     const [selectedPost, setSelectedPost] = useState(null);
     const [editingPost, setEditingPost] = useState(null);
+    const [selectedCourse, setSelectedCourse] = useState(null);
 
     // URL에서 탭 상태 동기화
     useEffect(() => {
@@ -45,11 +47,36 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                     setSelectedPost(null);
                     setEditingPost(null);
                 }
+            } else if (pathParts[4] === 'course') {
+                if (pathParts[5]) {
+                    const courseId = parseInt(pathParts[5]);
+                    if (location.state?.course) {
+                        setSelectedCourse(location.state.course);
+                    } else {
+                        // URL로 직접 접근 시 데이터 fetch
+                        const crewId = pathParts[3];
+                        const token = user?.accessToken || '';
+                        const headers = token ? { 'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}` } : {};
+
+                        api.request(`${import.meta.env.VITE_API_URL}/crew/${crewId}/courses`, { headers })
+                            .then(res => {
+                                if (res.ok) return res.json();
+                                throw new Error('Failed to fetch');
+                            })
+                            .then(data => {
+                                const found = data.find(c => c.id === courseId);
+                                if (found) setSelectedCourse(found);
+                            })
+                            .catch(console.error);
+                    }
+                } else {
+                    setSelectedCourse(null);
+                }
             }
         } else {
             setActiveTab('intro');
         }
-    }, [location.pathname]);
+    }, [location.pathname, user]);
 
     const handleTabChange = (tab) => {
         // 기본 탭(intro)일 경우 URL 깔끔하게 유지
@@ -238,6 +265,14 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
 
     const handlePostComplete = () => {
         navigate(`/crew/detail/${crew.id}/board`);
+    };
+
+    const handleCourseClick = (course) => {
+        navigate(`/crew/detail/${crew.id}/course/${course.id}`, { state: { course } });
+    };
+
+    const handleCloseCourseView = () => {
+        navigate(`/crew/detail/${crew.id}/course`);
     };
 
     // 크루 이미지 파싱
@@ -599,11 +634,19 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 )}
 
                 {activeTab === 'course' && (
-                    <CrewCourseTab
-                        crew={crew}
-                        user={user}
-                        userRole={userRole}
-                    />
+                    selectedCourse ? (
+                        <CourseViewPage
+                            course={selectedCourse}
+                            onClose={handleCloseCourseView}
+                        />
+                    ) : (
+                        <CrewCourseTab
+                            crew={crew}
+                            user={user}
+                            userRole={userRole}
+                            onCourseClick={handleCourseClick}
+                        />
+                    )
                 )}
 
                 {activeTab === 'members' && (
