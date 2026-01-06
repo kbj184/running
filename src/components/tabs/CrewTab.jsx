@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import CrewHomeTab from './crew/CrewHomeTab';
 import CrewRankingTab from './crew/CrewRankingTab';
 import CrewCreateTab from './crew/CrewCreateTab';
@@ -10,11 +11,28 @@ import PostDetailPage from './crew/PostDetailPage';
 import PostEditorPage from './crew/PostEditorPage';
 
 function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabChange }) {
+    const location = useLocation();
+    const navigate = useNavigate();
     const [selectedCrew, setSelectedCrew] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [viewMode, setViewMode] = useState('list'); // 'list', 'board', 'post', 'editor'
     const [selectedPost, setSelectedPost] = useState(null);
     const [editingPost, setEditingPost] = useState(null);
+
+    // URL 기반 크루 상세 페이지 감지
+    useEffect(() => {
+        const pathParts = location.pathname.split('/');
+        // /crew/detail/:id 형태 감지
+        if (pathParts[2] === 'detail' && pathParts[3]) {
+            const crewId = parseInt(pathParts[3]);
+            const crew = location.state?.crew || allCrews.find(c => c.id === crewId);
+            if (crew) {
+                setSelectedCrew(crew);
+                setIsEditing(false);
+                setViewMode('list');
+            }
+        }
+    }, [location, allCrews]);
 
     const handleCrewCreated = (newCrew) => {
         // 크루 생성 성공 시 크루 홈 탭으로 이동하고 목록 새로고침
@@ -33,6 +51,8 @@ function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabCh
     };
 
     const handleBack = () => {
+        // URL 기반 네비게이션으로 변경
+        navigate('/crew');
         setSelectedCrew(null);
         setIsEditing(false);
         setViewMode('list');
