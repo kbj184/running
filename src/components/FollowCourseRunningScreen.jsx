@@ -854,22 +854,19 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                     position={startPoint}
                                 >
                                     <div style={{
-                                        width: '30px',
-                                        height: '30px',
-                                    < div style={{
-                                            width: '32px',
-                                            height: '32px',
-                                            backgroundColor: '#22c55e',
-                                            borderRadius: '50%',
-                                            border: '3px solid white',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontSize: '14px',
-                                            fontWeight: '800',
-                                            color: 'white'
-                                        }}>
+                                        width: '32px',
+                                        height: '32px',
+                                        backgroundColor: '#22c55e',
+                                        borderRadius: '50%',
+                                        border: '3px solid white',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '14px',
+                                        fontWeight: '800',
+                                        color: 'white'
+                                    }}>
                                         S
                                     </div>
                                 </AdvancedMarker>
