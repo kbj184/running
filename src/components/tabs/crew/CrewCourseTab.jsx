@@ -180,9 +180,16 @@ function CrewCourseTab({ crew, user, userRole, refreshKey, onCourseClick, onCour
                                     </div>
                                     <div style={{
                                         fontSize: '12px',
-                                        color: '#999'
+                                        color: '#999',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
                                     }}>
-                                        {course.creatorNickname}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <span style={{ fontSize: '12px' }}>{course.liked ? '❤️' : '🤍'}</span>
+                                            <span style={{ fontWeight: '500' }}>{course.likeCount || 0}</span>
+                                        </div>
+                                        <span>{course.creatorNickname}</span>
                                     </div>
                                 </div>
                             </div>

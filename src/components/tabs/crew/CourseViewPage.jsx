@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { GoogleMap, useJsApiLoader, Polyline, Marker } from '@react-google-maps/api';
 import { generateRouteMapImage } from '../../../utils/mapThumbnail';
+import { api } from '../../../utils/api';
 
 const LIBRARIES = ['places', 'marker'];
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
@@ -17,6 +18,22 @@ const getSpeedColor = (speedKmh) => {
 function CourseViewPage({ course, onClose }) {
     const [showInteractiveMap, setShowInteractiveMap] = useState(false);
     const [map, setMap] = useState(null);
+    const [isLiked, setIsLiked] = useState(!!course.liked);
+    const [likeCount, setLikeCount] = useState(course.likeCount || 0);
+
+    const handleToggleLike = async () => {
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${course.crewId}/courses/${course.id}/like`, {
+                method: 'POST'
+            });
+            if (response.ok) {
+                setIsLiked(prev => !prev);
+                setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+            }
+        } catch (error) {
+            console.error('Like toggle failed:', error);
+        }
+    };
 
     // Google Maps API 로드
     const { isLoaded } = useJsApiLoader({
@@ -168,8 +185,28 @@ function CourseViewPage({ course, onClose }) {
                 <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
                     {course.title || course.name}
                 </div>
-                <div style={{ marginLeft: 'auto', fontSize: '14px', color: '#666' }}>
-                    {formatDate(course.createdAt)}
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button
+                        onClick={handleToggleLike}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '4px',
+                            color: isLiked ? '#ef4444' : '#666',
+                            fontSize: '14px',
+                            fontWeight: '600'
+                        }}
+                    >
+                        <span>{isLiked ? '❤️' : '🤍'}</span>
+                        <span>{likeCount}</span>
+                    </button>
+                    <div style={{ fontSize: '14px', color: '#666' }}>
+                        {formatDate(course.createdAt)}
+                    </div>
                 </div>
             </div>
 
