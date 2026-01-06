@@ -22,26 +22,29 @@ function CrewSubHeader() {
             position: 'sticky',
             top: 'calc(var(--header-height) - 56px)',
             width: '100%',
-            backgroundColor: '#f8f9fa',
+            backgroundColor: '#fff',
             borderBottom: '1px solid #e0e0e0',
-            zIndex: 90
+            zIndex: 90,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
             <div style={{
                 display: 'flex',
                 gap: '0',
+                padding: '0 20px',
+                maxWidth: '1200px',
                 margin: '0 auto'
             }}>
                 <button
                     onClick={() => handleTabChange('home')}
                     style={{
                         flex: 1,
-                        padding: '10px 12px',
+                        padding: '16px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        borderBottom: crewTab === 'home' ? '2px solid #1a1a1a' : '2px solid transparent',
+                        borderBottom: crewTab === 'home' ? '3px solid #1a1a1a' : '3px solid transparent',
                         color: crewTab === 'home' ? '#1a1a1a' : '#888',
                         fontWeight: crewTab === 'home' ? '700' : '500',
-                        fontSize: '14px',
+                        fontSize: '15px',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                     }}
@@ -52,13 +55,13 @@ function CrewSubHeader() {
                     onClick={() => handleTabChange('ranking')}
                     style={{
                         flex: 1,
-                        padding: '10px 12px',
+                        padding: '16px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        borderBottom: crewTab === 'ranking' ? '2px solid #1a1a1a' : '2px solid transparent',
+                        borderBottom: crewTab === 'ranking' ? '3px solid #1a1a1a' : '3px solid transparent',
                         color: crewTab === 'ranking' ? '#1a1a1a' : '#888',
                         fontWeight: crewTab === 'ranking' ? '700' : '500',
-                        fontSize: '14px',
+                        fontSize: '15px',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                     }}
@@ -69,13 +72,13 @@ function CrewSubHeader() {
                     onClick={() => handleTabChange('create')}
                     style={{
                         flex: 1,
-                        padding: '10px 12px',
+                        padding: '16px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        borderBottom: crewTab === 'create' ? '2px solid #1a1a1a' : '2px solid transparent',
+                        borderBottom: crewTab === 'create' ? '3px solid #1a1a1a' : '3px solid transparent',
                         color: crewTab === 'create' ? '#1a1a1a' : '#888',
                         fontWeight: crewTab === 'create' ? '700' : '500',
-                        fontSize: '14px',
+                        fontSize: '15px',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                     }}
@@ -86,13 +89,13 @@ function CrewSubHeader() {
                     onClick={() => handleTabChange('more')}
                     style={{
                         flex: 1,
-                        padding: '10px 12px',
+                        padding: '16px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        borderBottom: crewTab === 'more' ? '2px solid #1a1a1a' : '2px solid transparent',
+                        borderBottom: crewTab === 'more' ? '3px solid #1a1a1a' : '3px solid transparent',
                         color: crewTab === 'more' ? '#1a1a1a' : '#888',
                         fontWeight: crewTab === 'more' ? '700' : '500',
-                        fontSize: '14px',
+                        fontSize: '15px',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                     }}
