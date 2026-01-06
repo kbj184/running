@@ -19,6 +19,7 @@ const getSpeedColor = (speedKmh) => {
 function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [errors, setErrors] = useState({});
     const [registering, setRegistering] = useState(false);
     const [showInteractiveMap, setShowInteractiveMap] = useState(false);
     const [map, setMap] = useState(null);
@@ -136,12 +137,12 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
 
     const handleRegister = async () => {
         try {
-            if (!title.trim()) {
-                alert('코스 제목을 입력해주세요.');
-                return;
-            }
-            if (!description.trim()) {
-                alert('코스 설명을 입력해주세요.');
+            const newErrors = {};
+            if (!title.trim()) newErrors.title = '코스 제목을 입력해주세요.';
+            if (!description.trim()) newErrors.description = '코스 설명을 입력해주세요.';
+
+            if (Object.keys(newErrors).length > 0) {
+                setErrors(newErrors);
                 return;
             }
 
@@ -418,20 +419,24 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                     <input
                         type="text"
                         value={title}
-                        onChange={(e) => setTitle(e.target.value)}
+                        onChange={(e) => {
+                            setTitle(e.target.value);
+                            if (errors.title) setErrors(prev => ({ ...prev, title: '' }));
+                        }}
                         placeholder="코스 제목을 입력하세요"
                         maxLength={50}
                         style={{
                             width: '100%',
                             padding: '12px',
                             fontSize: '14px',
-                            border: '1px solid #e0e0e0',
+                            border: errors.title ? '1px solid #ef4444' : '1px solid #e0e0e0',
                             borderRadius: '8px',
                             fontFamily: 'inherit',
                             boxSizing: 'border-box',
                             outline: 'none'
                         }}
                     />
+                    {errors.title && <div style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>{errors.title}</div>}
                 </div>
 
                 {/* Description Input */}
@@ -447,7 +452,10 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                     </label>
                     <textarea
                         value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                        onChange={(e) => {
+                            setDescription(e.target.value);
+                            if (errors.description) setErrors(prev => ({ ...prev, description: '' }));
+                        }}
                         placeholder="코스에 대한 설명을 입력하세요"
                         maxLength={500}
                         style={{
@@ -455,7 +463,7 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                             minHeight: '150px', // More height for full page
                             padding: '12px',
                             fontSize: '14px',
-                            border: '1px solid #e0e0e0',
+                            border: errors.description ? '1px solid #ef4444' : '1px solid #e0e0e0',
                             borderRadius: '8px',
                             resize: 'none', // Disable resize on mobile
                             fontFamily: 'inherit',
@@ -463,6 +471,7 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                             outline: 'none'
                         }}
                     />
+                    {errors.description && <div style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px', textAlign: 'left' }}>{errors.description}</div>}
                     <div style={{
                         fontSize: '12px',
                         color: '#999',

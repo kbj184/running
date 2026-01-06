@@ -29,6 +29,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const [editingPost, setEditingPost] = useState(null);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [courseViewMode, setCourseViewMode] = useState('list'); // 'list', 'detail', 'create_select', 'create_form'
+    const [courseRefreshKey, setCourseRefreshKey] = useState(0);
 
     // URL에서 탭 상태 동기화
     useEffect(() => {
@@ -654,6 +655,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                             crew={crew}
                             user={user}
                             userRole={userRole}
+                            refreshKey={courseRefreshKey}
                             onCourseClick={handleCourseClick}
                             onCourseCreate={() => navigate(`/crew/detail/${crew.id}/course/create`)}
                         />
@@ -677,7 +679,10 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                 crewId={crew.id}
                                 selectedRecord={location.state?.record}
                                 onClose={() => navigate(-1)}
-                                onSuccess={() => navigate(`/crew/detail/${crew.id}/course`)}
+                                onSuccess={() => {
+                                    setCourseRefreshKey(prev => prev + 1);
+                                    navigate(`/crew/detail/${crew.id}/course`);
+                                }}
                             />
                         )}
                     </>

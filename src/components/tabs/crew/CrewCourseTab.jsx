@@ -2,13 +2,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../../utils/api';
 import { generateRouteThumbImage } from '../../../utils/mapThumbnail';
 
-function CrewCourseTab({ crew, user, userRole, onCourseClick, onCourseCreate }) {
+function CrewCourseTab({ crew, user, userRole, refreshKey, onCourseClick, onCourseCreate }) {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchCourses();
-    }, [crew.id]);
+    }, [crew.id, refreshKey]);
 
     const getAuthHeaders = () => {
         if (!user || !user.accessToken) return {};
