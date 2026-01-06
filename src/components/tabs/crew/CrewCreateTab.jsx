@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, Marker } from '@react-google-maps/api';
 import { api } from '../../../utils/api';
-import CrewSubHeader from '../../layout/CrewSubHeader';
 
 const CREW_IMAGES = [
     { id: 1, emoji: '🦁', bg: 'linear-gradient(135deg, #FF6B6B 0%, #C44569 100%)' },
@@ -283,311 +282,308 @@ function CrewCreateTab({ user, onCreate }) {
     };
 
     return (
-        <div>
-            <CrewSubHeader />
-            <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-                <h2 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '800' }}>새 크루 만들기</h2>
+        <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+            <h2 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '800' }}>새 크루 만들기</h2>
 
-                {error && (
-                    <div style={{
-                        padding: '12px',
-                        marginBottom: '16px',
-                        backgroundColor: '#fee2e2',
-                        color: '#dc2626',
-                        borderRadius: '8px',
-                        fontSize: '14px'
-                    }}>
-                        {error}
-                    </div>
-                )}
+            {error && (
+                <div style={{
+                    padding: '12px',
+                    marginBottom: '16px',
+                    backgroundColor: '#fee2e2',
+                    color: '#dc2626',
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                }}>
+                    {error}
+                </div>
+            )}
 
-                <form onSubmit={handleSubmit}>
-                    {/* 크루 이름 */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
-                            크루 이름 *
+            <form onSubmit={handleSubmit}>
+                {/* 크루 이름 */}
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
+                        크루 이름 *
+                    </label>
+                    <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="멋진 크루 이름을 입력하세요"
+                        style={{
+                            width: '100%',
+                            padding: '12px',
+                            borderRadius: '10px',
+                            border: '1px solid #e0e0e0',
+                            fontSize: '16px',
+                            boxSizing: 'border-box'
+                        }}
+                        required
+                    />
+                </div>
+
+                {/* 크루 설명 */}
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
+                        크루 설명
+                    </label>
+                    <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="우리 크루는 어떤 곳인가요?"
+                        style={{
+                            width: '100%',
+                            padding: '12px',
+                            borderRadius: '10px',
+                            border: '1px solid #e0e0e0',
+                            fontSize: '16px',
+                            minHeight: '80px',
+                            resize: 'vertical',
+                            boxSizing: 'border-box'
+                        }}
+                    />
+                </div>
+
+                {/* 가입 방식 */}
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
+                        가입 방식 *
+                    </label>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <label style={{
+                            flex: 1,
+                            padding: '16px',
+                            borderRadius: '10px',
+                            border: joinType === 'AUTO' ? '2px solid #1a1a1a' : '1px solid #e0e0e0',
+                            backgroundColor: joinType === 'AUTO' ? '#f8f9fa' : 'white',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}>
+                            <input
+                                type="radio"
+                                name="joinType"
+                                value="AUTO"
+                                checked={joinType === 'AUTO'}
+                                onChange={(e) => setJoinType(e.target.value)}
+                                style={{ marginRight: '8px' }}
+                            />
+                            <span style={{ fontWeight: '600' }}>자동 가입</span>
+                            <p style={{ fontSize: '13px', color: '#666', margin: '4px 0 0 24px' }}>
+                                누구나 바로 크루에 가입할 수 있습니다
+                            </p>
                         </label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="멋진 크루 이름을 입력하세요"
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                borderRadius: '10px',
-                                border: '1px solid #e0e0e0',
-                                fontSize: '16px',
-                                boxSizing: 'border-box'
-                            }}
-                            required
-                        />
-                    </div>
 
-                    {/* 크루 설명 */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
-                            크루 설명
+                        <label style={{
+                            flex: 1,
+                            padding: '16px',
+                            borderRadius: '10px',
+                            border: joinType === 'APPROVAL' ? '2px solid #1a1a1a' : '1px solid #e0e0e0',
+                            backgroundColor: joinType === 'APPROVAL' ? '#f8f9fa' : 'white',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}>
+                            <input
+                                type="radio"
+                                name="joinType"
+                                value="APPROVAL"
+                                checked={joinType === 'APPROVAL'}
+                                onChange={(e) => setJoinType(e.target.value)}
+                                style={{ marginRight: '8px' }}
+                            />
+                            <span style={{ fontWeight: '600' }}>승인 후 가입</span>
+                            <p style={{ fontSize: '13px', color: '#666', margin: '4px 0 0 24px' }}>
+                                크루장이 승인한 후에 가입됩니다
+                            </p>
                         </label>
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="우리 크루는 어떤 곳인가요?"
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                borderRadius: '10px',
-                                border: '1px solid #e0e0e0',
-                                fontSize: '16px',
-                                minHeight: '80px',
-                                resize: 'vertical',
-                                boxSizing: 'border-box'
-                            }}
-                        />
                     </div>
+                </div>
 
-                    {/* 가입 방식 */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
-                            가입 방식 *
-                        </label>
-                        <div style={{ display: 'flex', gap: '12px' }}>
-                            <label style={{
-                                flex: 1,
-                                padding: '16px',
-                                borderRadius: '10px',
-                                border: joinType === 'AUTO' ? '2px solid #1a1a1a' : '1px solid #e0e0e0',
-                                backgroundColor: joinType === 'AUTO' ? '#f8f9fa' : 'white',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                            }}>
-                                <input
-                                    type="radio"
-                                    name="joinType"
-                                    value="AUTO"
-                                    checked={joinType === 'AUTO'}
-                                    onChange={(e) => setJoinType(e.target.value)}
-                                    style={{ marginRight: '8px' }}
-                                />
-                                <span style={{ fontWeight: '600' }}>자동 가입</span>
-                                <p style={{ fontSize: '13px', color: '#666', margin: '4px 0 0 24px' }}>
-                                    누구나 바로 크루에 가입할 수 있습니다
-                                </p>
-                            </label>
+                {/* 크루 활동 지역 */}
+                <div style={{ marginBottom: '24px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
+                        크루 활동 지역 *
+                    </label>
+                    <p style={{ fontSize: '13px', color: '#666', marginBottom: '12px' }}>
+                        지도를 클릭하여 활동 지역을 선택하세요 (1개만 선택 가능)
+                    </p>
 
-                            <label style={{
-                                flex: 1,
-                                padding: '16px',
-                                borderRadius: '10px',
-                                border: joinType === 'APPROVAL' ? '2px solid #1a1a1a' : '1px solid #e0e0e0',
-                                backgroundColor: joinType === 'APPROVAL' ? '#f8f9fa' : 'white',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                            }}>
-                                <input
-                                    type="radio"
-                                    name="joinType"
-                                    value="APPROVAL"
-                                    checked={joinType === 'APPROVAL'}
-                                    onChange={(e) => setJoinType(e.target.value)}
-                                    style={{ marginRight: '8px' }}
-                                />
-                                <span style={{ fontWeight: '600' }}>승인 후 가입</span>
-                                <p style={{ fontSize: '13px', color: '#666', margin: '4px 0 0 24px' }}>
-                                    크루장이 승인한 후에 가입됩니다
-                                </p>
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* 크루 활동 지역 */}
-                    <div style={{ marginBottom: '24px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
-                            크루 활동 지역 *
-                        </label>
-                        <p style={{ fontSize: '13px', color: '#666', marginBottom: '12px' }}>
-                            지도를 클릭하여 활동 지역을 선택하세요 (1개만 선택 가능)
-                        </p>
-
-                        {/* 지도 */}
-                        <GoogleMap
-                            mapContainerStyle={mapContainerStyle}
-                            center={mapCenter}
-                            zoom={13}
-                            onClick={handleMapClick}
-                            options={{
-                                styles: [
-                                    {
-                                        featureType: 'poi',
-                                        stylers: [{ visibility: 'off' }]
-                                    },
-                                    {
-                                        featureType: 'transit',
-                                        stylers: [{ visibility: 'off' }]
-                                    }
-                                ]
-                            }}
-                        >
-                            {activityAreas.map((area) => (
-                                <Marker
-                                    key={area.id}
-                                    position={{ lat: area.latitude, lng: area.longitude }}
-                                    icon={{
-                                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                    {/* 지도 */}
+                    <GoogleMap
+                        mapContainerStyle={mapContainerStyle}
+                        center={mapCenter}
+                        zoom={13}
+                        onClick={handleMapClick}
+                        options={{
+                            styles: [
+                                {
+                                    featureType: 'poi',
+                                    stylers: [{ visibility: 'off' }]
+                                },
+                                {
+                                    featureType: 'transit',
+                                    stylers: [{ visibility: 'off' }]
+                                }
+                            ]
+                        }}
+                    >
+                        {activityAreas.map((area) => (
+                            <Marker
+                                key={area.id}
+                                position={{ lat: area.latitude, lng: area.longitude }}
+                                icon={{
+                                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
                                         <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="16" cy="16" r="14" fill="#00f2fe" stroke="#fff" stroke-width="2"/>
                                             <text x="16" y="21" font-size="16" text-anchor="middle" fill="#fff">📍</text>
                                         </svg>
                                     `),
-                                        scaledSize: new window.google.maps.Size(32, 32)
-                                    }}
-                                />
-                            ))}
-                        </GoogleMap>
+                                    scaledSize: new window.google.maps.Size(32, 32)
+                                }}
+                            />
+                        ))}
+                    </GoogleMap>
 
-                        {/* 선택된 지역 표시 */}
-                        {selectedAddress && (
-                            <div style={{
-                                marginTop: '16px',
-                                padding: '12px',
-                                backgroundColor: '#f8f9fa',
-                                borderRadius: '8px',
-                                fontSize: '14px',
-                                color: '#333'
-                            }}>
-                                <strong>선택된 지역:</strong> {selectedAddress}
-                            </div>
-                        )}
+                    {/* 선택된 지역 표시 */}
+                    {selectedAddress && (
+                        <div style={{
+                            marginTop: '16px',
+                            padding: '12px',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            color: '#333'
+                        }}>
+                            <strong>선택된 지역:</strong> {selectedAddress}
+                        </div>
+                    )}
+                </div>
+
+                {/* 크루 이미지 */}
+                <div style={{ marginBottom: '24px' }}>
+                    <label style={{ display: 'block', marginBottom: '12px', fontWeight: '600', color: '#1a1a1a' }}>
+                        크루 이미지
+                    </label>
+
+                    {/* 이미지 업로드 */}
+                    <div style={{ marginBottom: '16px' }}>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            style={{ display: 'none' }}
+                            id="crew-image-upload"
+                            disabled={isUploading}
+                        />
+                        <label
+                            htmlFor="crew-image-upload"
+                            style={{
+                                display: 'inline-block',
+                                padding: '10px 20px',
+                                backgroundColor: '#f3f4f6',
+                                border: '2px dashed #d1d5db',
+                                borderRadius: '10px',
+                                cursor: isUploading ? 'not-allowed' : 'pointer',
+                                fontWeight: '600',
+                                color: '#374151',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {isUploading ? '업로드 중...' : '📷 내 이미지 업로드'}
+                        </label>
                     </div>
 
-                    {/* 크루 이미지 */}
-                    <div style={{ marginBottom: '24px' }}>
-                        <label style={{ display: 'block', marginBottom: '12px', fontWeight: '600', color: '#1a1a1a' }}>
-                            크루 이미지
-                        </label>
-
-                        {/* 이미지 업로드 */}
+                    {/* 업로드된 이미지 미리보기 */}
+                    {uploadedImage && (
                         <div style={{ marginBottom: '16px' }}>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                style={{ display: 'none' }}
-                                id="crew-image-upload"
-                                disabled={isUploading}
-                            />
-                            <label
-                                htmlFor="crew-image-upload"
+                            <div
+                                onClick={() => {
+                                    setUploadedImage(null);
+                                    setSelectedImageId(CREW_IMAGES[0].id);
+                                }}
                                 style={{
-                                    display: 'inline-block',
-                                    padding: '10px 20px',
-                                    backgroundColor: '#f3f4f6',
-                                    border: '2px dashed #d1d5db',
-                                    borderRadius: '10px',
-                                    cursor: isUploading ? 'not-allowed' : 'pointer',
-                                    fontWeight: '600',
-                                    color: '#374151',
-                                    transition: 'all 0.2s'
+                                    width: '80px',
+                                    height: '80px',
+                                    borderRadius: '12px',
+                                    overflow: 'hidden',
+                                    border: '3px solid #1a1a1a',
+                                    cursor: 'pointer',
+                                    position: 'relative'
                                 }}
                             >
-                                {isUploading ? '업로드 중...' : '📷 내 이미지 업로드'}
-                            </label>
-                        </div>
-
-                        {/* 업로드된 이미지 미리보기 */}
-                        {uploadedImage && (
-                            <div style={{ marginBottom: '16px' }}>
-                                <div
-                                    onClick={() => {
-                                        setUploadedImage(null);
-                                        setSelectedImageId(CREW_IMAGES[0].id);
-                                    }}
+                                <img
+                                    src={uploadedImage}
+                                    alt="Uploaded"
                                     style={{
-                                        width: '80px',
-                                        height: '80px',
-                                        borderRadius: '12px',
-                                        overflow: 'hidden',
-                                        border: '3px solid #1a1a1a',
-                                        cursor: 'pointer',
-                                        position: 'relative'
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover'
                                     }}
-                                >
-                                    <img
-                                        src={uploadedImage}
-                                        alt="Uploaded"
+                                />
+                            </div>
+                            <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>클릭하여 제거</p>
+                        </div>
+                    )}
+
+                    {/* 기본 이미지 */}
+                    {!uploadedImage && (
+                        <>
+                            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>또는 기본 이미지 선택</div>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(5, 1fr)',
+                                gap: '12px'
+                            }}>
+                                {CREW_IMAGES.map((img) => (
+                                    <button
+                                        key={img.id}
+                                        type="button"
+                                        onClick={() => setSelectedImageId(img.id)}
                                         style={{
                                             width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover'
+                                            aspectRatio: '1',
+                                            borderRadius: '12px',
+                                            border: selectedImageId === img.id ? '3px solid #1a1a1a' : '2px solid #e0e0e0',
+                                            background: img.bg,
+                                            fontSize: '24px',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            transition: 'all 0.2s',
+                                            transform: selectedImageId === img.id ? 'scale(1.05)' : 'scale(1)',
+                                            boxShadow: selectedImageId === img.id ? '0 4px 12px rgba(0,0,0,0.15)' : '0 2px 4px rgba(0,0,0,0.05)'
                                         }}
-                                    />
-                                </div>
-                                <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>클릭하여 제거</p>
+                                    >
+                                        {img.emoji}
+                                    </button>
+                                ))}
                             </div>
-                        )}
+                        </>
+                    )}
+                </div>
 
-                        {/* 기본 이미지 */}
-                        {!uploadedImage && (
-                            <>
-                                <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>또는 기본 이미지 선택</div>
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(5, 1fr)',
-                                    gap: '12px'
-                                }}>
-                                    {CREW_IMAGES.map((img) => (
-                                        <button
-                                            key={img.id}
-                                            type="button"
-                                            onClick={() => setSelectedImageId(img.id)}
-                                            style={{
-                                                width: '100%',
-                                                aspectRatio: '1',
-                                                borderRadius: '12px',
-                                                border: selectedImageId === img.id ? '3px solid #1a1a1a' : '2px solid #e0e0e0',
-                                                background: img.bg,
-                                                fontSize: '24px',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                transition: 'all 0.2s',
-                                                transform: selectedImageId === img.id ? 'scale(1.05)' : 'scale(1)',
-                                                boxShadow: selectedImageId === img.id ? '0 4px 12px rgba(0,0,0,0.15)' : '0 2px 4px rgba(0,0,0,0.05)'
-                                            }}
-                                        >
-                                            {img.emoji}
-                                        </button>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </div>
-
-                    {/* 제출 버튼 */}
-                    <button
-                        type="submit"
-                        disabled={isSubmitting || isUploading || isLoadingLocation}
-                        style={{
-                            width: '100%',
-                            padding: '16px',
-                            backgroundColor: isSubmitting || isUploading || isLoadingLocation ? '#9ca3af' : '#1a1a1a',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '12px',
-                            fontSize: '16px',
-                            fontWeight: '700',
-                            cursor: isSubmitting || isUploading || isLoadingLocation ? 'not-allowed' : 'pointer',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}
-                    >
-                        <span>✨</span> {isSubmitting ? '생성 중...' : '크루 생성하기'}
-                    </button>
-                </form>
-            </div>
+                {/* 제출 버튼 */}
+                <button
+                    type="submit"
+                    disabled={isSubmitting || isUploading || isLoadingLocation}
+                    style={{
+                        width: '100%',
+                        padding: '16px',
+                        backgroundColor: isSubmitting || isUploading || isLoadingLocation ? '#9ca3af' : '#1a1a1a',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        cursor: isSubmitting || isUploading || isLoadingLocation ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}
+                >
+                    <span>✨</span> {isSubmitting ? '생성 중...' : '크루 생성하기'}
+                </button>
+            </form>
         </div>
     );
 }

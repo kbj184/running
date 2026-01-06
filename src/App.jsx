@@ -34,6 +34,7 @@ import SettingsTab from './components/profile/SettingsTab';
 import CrewHomeTab from './components/tabs/crew/CrewHomeTab';
 import CrewRankingTab from './components/tabs/crew/CrewRankingTab';
 import CrewCreateTab from './components/tabs/crew/CrewCreateTab';
+import CrewLayout from './components/layout/CrewLayout';
 
 // Modal Components
 import RunnerGradeModal from './components/modals/RunnerGradeModal';
@@ -498,7 +499,7 @@ function App() {
                                 } />
 
                                 {/* Crew Tab - URL 기반 서브 라우팅 */}
-                                <Route path="crew">
+                                <Route path="crew" element={<CrewLayout />}>
                                     <Route index element={
                                         <CrewHomeTab
                                             allCrews={allCrews}
