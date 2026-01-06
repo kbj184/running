@@ -853,24 +853,21 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                     </div>
                 )}
             </div>
-        </div>
 
-        {/* Follow Course Running Screen */ }
-    {
-        followRunningCourse && (
-            <FollowCourseRunningScreen
-                course={followRunningCourse}
-                user={user}
-                onStop={(result) => {
-                    setFollowRunningCourse(null);
-                    if (result.saved) {
-                        setCourseRefreshKey(prev => prev + 1);
-                    }
-                }}
-            />
-        )
-    }
-    </div >
+            {/* Follow Course Running Screen */}
+            {followRunningCourse && (
+                <FollowCourseRunningScreen
+                    course={followRunningCourse}
+                    user={user}
+                    onStop={(result) => {
+                        setFollowRunningCourse(null);
+                        if (result.saved) {
+                            setCourseRefreshKey(prev => prev + 1);
+                        }
+                    }}
+                />
+            )}
+        </div>
     );
 }
 
