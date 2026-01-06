@@ -257,7 +257,8 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
                                     alignItems: 'center',
                                     fontSize: '13px',
                                     color: '#666',
-                                    fontWeight: '500'
+                                    fontWeight: '500',
+                                    gap: '8px'
                                 }}>
                                     <span>
                                         {(() => {
@@ -270,6 +271,18 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
                                             return `${year}${t('common.year')}${month}${t('common.month')}${day}${t('common.day')} ${hours}:${minutes}`;
                                         })()}
                                     </span>
+                                    {record.courseId && (
+                                        <span style={{
+                                            fontSize: '10px',
+                                            fontWeight: '700',
+                                            color: '#fff',
+                                            backgroundColor: '#7c3aed',
+                                            padding: '2px 6px',
+                                            borderRadius: '4px'
+                                        }}>
+                                            COURSE
+                                        </span>
+                                    )}
                                 </div>
 
                                 {/* 중간: 거리 강조 (24px) */}
