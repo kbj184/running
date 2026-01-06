@@ -186,35 +186,33 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
             flexDirection: 'column',
             overflow: 'hidden'
         }}>
-            {/* Header - Full Page Modal Style (Right 'X' button) */}
+            {/* Header - Full Page Modal Style (Left Back Arrow) */}
             <div style={{
                 padding: '16px 20px',
                 borderBottom: '1px solid #e0e0e0',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                backgroundColor: '#fff'
+                backgroundColor: '#fff',
+                gap: '12px'
             }}>
-                <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
-                    코스 등록
-                </div>
                 <button
                     onClick={onClose}
                     style={{
                         background: 'none',
                         border: 'none',
-                        fontSize: '28px',
+                        fontSize: '20px',
                         cursor: 'pointer',
-                        color: '#666',
                         padding: '4px',
-                        lineHeight: 0.8,
+                        color: '#333',
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
+                        alignItems: 'center'
                     }}
                 >
-                    ×
+                    ←
                 </button>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
+                    코스 등록
+                </div>
             </div>
 
             {/* Scrollable Content */}

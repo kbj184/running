@@ -663,7 +663,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                 onClose={handleCloseCourseView}
                             />
                         )}
-                        {courseViewMode === 'create_select' && (
+                        {(courseViewMode === 'create_select' || courseViewMode === 'create_form') && (
                             <CourseSelectionPage
                                 user={user}
                                 crewId={crew.id}
