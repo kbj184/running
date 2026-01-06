@@ -573,12 +573,21 @@ function CourseViewPage({ course, user, onClose, onFollowRunning, refreshKey }) 
                                         alignItems: 'center',
                                         marginBottom: '8px'
                                     }}>
-                                        <div style={{
-                                            fontSize: '14px',
-                                            fontWeight: '600',
-                                            color: attempt.courseCompleted ? '#10b981' : '#f59e0b'
-                                        }}>
-                                            {attempt.courseCompleted ? '✅ 완주' : '💪 미완주'}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{
+                                                fontSize: '14px',
+                                                fontWeight: '600',
+                                                color: attempt.courseCompleted ? '#10b981' : '#f59e0b'
+                                            }}>
+                                                {attempt.courseCompleted ? '✅ 완주' : '💪 미완주'}
+                                            </div>
+                                            <div style={{
+                                                fontSize: '13px',
+                                                color: '#4b5563',
+                                                fontWeight: '500'
+                                            }}>
+                                                {user?.nickname || 'Unknown'}
+                                            </div>
                                         </div>
                                         <div style={{
                                             fontSize: '12px',
