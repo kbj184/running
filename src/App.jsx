@@ -502,18 +502,14 @@ function App() {
 
                                 {/* Profile Tab */}
                                 <Route path="profile/*" element={
-                                    showProfileMenu ? (
-                                        <ProfileMenu
-                                            profileTab={profileTab}
-                                            user={user}
-                                            refreshRecords={refreshRecords}
-                                            onRecordClick={handleRecordClick}
-                                            onLogout={handleLogout}
-                                            onUserUpdate={handleUserUpdate}
-                                        />
-                                    ) : (
-                                        <Navigate to="/" replace />
-                                    )
+                                    <ProfileMenu
+                                        profileTab={profileTab}
+                                        user={user}
+                                        refreshRecords={refreshRecords}
+                                        onRecordClick={handleRecordClick}
+                                        onLogout={handleLogout}
+                                        onUserUpdate={handleUserUpdate}
+                                    />
                                 } />
                             </Route>
                         </Routes>

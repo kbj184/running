@@ -26,6 +26,12 @@ function MainLayout({ user, onProfileClick, onGradeClick, onStartRunning }) {
             crew: '/crew',
             profile: '/profile'
         };
+
+        // Profile 탭인 경우 onProfileClick도 호출
+        if (tab === 'profile' && onProfileClick) {
+            onProfileClick();
+        }
+
         navigate(routes[tab] || '/');
     };
 

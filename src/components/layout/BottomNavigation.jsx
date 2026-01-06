@@ -106,8 +106,8 @@ function BottomNavigation({ activeTab, onTabChange, onStartRunning, onProfileCli
 
             {/* My */}
             <div
-                style={navItemStyle(false)}
-                onClick={onProfileClick}
+                style={navItemStyle(activeTab === 'profile')}
+                onClick={() => onTabChange('profile')}
             >
                 <div style={iconStyle}>👤</div>
                 <span>My</span>
