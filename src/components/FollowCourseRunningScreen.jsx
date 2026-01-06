@@ -21,7 +21,7 @@ const containerStyle = {
 };
 
 const LIBRARIES = ['places', 'marker'];
-const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
 const mapOptions = {
     disableDefaultUI: true,
@@ -71,8 +71,17 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
         return [];
     }, [course.routeData]);
 
-    const startPoint = useMemo(() => courseRoute[0], [courseRoute]);
-    const endPoint = useMemo(() => courseRoute[courseRoute.length - 1], [courseRoute]);
+    const startPoint = useMemo(() => {
+        const point = courseRoute[0];
+        console.log('📍 Start Point:', point);
+        return point;
+    }, [courseRoute]);
+
+    const endPoint = useMemo(() => {
+        const point = courseRoute[courseRoute.length - 1];
+        console.log('🎯 End Point:', point);
+        return point;
+    }, [courseRoute]);
 
     // 러닝 상태
     const [route, setRoute] = useState([]);
