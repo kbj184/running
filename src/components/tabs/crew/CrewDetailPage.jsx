@@ -649,27 +649,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 )}
 
                 {activeTab === 'course' && (
-                    courseViewMode === 'detail' && selectedCourse ? (
-                        <CourseViewPage
-                            course={selectedCourse}
-                            onClose={handleCloseCourseView}
-                        />
-                    ) : courseViewMode === 'create_select' ? (
-                        <CourseSelectionPage
-                            user={user}
-                            crewId={crew.id}
-                            onBack={() => navigate(-1)}
-                            onSelectRecord={(record) => navigate(`/crew/detail/${crew.id}/course/write`, { state: { record } })}
-                        />
-                    ) : courseViewMode === 'create_form' ? (
-                        <CourseCreatePage
-                            user={user}
-                            crewId={crew.id}
-                            selectedRecord={location.state?.record}
-                            onClose={() => navigate(-1)}
-                            onSuccess={() => navigate(`/crew/detail/${crew.id}/course`)}
-                        />
-                    ) : (
+                    <>
                         <CrewCourseTab
                             crew={crew}
                             user={user}
@@ -677,7 +657,30 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                             onCourseClick={handleCourseClick}
                             onCourseCreate={() => navigate(`/crew/detail/${crew.id}/course/create`)}
                         />
-                    )
+                        {courseViewMode === 'detail' && selectedCourse && (
+                            <CourseViewPage
+                                course={selectedCourse}
+                                onClose={handleCloseCourseView}
+                            />
+                        )}
+                        {courseViewMode === 'create_select' && (
+                            <CourseSelectionPage
+                                user={user}
+                                crewId={crew.id}
+                                onBack={() => navigate(-1)}
+                                onSelectRecord={(record) => navigate(`/crew/detail/${crew.id}/course/write`, { state: { record } })}
+                            />
+                        )}
+                        {courseViewMode === 'create_form' && (
+                            <CourseCreatePage
+                                user={user}
+                                crewId={crew.id}
+                                selectedRecord={location.state?.record}
+                                onClose={() => navigate(-1)}
+                                onSuccess={() => navigate(`/crew/detail/${crew.id}/course`)}
+                            />
+                        )}
+                    </>
                 )}
 
                 {activeTab === 'members' && (
