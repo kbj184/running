@@ -1067,11 +1067,13 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                         {/* 시작점 마커 */}
                         {window.google && startPoint && (
                             <AdvancedMarker
+                                key="start-marker"
                                 map={map}
                                 position={startPoint}
-                                zIndex={100}
+                                zIndex={200}
                             >
                                 <div style={{
+                                    position: 'relative',
                                     width: '32px',
                                     height: '32px',
                                     backgroundColor: '#22c55e',
@@ -1093,11 +1095,13 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                         {/* 종료점 마커 */}
                         {window.google && endPoint && (
                             <AdvancedMarker
+                                key="end-marker"
                                 map={map}
                                 position={endPoint}
-                                zIndex={100}
+                                zIndex={200}
                             >
                                 <div style={{
+                                    position: 'relative',
                                     width: '32px',
                                     height: '32px',
                                     backgroundColor: '#ef4444',
