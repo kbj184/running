@@ -561,7 +561,40 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
     // 결과 화면
     if (showResult) {
         return (
-            <div className="running-screen" style={{ backgroundColor: '#f5f5f5' }}>
+            <div className="running-screen" style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: '#f5f5f5',
+                zIndex: 2000,
+                display: 'flex',
+                flexDirection: 'column',
+                overflowY: 'auto'
+            }}>
+                <button
+                    onClick={handleClose}
+                    style={{
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        border: 'none',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        fontSize: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        zIndex: 2005
+                    }}
+                >
+                    ✕
+                </button>
                 <div style={{
                     padding: '40px 20px',
                     textAlign: 'center',
