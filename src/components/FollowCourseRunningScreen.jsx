@@ -643,7 +643,17 @@ function FollowCourseRunningScreen({ course, onStop, user }) {
     // 대기 화면 (시작 전)
     if (!hasStarted) {
         return (
-            <div className="running-screen">
+            <div className="running-screen" style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: '#fff',
+                zIndex: 2000,
+                display: 'flex',
+                flexDirection: 'column'
+            }}>
                 <div style={{
                     position: 'absolute',
                     top: '20px',
@@ -811,7 +821,17 @@ function FollowCourseRunningScreen({ course, onStop, user }) {
 
     // 러닝 화면 (진행 중)
     return (
-        <div className="running-screen">
+        <div className="running-screen" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: '#fff',
+            zIndex: 2000,
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
             {splits.length > 0 && (Date.now() - (route[route.length - 1]?.timestamp || 0) < 5000) && (
                 <div style={{
                     position: 'fixed', top: '100px', left: '50%', transform: 'translateX(-50%)',
