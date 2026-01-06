@@ -733,6 +733,15 @@ function FollowCourseRunningScreen({ course, onStop, user }) {
                             zoom={15}
                             onLoad={onLoad}
                             onUnmount={onUnmount}
+                            onClick={(e) => {
+                                // TEST MODE: 클릭한 위치로 이동
+                                if (e.latLng) {
+                                    const newPos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+                                    console.log('Test Mode: Moving to', newPos);
+                                    setCurrentPosition(newPos);
+                                    dataRef.current.currentPosition = newPos;
+                                }
+                            }}
                             options={{
                                 ...mapOptions,
                                 mapId: MAP_ID
@@ -742,9 +751,9 @@ function FollowCourseRunningScreen({ course, onStop, user }) {
                             <PolylineF
                                 path={courseRoute}
                                 options={{
-                                    strokeColor: '#667eea',
-                                    strokeOpacity: 0.6,
-                                    strokeWeight: 4,
+                                    strokeColor: '#39FF14', // 형광 녹색
+                                    strokeOpacity: 0.8,
+                                    strokeWeight: 6,
                                 }}
                             />
 
@@ -872,6 +881,20 @@ function FollowCourseRunningScreen({ course, onStop, user }) {
                         zoom={16}
                         onLoad={onLoad}
                         onUnmount={onUnmount}
+                        onClick={(e) => {
+                            // TEST MODE: 클릭한 위치로 이동 및 러닝 데이터 업데이트
+                            if (e.latLng) {
+                                const newPos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+                                console.log('Test Mode: Moving to', newPos);
+                                setCurrentPosition(newPos);
+                                dataRef.current.currentPosition = newPos;
+
+                                if (hasStarted && isTracking) {
+                                    const currentDuration = (Date.now() - startTimeRef.current) / 1000;
+                                    handleLocationUpdate(newPos, currentDuration, 0);
+                                }
+                            }
+                        }}
                         options={{
                             ...mapOptions,
                             mapId: MAP_ID
@@ -881,9 +904,9 @@ function FollowCourseRunningScreen({ course, onStop, user }) {
                         <PolylineF
                             path={courseRoute}
                             options={{
-                                strokeColor: '#667eea',
-                                strokeOpacity: 0.3,
-                                strokeWeight: 4,
+                                strokeColor: '#39FF14', // 형광 녹색
+                                strokeOpacity: 0.6,
+                                strokeWeight: 6,
                             }}
                         />
 
@@ -900,20 +923,49 @@ function FollowCourseRunningScreen({ course, onStop, user }) {
                             />
                         ))}
 
-                        {/* 시작점 */}
-                        {route.length > 0 && window.google && (
+                        {/* 시작점 마커 */}
+                        {window.google && startPoint && (
                             <AdvancedMarker
                                 map={map}
-                                position={route[0]}
+                                position={startPoint}
                             >
                                 <div style={{
-                                    width: '10px',
-                                    height: '10px',
-                                    backgroundColor: '#22c55e',
+                                    width: '30px',
+                                    height: '30px',
+                                    backgroundColor: '#10b981',
                                     borderRadius: '50%',
-                                    border: '2px solid white',
-                                    boxShadow: '0 0 4px rgba(0,0,0,0.3)'
-                                }} />
+                                    border: '3px solid white',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '16px'
+                                }}>
+                                    🏁
+                                </div>
+                            </AdvancedMarker>
+                        )}
+
+                        {/* 종료점 마커 */}
+                        {window.google && endPoint && (
+                            <AdvancedMarker
+                                map={map}
+                                position={endPoint}
+                            >
+                                <div style={{
+                                    width: '30px',
+                                    height: '30px',
+                                    backgroundColor: '#ef4444',
+                                    borderRadius: '50%',
+                                    border: '3px solid white',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '16px'
+                                }}>
+                                    🎯
+                                </div>
                             </AdvancedMarker>
                         )}
 
