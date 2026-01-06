@@ -180,314 +180,302 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)', // 반투명 배경 (모달 느낌)
+            backgroundColor: '#fff', // Full Page White Background
             zIndex: 2000,
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px'
+            flexDirection: 'column',
+            overflow: 'hidden'
         }}>
+            {/* Header - Full Page Modal Style (Right 'X' button) */}
             <div style={{
-                backgroundColor: '#fff',
-                borderRadius: '16px',
-                width: '100%',
-                maxWidth: '600px',
-                maxHeight: '90vh', // 화면 90% 높이 제한
+                padding: '16px 20px',
+                borderBottom: '1px solid #e0e0e0',
                 display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: '#fff'
             }}>
-                {/* Header - Modal Style */}
-                <div style={{
-                    padding: '16px 20px',
-                    borderBottom: '1px solid #e0e0e0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    backgroundColor: '#fff'
-                }}>
-                    <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
-                        코스 등록
-                    </div>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            fontSize: '24px',
-                            cursor: 'pointer',
-                            color: '#999',
-                            padding: '4px',
-                            lineHeight: 1,
-                            display: 'flex', // Flex to center icon
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        ×
-                    </button>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
+                    코스 등록
                 </div>
+                <button
+                    onClick={onClose}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '28px',
+                        cursor: 'pointer',
+                        color: '#666',
+                        padding: '4px',
+                        lineHeight: 0.8,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
+                    ×
+                </button>
+            </div>
 
-                {/* Scrollable Content */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-                    {/* Map - Static or Interactive */}
-                    <div style={{ position: 'relative', marginBottom: '20px' }}>
-                        {!showInteractiveMap ? (
-                            // Static Map
-                            <div
-                                style={{
-                                    width: '100%',
-                                    height: '240px',
-                                    borderRadius: '12px',
-                                    overflow: 'hidden',
-                                    backgroundColor: '#f0f0f0',
+            {/* Scrollable Content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+                {/* Map - Static or Interactive */}
+                <div style={{ position: 'relative', marginBottom: '20px' }}>
+                    {!showInteractiveMap ? (
+                        // Static Map
+                        <div
+                            style={{
+                                width: '100%',
+                                height: '280px', // Slightly larger for full page
+                                borderRadius: '12px',
+                                overflow: 'hidden',
+                                backgroundColor: '#f0f0f0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                position: 'relative'
+                            }}
+                            onClick={() => setShowInteractiveMap(true)}
+                        >
+                            {mapImageUrl ? (
+                                <img
+                                    src={mapImageUrl}
+                                    alt="러닝 경로"
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover'
+                                    }}
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        const errorDiv = document.createElement('div');
+                                        errorDiv.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-size:16px;';
+                                        errorDiv.textContent = '지도 로딩 실패';
+                                        e.target.parentElement.appendChild(errorDiv);
+                                    }}
+                                />
+                            ) : (
+                                <div style={{ fontSize: '40px', color: '#ccc' }}>🗺️</div>
+                            )}
+                        </div>
+                    ) : (
+                        // Interactive Map
+                        <div style={{
+                            width: '100%',
+                            height: '280px',
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            position: 'relative'
+                        }}>
+                            {isLoaded && parsedRoute && parsedRoute.length > 0 ? (
+                                <GoogleMap
+                                    mapContainerStyle={{
+                                        width: '100%',
+                                        height: '100%',
+                                        borderRadius: '12px'
+                                    }}
+                                    center={mapCenter}
+                                    zoom={14}
+                                    onLoad={onLoad}
+                                    onUnmount={() => setMap(null)}
+                                    options={{
+                                        mapId: MAP_ID,
+                                        disableDefaultUI: false,
+                                        zoomControl: true,
+                                        mapTypeControl: false,
+                                        streetViewControl: false,
+                                        fullscreenControl: true,
+                                    }}
+                                >
+                                    {routeSegments.map((segment, idx) => (
+                                        <Polyline
+                                            key={`segment-${idx}`}
+                                            path={segment.path}
+                                            options={{
+                                                strokeColor: segment.color,
+                                                strokeOpacity: 0.9,
+                                                strokeWeight: 6,
+                                            }}
+                                        />
+                                    ))}
+                                    {markers.start && (
+                                        <AdvancedMarker
+                                            map={map}
+                                            position={markers.start}
+                                            zIndex={100}
+                                        >
+                                            <div style={{
+                                                width: '32px',
+                                                height: '32px',
+                                                backgroundColor: '#22c55e',
+                                                borderRadius: '50%',
+                                                border: '3px solid white',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '14px',
+                                                fontWeight: '800',
+                                                color: 'white'
+                                            }}>
+                                                S
+                                            </div>
+                                        </AdvancedMarker>
+                                    )}
+                                    {markers.goal && (
+                                        <AdvancedMarker
+                                            map={map}
+                                            position={markers.goal}
+                                            zIndex={100}
+                                        >
+                                            <div style={{
+                                                width: '32px',
+                                                height: '32px',
+                                                backgroundColor: '#ef4444',
+                                                borderRadius: '50%',
+                                                border: '3px solid white',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '14px',
+                                                fontWeight: '800',
+                                                color: 'white'
+                                            }}>
+                                                G
+                                            </div>
+                                        </AdvancedMarker>
+                                    )}
+                                </GoogleMap>
+                            ) : (
+                                <div style={{
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    cursor: 'pointer',
-                                    position: 'relative'
-                                }}
-                                onClick={() => setShowInteractiveMap(true)}
-                            >
-                                {mapImageUrl ? (
-                                    <img
-                                        src={mapImageUrl}
-                                        alt="러닝 경로"
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover'
-                                        }}
-                                        onError={(e) => {
-                                            e.target.style.display = 'none';
-                                            const errorDiv = document.createElement('div');
-                                            errorDiv.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-size:16px;';
-                                            errorDiv.textContent = '지도 로딩 실패';
-                                            e.target.parentElement.appendChild(errorDiv);
-                                        }}
-                                    />
-                                ) : (
-                                    <div style={{ fontSize: '40px', color: '#ccc' }}>🗺️</div>
-                                )}
-                            </div>
-                        ) : (
-                            // Interactive Map
-                            <div style={{
-                                width: '100%',
-                                height: '240px',
-                                borderRadius: '12px',
-                                overflow: 'hidden',
-                                position: 'relative'
-                            }}>
-                                {isLoaded && parsedRoute && parsedRoute.length > 0 ? (
-                                    <GoogleMap
-                                        mapContainerStyle={{
-                                            width: '100%',
-                                            height: '100%',
-                                            borderRadius: '12px'
-                                        }}
-                                        center={mapCenter}
-                                        zoom={14}
-                                        onLoad={onLoad}
-                                        onUnmount={() => setMap(null)}
-                                        options={{
-                                            mapId: MAP_ID,
-                                            disableDefaultUI: false,
-                                            zoomControl: true,
-                                            mapTypeControl: false,
-                                            streetViewControl: false,
-                                            fullscreenControl: true,
-                                        }}
-                                    >
-                                        {routeSegments.map((segment, idx) => (
-                                            <Polyline
-                                                key={`segment-${idx}`}
-                                                path={segment.path}
-                                                options={{
-                                                    strokeColor: segment.color,
-                                                    strokeOpacity: 0.9,
-                                                    strokeWeight: 6,
-                                                }}
-                                            />
-                                        ))}
-                                        {markers.start && (
-                                            <AdvancedMarker
-                                                map={map}
-                                                position={markers.start}
-                                                zIndex={100}
-                                            >
-                                                <div style={{
-                                                    width: '32px',
-                                                    height: '32px',
-                                                    backgroundColor: '#22c55e',
-                                                    borderRadius: '50%',
-                                                    border: '3px solid white',
-                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    fontSize: '14px',
-                                                    fontWeight: '800',
-                                                    color: 'white'
-                                                }}>
-                                                    S
-                                                </div>
-                                            </AdvancedMarker>
-                                        )}
-                                        {markers.goal && (
-                                            <AdvancedMarker
-                                                map={map}
-                                                position={markers.goal}
-                                                zIndex={100}
-                                            >
-                                                <div style={{
-                                                    width: '32px',
-                                                    height: '32px',
-                                                    backgroundColor: '#ef4444',
-                                                    borderRadius: '50%',
-                                                    border: '3px solid white',
-                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    fontSize: '14px',
-                                                    fontWeight: '800',
-                                                    color: 'white'
-                                                }}>
-                                                    G
-                                                </div>
-                                            </AdvancedMarker>
-                                        )}
-                                    </GoogleMap>
-                                ) : (
-                                    <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        height: '100%',
-                                        color: '#999',
-                                        backgroundColor: '#f5f5f5'
-                                    }}>
-                                        지도 로딩 중...
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Course Info */}
-                    <div style={{
-                        padding: '16px',
-                        backgroundColor: '#f8f8f8',
-                        borderRadius: '12px',
-                        marginBottom: '20px'
-                    }}>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: '8px'
-                        }}>
-                            <div style={{ fontSize: '14px', color: '#666' }}>거리</div>
-                            <div style={{ fontSize: '18px', fontWeight: '700', color: '#FF9A56' }}>
-                                {selectedRecord.distance?.toFixed(2)} km
-                            </div>
+                                    height: '100%',
+                                    color: '#999',
+                                    backgroundColor: '#f5f5f5'
+                                }}>
+                                    지도 로딩 중...
+                                </div>
+                            )}
                         </div>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                        }}>
-                            <div style={{ fontSize: '14px', color: '#666' }}>시간</div>
-                            <div style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>
-                                {Math.floor(selectedRecord.duration / 60)}분
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Description Input */}
-                    <div>
-                        <label style={{
-                            display: 'block',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#333',
-                            marginBottom: '8px'
-                        }}>
-                            코스 설명
-                        </label>
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="코스에 대한 설명을 입력하세요 (선택사항)"
-                            maxLength={500}
-                            style={{
-                                width: '100%',
-                                minHeight: '120px',
-                                padding: '12px',
-                                fontSize: '14px',
-                                border: '1px solid #e0e0e0',
-                                borderRadius: '8px',
-                                resize: 'vertical',
-                                fontFamily: 'inherit',
-                                boxSizing: 'border-box',
-                                outline: 'none'
-                            }}
-                        />
-                        <div style={{
-                            fontSize: '12px',
-                            color: '#999',
-                            marginTop: '4px',
-                            textAlign: 'right'
-                        }}>
-                            {description.length} / 500
-                        </div>
-                    </div>
+                    )}
                 </div>
 
-                {/* Footer Action Buttons */}
+                {/* Course Info */}
                 <div style={{
-                    padding: '16px 20px',
-                    borderTop: '1px solid #f0f0f0',
-                    backgroundColor: '#fff',
-                    display: 'flex',
-                    gap: '12px'
+                    padding: '16px',
+                    backgroundColor: '#f8f8f8',
+                    borderRadius: '12px',
+                    marginBottom: '20px'
                 }}>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            flex: 1,
-                            padding: '14px',
-                            backgroundColor: '#f0f0f0',
-                            color: '#666',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontSize: '15px',
-                            fontWeight: '600',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        취소
-                    </button>
-                    <button
-                        onClick={handleRegister}
-                        disabled={registering}
-                        style={{
-                            flex: 1,
-                            padding: '14px',
-                            backgroundColor: registering ? '#ccc' : '#FF9A56',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontSize: '15px',
-                            fontWeight: '600',
-                            cursor: registering ? 'not-allowed' : 'pointer'
-                        }}
-                    >
-                        {registering ? '등록 중...' : '등록'}
-                    </button>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '8px'
+                    }}>
+                        <div style={{ fontSize: '14px', color: '#666' }}>거리</div>
+                        <div style={{ fontSize: '18px', fontWeight: '700', color: '#FF9A56' }}>
+                            {selectedRecord.distance?.toFixed(2)} km
+                        </div>
+                    </div>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <div style={{ fontSize: '14px', color: '#666' }}>시간</div>
+                        <div style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>
+                            {Math.floor(selectedRecord.duration / 60)}분
+                        </div>
+                    </div>
                 </div>
+
+                {/* Description Input */}
+                <div>
+                    <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#333',
+                        marginBottom: '8px'
+                    }}>
+                        코스 설명
+                    </label>
+                    <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="코스에 대한 설명을 입력하세요 (선택사항)"
+                        maxLength={500}
+                        style={{
+                            width: '100%',
+                            minHeight: '150px', // More height for full page
+                            padding: '12px',
+                            fontSize: '14px',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            resize: 'none', // Disable resize on mobile
+                            fontFamily: 'inherit',
+                            boxSizing: 'border-box',
+                            outline: 'none'
+                        }}
+                    />
+                    <div style={{
+                        fontSize: '12px',
+                        color: '#999',
+                        marginTop: '4px',
+                        textAlign: 'right'
+                    }}>
+                        {description.length} / 500
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer Action Buttons */}
+            <div style={{
+                padding: '16px 20px',
+                borderTop: '1px solid #f0f0f0',
+                backgroundColor: '#fff',
+                display: 'flex',
+                gap: '12px',
+                paddingBottom: 'max(16px, env(safe-area-inset-bottom))' // Safe area for mobile
+            }}>
+                <button
+                    onClick={onClose}
+                    style={{
+                        flex: 1,
+                        padding: '16px', // Larger touch area
+                        backgroundColor: '#f0f0f0',
+                        color: '#666',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                    }}
+                >
+                    취소
+                </button>
+                <button
+                    onClick={handleRegister}
+                    disabled={registering}
+                    style={{
+                        flex: 1,
+                        padding: '16px',
+                        backgroundColor: registering ? '#ccc' : '#FF9A56',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        cursor: registering ? 'not-allowed' : 'pointer'
+                    }}
+                >
+                    {registering ? '등록 중...' : '등록'}
+                </button>
             </div>
         </div>
     );
