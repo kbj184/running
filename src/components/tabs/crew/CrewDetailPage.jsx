@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../../../utils/api';
 import CrewBoardTab from './CrewBoardTab';
 import PostDetailPage from './PostDetailPage';
@@ -6,6 +7,9 @@ import PostEditorPage from './PostEditorPage';
 import CrewCourseTab from './CrewCourseTab';
 
 function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
+    const navigate = useNavigate();
+    const location = useLocation();
+
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userStatus, setUserStatus] = useState(null);
@@ -21,17 +25,44 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const [selectedPost, setSelectedPost] = useState(null);
     const [editingPost, setEditingPost] = useState(null);
 
+    // URL에서 탭 상태 동기화
+    useEffect(() => {
+        const pathParts = location.pathname.split('/');
+        // URL 구조: /crew/detail/:id/:tab/:subAction/:subId
+
+        if (pathParts[4]) {
+            setActiveTab(pathParts[4]);
+
+            if (pathParts[4] === 'board') {
+                if (pathParts[5] === 'view' && pathParts[6]) {
+                    setBoardView('detail');
+                    setSelectedPost({ id: pathParts[6] });
+                } else if (pathParts[5] === 'write') {
+                    setBoardView('editor');
+                    setEditingPost(null);
+                } else {
+                    setBoardView('list');
+                    setSelectedPost(null);
+                    setEditingPost(null);
+                }
+            }
+        } else {
+            setActiveTab('intro');
+        }
+    }, [location.pathname]);
+
+    const handleTabChange = (tab) => {
+        // 기본 탭(intro)일 경우 URL 깔끔하게 유지
+        if (tab === 'intro') {
+            navigate(`/crew/detail/${crew.id}`);
+        } else {
+            navigate(`/crew/detail/${crew.id}/${tab}`);
+        }
+    };
+
     useEffect(() => {
         if (crew) {
             console.log('Crew data (full):', JSON.stringify(crew, null, 2));
-            console.log('Activity area:', {
-                lat: crew.activityAreaLatitude,
-                lng: crew.activityAreaLongitude,
-                address: crew.activityAreaAddress,
-                level1: crew.activityAreaLevel1,
-                level2: crew.activityAreaLevel2,
-                level3: crew.activityAreaLevel3
-            });
             fetchMembers();
         }
     }, [crew]);
@@ -84,8 +115,6 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
         if (members.length > 0 && user) {
             const myInfo = members.find(m => m.userId === user.id);
             if (myInfo) {
-                console.log('DEBUG: My member info:', myInfo);
-                console.log('DEBUG: Role value:', myInfo.role);
                 setUserStatus(myInfo.status);
                 setUserRole(myInfo.role);
             } else {
@@ -153,7 +182,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
 
             if (response.ok) {
                 alert('멤버를 승인했습니다.');
-                fetchMembers(); // Assuming fetchMembers will update the crew details
+                fetchMembers();
             } else {
                 alert('승인에 실패했습니다.');
             }
@@ -177,7 +206,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
 
             if (response.ok) {
                 alert('가입 요청을 거절했습니다.');
-                fetchMembers(); // Assuming fetchMembers will update the crew details
+                fetchMembers();
             } else {
                 alert('거절에 실패했습니다.');
             }
@@ -191,13 +220,11 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
 
     // 게시판 핸들러
     const handlePostClick = (post) => {
-        setSelectedPost(post);
-        setBoardView('detail');
+        navigate(`/crew/detail/${crew.id}/board/view/${post.id}`);
     };
 
     const handleCreatePost = () => {
-        setEditingPost(null);
-        setBoardView('editor');
+        navigate(`/crew/detail/${crew.id}/board/write`);
     };
 
     const handleEditPost = (post) => {
@@ -206,15 +233,11 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     };
 
     const handleBackToBoard = () => {
-        setBoardView('list');
-        setSelectedPost(null);
-        setEditingPost(null);
+        navigate(`/crew/detail/${crew.id}/board`);
     };
 
     const handlePostComplete = () => {
-        setBoardView('list');
-        setSelectedPost(null);
-        setEditingPost(null);
+        navigate(`/crew/detail/${crew.id}/board`);
     };
 
     // 크루 이미지 파싱
@@ -370,7 +393,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 }}
             >
                 <button
-                    onClick={() => setActiveTab('intro')}
+                    onClick={() => handleTabChange('intro')}
                     style={{
                         flex: 1,
                         padding: '14px',
@@ -387,7 +410,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                     소개
                 </button>
                 <button
-                    onClick={() => setActiveTab('course')}
+                    onClick={() => handleTabChange('course')}
                     style={{
                         flex: 1,
                         padding: '14px',
@@ -404,7 +427,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                     코스
                 </button>
                 <button
-                    onClick={() => setActiveTab('members')}
+                    onClick={() => handleTabChange('members')}
                     style={{
                         flex: 1,
                         padding: '14px',
@@ -421,7 +444,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                     멤버
                 </button>
                 <button
-                    onClick={() => setActiveTab('notice')}
+                    onClick={() => handleTabChange('notice')}
                     style={{
                         flex: 1,
                         padding: '14px',
@@ -439,7 +462,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 </button>
                 <button
                     onClick={() => {
-                        setActiveTab('board');
+                        handleTabChange('board');
                         setBoardView('list');
                     }}
                     style={{

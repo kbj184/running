@@ -6,36 +6,33 @@ import CrewCreateTab from './crew/CrewCreateTab';
 import CrewDetailPage from './crew/CrewDetailPage';
 import CrewSubHeader from '../layout/CrewSubHeader';
 import CrewEditPage from './crew/CrewEditPage';
-import CrewBoardTab from './crew/CrewBoardTab';
-import PostDetailPage from './crew/PostDetailPage';
-import PostEditorPage from './crew/PostEditorPage';
 
 function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabChange }) {
     const location = useLocation();
     const navigate = useNavigate();
     const [selectedCrew, setSelectedCrew] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [viewMode, setViewMode] = useState('list'); // 'list', 'board', 'post', 'editor'
-    const [selectedPost, setSelectedPost] = useState(null);
-    const [editingPost, setEditingPost] = useState(null);
 
     // URL 기반 크루 상세 페이지 감지
     useEffect(() => {
         const pathParts = location.pathname.split('/');
-        // /crew/detail/:id 형태 감지
+        // URL 구조: /crew/detail/:id
         if (pathParts[2] === 'detail' && pathParts[3]) {
             const crewId = parseInt(pathParts[3]);
+            // state에서 먼저 찾고, 없으면 allCrews에서 찾기 (새로고침 시 allCrews 로딩 대기 필요할 수 있음)
             const crew = location.state?.crew || allCrews.find(c => c.id === crewId);
             if (crew) {
                 setSelectedCrew(crew);
                 setIsEditing(false);
-                setViewMode('list');
             }
+        } else {
+            // 상세 페이지가 아니면 크루 선택 해제 (브라우저 뒤로가기 지원)
+            setSelectedCrew(null);
+            setIsEditing(false);
         }
-    }, [location, allCrews]);
+    }, [location.pathname, allCrews, location.state]);
 
     const handleCrewCreated = (newCrew) => {
-        // 크루 생성 성공 시 크루 홈 탭으로 이동하고 목록 새로고침
         if (onCrewTabChange) {
             onCrewTabChange('home');
         }
@@ -45,19 +42,13 @@ function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabCh
     };
 
     const handleCrewClick = (crew) => {
-        setSelectedCrew(crew);
-        setIsEditing(false);
-        setViewMode('list');
+        // 클릭 시 URL 변경 -> useEffect가 감지하여 state 업데이트
+        // state에 crew 객체를 담아 보내서 즉시 렌더링 가능하게 함
+        navigate(`/crew/detail/${crew.id}`, { state: { crew } });
     };
 
     const handleBack = () => {
-        // URL 기반 네비게이션으로 변경
         navigate('/crew');
-        setSelectedCrew(null);
-        setIsEditing(false);
-        setViewMode('list');
-        setSelectedPost(null);
-        setEditingPost(null);
     };
 
     const handleEdit = () => {
@@ -72,38 +63,6 @@ function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabCh
         setSelectedCrew(updatedCrew);
         setIsEditing(false);
         if (onRefreshCrews) onRefreshCrews();
-    };
-
-    // Board navigation handlers
-    const handleViewBoard = () => {
-        setViewMode('board');
-    };
-
-    const handlePostClick = (post) => {
-        setSelectedPost(post);
-        setViewMode('post');
-    };
-
-    const handleCreatePost = () => {
-        setEditingPost(null);
-        setViewMode('editor');
-    };
-
-    const handleEditPost = (post) => {
-        setEditingPost(post);
-        setViewMode('editor');
-    };
-
-    const handleBackToBoard = () => {
-        setViewMode('board');
-        setSelectedPost(null);
-        setEditingPost(null);
-    };
-
-    const handlePostComplete = () => {
-        setViewMode('board');
-        setSelectedPost(null);
-        setEditingPost(null);
     };
 
     // 상세 페이지 또는 수정 페이지 뷰
@@ -121,52 +80,6 @@ function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabCh
             );
         }
 
-        // 게시판 뷰
-        if (viewMode === 'board') {
-            return (
-                <div className="tab-content crew-tab">
-                    <CrewBoardTab
-                        crew={selectedCrew}
-                        user={user}
-                        onPostClick={handlePostClick}
-                        onCreatePost={handleCreatePost}
-                        onBack={handleBack}
-                    />
-                </div>
-            );
-        }
-
-        // 게시글 상세 뷰
-        if (viewMode === 'post' && selectedPost) {
-            return (
-                <div className="tab-content crew-tab">
-                    <PostDetailPage
-                        postId={selectedPost.id}
-                        crew={selectedCrew}
-                        user={user}
-                        onBack={handleBackToBoard}
-                        onEdit={handleEditPost}
-                    />
-                </div>
-            );
-        }
-
-        // 게시글 작성/수정 뷰
-        if (viewMode === 'editor') {
-            return (
-                <div className="tab-content crew-tab">
-                    <PostEditorPage
-                        crew={selectedCrew}
-                        user={user}
-                        post={editingPost}
-                        onCancel={handleBackToBoard}
-                        onComplete={handlePostComplete}
-                    />
-                </div>
-            );
-        }
-
-        // 크루 상세 페이지 (기본)
         return (
             <div className="tab-content crew-tab">
                 <CrewDetailPage
@@ -174,7 +87,6 @@ function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabCh
                     user={user}
                     onBack={handleBack}
                     onEdit={handleEdit}
-                    onViewBoard={handleViewBoard}
                     onUpdateUser={() => {
                         if (onRefreshCrews) onRefreshCrews();
                     }}
