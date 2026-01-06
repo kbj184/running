@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Polyline, Marker } from '@react-google-maps/api';
 import { generateRouteMapImage } from '../../../utils/mapThumbnail';
 import { api } from '../../../utils/api';
@@ -15,11 +15,33 @@ const getSpeedColor = (speedKmh) => {
     return "#7c3aed";
 };
 
-function CourseViewPage({ course, onClose }) {
+function CourseViewPage({ course, user, onClose }) {
     const [showInteractiveMap, setShowInteractiveMap] = useState(false);
     const [map, setMap] = useState(null);
     const [isLiked, setIsLiked] = useState(!!course.liked);
     const [likeCount, setLikeCount] = useState(course.likeCount || 0);
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState('');
+    const [loadingComments, setLoadingComments] = useState(false);
+
+    useEffect(() => {
+        fetchComments();
+    }, [course.id]);
+
+    const fetchComments = async () => {
+        try {
+            setLoadingComments(true);
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${course.crewId}/courses/${course.id}/comments`);
+            if (response.ok) {
+                const data = await response.json();
+                setComments(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch comments:', error);
+        } finally {
+            setLoadingComments(false);
+        }
+    };
 
     const handleToggleLike = async () => {
         try {
@@ -32,6 +54,43 @@ function CourseViewPage({ course, onClose }) {
             }
         } catch (error) {
             console.error('Like toggle failed:', error);
+        }
+    };
+
+    const handleCreateComment = async () => {
+        if (!newComment.trim()) return;
+
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${course.crewId}/courses/${course.id}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content: newComment.trim() })
+            });
+
+            if (response.ok) {
+                setNewComment('');
+                fetchComments();
+            }
+        } catch (error) {
+            console.error('Failed to create comment:', error);
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        if (!confirm('댓글을 삭제하시겠습니까?')) return;
+
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${course.crewId}/courses/${course.id}/comments/${commentId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                fetchComments();
+            }
+        } catch (error) {
+            console.error('Failed to delete comment:', error);
         }
     };
 
@@ -414,6 +473,135 @@ function CourseViewPage({ course, onClose }) {
                     }}>
                         <div>등록자: {course.creatorNickname}</div>
                     </div>
+                </div>
+
+                {/* Comments Section */}
+                <div style={{
+                    padding: '20px',
+                    backgroundColor: '#fff',
+                    borderTop: '8px solid #f5f5f5'
+                }}>
+                    <div style={{
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        color: '#1a1a1a',
+                        marginBottom: '16px'
+                    }}>
+                        댓글 {comments.length}
+                    </div>
+
+                    {/* Comment Input */}
+                    <div style={{
+                        display: 'flex',
+                        gap: '8px',
+                        marginBottom: '20px'
+                    }}>
+                        <input
+                            type="text"
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleCreateComment()}
+                            placeholder="댓글을 입력하세요..."
+                            style={{
+                                flex: 1,
+                                padding: '12px',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                outline: 'none'
+                            }}
+                        />
+                        <button
+                            onClick={handleCreateComment}
+                            disabled={!newComment.trim()}
+                            style={{
+                                padding: '12px 20px',
+                                backgroundColor: newComment.trim() ? '#FF9A56' : '#e0e0e0',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: newComment.trim() ? 'pointer' : 'not-allowed'
+                            }}
+                        >
+                            등록
+                        </button>
+                    </div>
+
+                    {/* Comments List */}
+                    {loadingComments ? (
+                        <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+                            로딩 중...
+                        </div>
+                    ) : comments.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+                            첫 번째 댓글을 남겨보세요!
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {comments.map(comment => (
+                                <div
+                                    key={comment.id}
+                                    style={{
+                                        padding: '12px',
+                                        backgroundColor: '#f8f9fa',
+                                        borderRadius: '8px'
+                                    }}
+                                >
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '8px'
+                                    }}>
+                                        <div style={{
+                                            fontSize: '14px',
+                                            fontWeight: '600',
+                                            color: '#1a1a1a'
+                                        }}>
+                                            {comment.authorNickname}
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{
+                                                fontSize: '12px',
+                                                color: '#999'
+                                            }}>
+                                                {new Date(comment.createdAt).toLocaleDateString('ko-KR', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric'
+                                                })}
+                                            </div>
+                                            {user && comment.authorId === user.id && (
+                                                <button
+                                                    onClick={() => handleDeleteComment(comment.id)}
+                                                    style={{
+                                                        padding: '4px 8px',
+                                                        backgroundColor: 'transparent',
+                                                        border: 'none',
+                                                        color: '#ef4444',
+                                                        fontSize: '12px',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    삭제
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div style={{
+                                        fontSize: '14px',
+                                        color: '#333',
+                                        lineHeight: '1.5',
+                                        whiteSpace: 'pre-wrap'
+                                    }}>
+                                        {comment.content}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

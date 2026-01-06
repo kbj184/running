@@ -663,6 +663,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                         {courseViewMode === 'detail' && selectedCourse && (
                             <CourseViewPage
                                 course={selectedCourse}
+                                user={user}
                                 onClose={handleCloseCourseView}
                             />
                         )}
