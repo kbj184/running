@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LoadScript } from '@react-google-maps/api';
 import './running-styles.css';
 import './main-layout.css';
@@ -26,6 +26,14 @@ import MyRunTab from './components/tabs/MyRunTab';
 
 // Profile Components
 import ProfileMenu from './components/profile/ProfileMenu';
+import MyRecordsTab from './components/profile/MyRecordsTab';
+import MyInfoTab from './components/profile/MyInfoTab';
+import SettingsTab from './components/profile/SettingsTab';
+
+// Crew Components
+import CrewHomeTab from './components/tabs/crew/CrewHomeTab';
+import CrewRankingTab from './components/tabs/crew/CrewRankingTab';
+import CrewCreateTab from './components/tabs/crew/CrewCreateTab';
 
 // Modal Components
 import RunnerGradeModal from './components/modals/RunnerGradeModal';
@@ -489,29 +497,68 @@ function App() {
                                     />
                                 } />
 
-                                {/* Crew Tab - 기존 로직 유지 */}
-                                <Route path="crew/*" element={
-                                    <CrewTab
-                                        user={user}
-                                        allCrews={allCrews}
-                                        onRefreshCrews={fetchCrews}
-                                        crewTab={user.crewTab || 'home'}
-                                        onCrewTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
-                                    />
-                                } />
+                                {/* Crew Tab - URL 기반 서브 라우팅 */}
+                                <Route path="crew">
+                                    <Route index element={
+                                        <CrewHomeTab
+                                            allCrews={allCrews}
+                                            onCrewClick={(crew) => {
+                                                // TODO: Navigate to crew detail
+                                                console.log('Crew clicked:', crew);
+                                            }}
+                                            onRefreshCrews={fetchCrews}
+                                            user={user}
+                                        />
+                                    } />
+                                    <Route path="ranking" element={<CrewRankingTab />} />
+                                    <Route path="create" element={
+                                        <CrewCreateTab
+                                            user={user}
+                                            onCrewCreated={() => {
+                                                navigate('/crew');
+                                                fetchCrews();
+                                            }}
+                                        />
+                                    } />
+                                    {/* Crew 상세 페이지는 CrewTab에서 처리 (복잡한 구조) */}
+                                    <Route path="*" element={
+                                        <CrewTab
+                                            user={user}
+                                            allCrews={allCrews}
+                                            onRefreshCrews={fetchCrews}
+                                            crewTab={user.crewTab || 'home'}
+                                            onCrewTabChange={(tab) => setUser(prev => ({ ...prev, crewTab: tab }))}
+                                        />
+                                    } />
+                                </Route>
 
-                                {/* Profile Tab */}
-                                <Route path="profile/*" element={
-                                    <ProfileMenu
-                                        profileTab={profileTab}
-                                        user={user}
-                                        refreshRecords={refreshRecords}
-                                        onRecordClick={handleRecordClick}
-                                        onLogout={handleLogout}
-                                        onUserUpdate={handleUserUpdate}
-                                        onTabChange={handleProfileTabChange}
-                                    />
-                                } />
+                                {/* Profile Tab - URL 기반 서브 라우팅 */}
+                                <Route path="profile">
+                                    <Route index element={<Navigate to="records" replace />} />
+                                    <Route path="records" element={
+                                        <ProfileMenu profileTab="records">
+                                            <MyRecordsTab
+                                                refreshRecords={refreshRecords}
+                                                onRecordClick={handleRecordClick}
+                                                user={user}
+                                            />
+                                        </ProfileMenu>
+                                    } />
+                                    <Route path="info" element={
+                                        <ProfileMenu profileTab="info">
+                                            <MyInfoTab user={user} />
+                                        </ProfileMenu>
+                                    } />
+                                    <Route path="settings" element={
+                                        <ProfileMenu profileTab="settings">
+                                            <SettingsTab
+                                                user={user}
+                                                onLogout={handleLogout}
+                                                onUserUpdate={handleUserUpdate}
+                                            />
+                                        </ProfileMenu>
+                                    } />
+                                </Route>
                             </Route>
                         </Routes>
                     )

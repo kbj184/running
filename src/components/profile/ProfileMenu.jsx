@@ -1,10 +1,18 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ProfileSubHeader from '../layout/ProfileSubHeader';
-import MyRecordsTab from './MyRecordsTab';
-import MyInfoTab from './MyInfoTab';
-import SettingsTab from './SettingsTab';
 
-function ProfileMenu({ profileTab, user, refreshRecords, onRecordClick, onLogout, onUserUpdate, onTabChange }) {
+function ProfileMenu({ profileTab, children }) {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // URL에서 현재 프로필 탭 추출
+    const currentTab = profileTab || location.pathname.split('/')[2] || 'records';
+
+    const handleTabChange = (tab) => {
+        navigate(`/profile/${tab}`);
+    };
+
     return (
         <div className="tab-content profile-tab">
             {/* ProfileSubHeader 추가 */}
@@ -15,31 +23,13 @@ function ProfileMenu({ profileTab, user, refreshRecords, onRecordClick, onLogout
                 backgroundColor: '#fff'
             }}>
                 <ProfileSubHeader
-                    profileTab={profileTab}
-                    onTabChange={onTabChange}
+                    profileTab={currentTab}
+                    onTabChange={handleTabChange}
                 />
             </div>
 
             <div style={{ padding: '20px' }}>
-                {profileTab === 'records' && (
-                    <MyRecordsTab
-                        refreshRecords={refreshRecords}
-                        onRecordClick={onRecordClick}
-                        user={user}
-                    />
-                )}
-
-                {profileTab === 'info' && (
-                    <MyInfoTab user={user} />
-                )}
-
-                {profileTab === 'settings' && (
-                    <SettingsTab
-                        user={user}
-                        onLogout={onLogout}
-                        onUserUpdate={onUserUpdate}
-                    />
-                )}
+                {children}
             </div>
         </div>
     );

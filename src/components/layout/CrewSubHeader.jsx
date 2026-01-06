@@ -1,8 +1,21 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-function CrewSubHeader({ crewTab, onTabChange }) {
-    const { t } = useTranslation();
+function CrewSubHeader() {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // URL에서 현재 크루 탭 추출
+    const pathParts = location.pathname.split('/');
+    const crewTab = pathParts[2] || 'home'; // /crew/ranking -> 'ranking', /crew -> 'home'
+
+    const handleTabChange = (tab) => {
+        if (tab === 'home') {
+            navigate('/crew');
+        } else {
+            navigate(`/crew/${tab}`);
+        }
+    };
 
     return (
         <div style={{
@@ -18,7 +31,7 @@ function CrewSubHeader({ crewTab, onTabChange }) {
                 margin: '0 auto'
             }}>
                 <button
-                    onClick={() => onTabChange('home')}
+                    onClick={() => handleTabChange('home')}
                     style={{
                         flex: 1,
                         padding: '10px 12px',
@@ -35,7 +48,7 @@ function CrewSubHeader({ crewTab, onTabChange }) {
                     크루 홈
                 </button>
                 <button
-                    onClick={() => onTabChange('ranking')}
+                    onClick={() => handleTabChange('ranking')}
                     style={{
                         flex: 1,
                         padding: '10px 12px',
@@ -52,7 +65,7 @@ function CrewSubHeader({ crewTab, onTabChange }) {
                     크루 랭킹
                 </button>
                 <button
-                    onClick={() => onTabChange('create')}
+                    onClick={() => handleTabChange('create')}
                     style={{
                         flex: 1,
                         padding: '10px 12px',
@@ -69,7 +82,7 @@ function CrewSubHeader({ crewTab, onTabChange }) {
                     크루 만들기
                 </button>
                 <button
-                    onClick={() => onTabChange('more')}
+                    onClick={() => handleTabChange('more')}
                     style={{
                         flex: 1,
                         padding: '10px 12px',
