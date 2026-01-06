@@ -528,7 +528,9 @@ function CourseViewPage({ course, user, onClose }) {
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
+                            console.log('Follow running button clicked!');
                             setShowFollowRunning(true);
+                            console.log('showFollowRunning set to true');
                         }}
                         style={{
                             width: '100%',
