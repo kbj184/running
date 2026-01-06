@@ -267,6 +267,7 @@ function CourseViewPage({ course, user, onClose }) {
                 gap: '12px'
             }}>
                 <button
+                    type="button"
                     onClick={onClose}
                     style={{
                         background: 'none',
@@ -286,6 +287,7 @@ function CourseViewPage({ course, user, onClose }) {
                 </div>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button
+                        type="button"
                         onClick={handleToggleLike}
                         style={{
                             background: 'none',
