@@ -20,7 +20,7 @@ function CrewSubHeader() {
     return (
         <div style={{
             position: 'sticky',
-            top: 'calc(var(--header-height) - 56px)',
+            top: 'calc(var(--header-height) - 60px)',
             width: '100%',
             backgroundColor: '#fff',
             borderBottom: '1px solid #e0e0e0',
