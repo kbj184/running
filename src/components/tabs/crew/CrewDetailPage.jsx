@@ -288,6 +288,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     };
 
     const handleCloseCourseView = () => {
+        setCourseRefreshKey(prev => prev + 1);
         navigate(-1);
     };
 
