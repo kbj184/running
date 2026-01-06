@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Polyline, Marker } from '@react-google-maps/api';
 import { generateRouteMapImage } from '../../../utils/mapThumbnail';
 import { api } from '../../../utils/api';
+import FollowCourseRunningScreen from '../../FollowCourseRunningScreen';
 
 const LIBRARIES = ['places', 'marker'];
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
@@ -23,9 +24,13 @@ function CourseViewPage({ course, user, onClose }) {
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [loadingComments, setLoadingComments] = useState(false);
+    const [showFollowRunning, setShowFollowRunning] = useState(false);
+    const [attempts, setAttempts] = useState([]);
+    const [loadingAttempts, setLoadingAttempts] = useState(false);
 
     useEffect(() => {
         fetchComments();
+        fetchAttempts();
     }, [course.id]);
 
     const fetchComments = async () => {
@@ -40,6 +45,23 @@ function CourseViewPage({ course, user, onClose }) {
             console.error('Failed to fetch comments:', error);
         } finally {
             setLoadingComments(false);
+        }
+    };
+
+    const fetchAttempts = async () => {
+        if (!user) return;
+
+        try {
+            setLoadingAttempts(true);
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/course/${course.id}/attempts?userId=${user.id}`);
+            if (response.ok) {
+                const data = await response.json();
+                setAttempts(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch attempts:', error);
+        } finally {
+            setLoadingAttempts(false);
         }
     };
 
@@ -203,6 +225,24 @@ function CourseViewPage({ course, user, onClose }) {
         const date = new Date(dateString);
         return `${date.getFullYear()}년${date.getMonth() + 1}월${date.getDate()}일`;
     };
+
+    const handleFollowRunningStop = (result) => {
+        setShowFollowRunning(false);
+        if (result.saved) {
+            fetchAttempts(); // 기록 새로고침
+        }
+    };
+
+    // 따라 달리기 화면 표시
+    if (showFollowRunning) {
+        return (
+            <FollowCourseRunningScreen
+                course={course}
+                user={user}
+                onStop={handleFollowRunningStop}
+            />
+        );
+    }
 
     return (
         <div style={{
@@ -474,6 +514,114 @@ function CourseViewPage({ course, user, onClose }) {
                         <div>등록자: {course.creatorNickname}</div>
                     </div>
                 </div>
+
+                {/* 따라 달리기 버튼 */}
+                <div style={{
+                    padding: '20px',
+                    backgroundColor: '#fff',
+                    borderTop: '1px solid #f0f0f0'
+                }}>
+                    <button
+                        onClick={() => setShowFollowRunning(true)}
+                        style={{
+                            width: '100%',
+                            padding: '16px',
+                            backgroundColor: '#10b981',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '16px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                        }}
+                    >
+                        🏃 이 코스 따라 달리기
+                    </button>
+                </div>
+
+                {/* 따라 달리기 기록 */}
+                {attempts.length > 0 && (
+                    <div style={{
+                        padding: '20px',
+                        backgroundColor: '#fff',
+                        borderTop: '8px solid #f5f5f5'
+                    }}>
+                        <div style={{
+                            fontSize: '16px',
+                            fontWeight: '700',
+                            color: '#1a1a1a',
+                            marginBottom: '16px'
+                        }}>
+                            따라 달리기 기록 ({attempts.length})
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {attempts.map(attempt => (
+                                <div
+                                    key={attempt.id}
+                                    style={{
+                                        padding: '16px',
+                                        backgroundColor: '#f8f9fa',
+                                        borderRadius: '8px',
+                                        border: attempt.courseCompleted ? '2px solid #10b981' : '1px solid #e0e0e0'
+                                    }}
+                                >
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '8px'
+                                    }}>
+                                        <div style={{
+                                            fontSize: '14px',
+                                            fontWeight: '600',
+                                            color: attempt.courseCompleted ? '#10b981' : '#f59e0b'
+                                        }}>
+                                            {attempt.courseCompleted ? '✅ 완주' : '💪 미완주'}
+                                        </div>
+                                        <div style={{
+                                            fontSize: '12px',
+                                            color: '#999'
+                                        }}>
+                                            {new Date(attempt.timestamp || attempt.createdAt).toLocaleDateString('ko-KR', {
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}
+                                        </div>
+                                    </div>
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '16px',
+                                        fontSize: '13px',
+                                        color: '#666'
+                                    }}>
+                                        <div>
+                                            <span style={{ fontWeight: '600', color: '#1a1a1a' }}>
+                                                {attempt.distance?.toFixed(2) || '0.00'}km
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span style={{ fontWeight: '600', color: '#1a1a1a' }}>
+                                                {Math.floor((attempt.duration || 0) / 60)}:{String((attempt.duration || 0) % 60).padStart(2, '0')}
+                                            </span>
+                                        </div>
+                                        {attempt.pace > 0 && (
+                                            <div>
+                                                <span style={{ fontWeight: '600', color: '#1a1a1a' }}>
+                                                    {Math.floor(attempt.pace)}'{String(Math.floor((attempt.pace % 1) * 60)).padStart(2, '0')}"/km
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Comments Section */}
                 <div style={{
