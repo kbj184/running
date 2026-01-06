@@ -1,7 +1,14 @@
 import React from 'react';
 import { getGradeInfo } from '../../constants/runnerGradeInfo';
 
-function MainHeader({ user, onProfileClick, onGradeClick }) {
+function MainHeader({ user, activeTab, onProfileClick, onGradeClick }) {
+    // 탭별 캐치 프레이즈 결정
+    const getCatchPhrase = () => {
+        if (activeTab === 'profile') return "I'm a runner";
+        if (activeTab === 'crew') return "We are a crew";
+        return "We are runners";
+    };
+
     return (
         <div style={{
             position: 'relative',
@@ -14,16 +21,33 @@ function MainHeader({ user, onProfileClick, onGradeClick }) {
             padding: '0 16px',
             borderBottom: '1px solid #e8e8e8'
         }}>
-            {/* Logo */}
+            {/* Logo + Catch Phrase */}
             <div style={{
-                fontSize: '28px',
-                fontWeight: '700',
-                color: '#1a1a1a',
-                fontStyle: 'italic',
-                letterSpacing: '-1.5px',
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
             }}>
-                llrun
+                <div style={{
+                    fontSize: '28px',
+                    fontWeight: '700',
+                    color: '#1a1a1a',
+                    fontStyle: 'italic',
+                    letterSpacing: '-1.5px',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                }}>
+                    llrun
+                </div>
+                <div style={{
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    color: '#666',
+                    fontStyle: 'italic',
+                    letterSpacing: '-0.3px',
+                    paddingLeft: '12px',
+                    borderLeft: '1px solid #d0d0d0'
+                }}>
+                    {getCatchPhrase()}
+                </div>
             </div>
 
             {/* Right Section: Runner Grade Badge + Avatar */}

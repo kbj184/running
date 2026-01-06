@@ -49,6 +49,7 @@ function MainLayout({ user, onProfileClick, onGradeClick, onStartRunning }) {
             }}>
                 <MainHeader
                     user={user}
+                    activeTab={activeTab}
                     onProfileClick={onProfileClick}
                     onGradeClick={onGradeClick}
                 />
