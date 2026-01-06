@@ -19,11 +19,12 @@ function CrewSubHeader() {
 
     return (
         <div style={{
-            position: 'relative',
+            position: 'sticky',
+            top: 'var(--header-height)',
             width: '100%',
             backgroundColor: '#f8f9fa',
             borderBottom: '1px solid #e0e0e0',
-            zIndex: 999
+            zIndex: 90
         }}>
             <div style={{
                 display: 'flex',

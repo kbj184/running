@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LocationFilter from './LocationFilter';
 import CrewSubHeader from '../../layout/CrewSubHeader';
 
 
-function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews, user }) {
+function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
+    const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState({ level1: null, level2: null });
 
     // 컴포넌트 마운트 시 크루 목록 로드
@@ -19,6 +21,11 @@ function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews, user }) {
             // 필터 변경 시 크루 목록 새로고침 (API 호출)
             onRefreshCrews(filter);
         }
+    };
+
+    const handleCrewClick = (crew) => {
+        // CrewTab의 상세 페이지로 이동 (CrewTab이 처리)
+        navigate(`/crew/detail/${crew.id}`, { state: { crew } });
     };
 
     return (
@@ -69,7 +76,7 @@ function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews, user }) {
                             return (
                                 <div
                                     key={crew.id}
-                                    onClick={() => onCrewClick({ ...crew, image: crewImage })}
+                                    onClick={() => handleCrewClick({ ...crew, image: crewImage })}
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',

@@ -502,25 +502,21 @@ function App() {
                                     <Route index element={
                                         <CrewHomeTab
                                             allCrews={allCrews}
-                                            onCrewClick={(crew) => {
-                                                // TODO: Navigate to crew detail
-                                                console.log('Crew clicked:', crew);
-                                            }}
                                             onRefreshCrews={fetchCrews}
                                             user={user}
                                         />
                                     } />
-                                    <Route path="ranking" element={<CrewRankingTab />} />
+                                    <Route path="ranking" element={<CrewRankingTab allCrews={allCrews} />} />
                                     <Route path="create" element={
                                         <CrewCreateTab
                                             user={user}
                                             onCrewCreated={() => {
-                                                navigate('/crew');
+                                                window.location.href = '/crew';
                                                 fetchCrews();
                                             }}
                                         />
                                     } />
-                                    {/* Crew 상세 페이지는 CrewTab에서 처리 (복잡한 구조) */}
+                                    {/* Crew 상세 및 기타 페이지는 CrewTab에서 처리 */}
                                     <Route path="*" element={
                                         <CrewTab
                                             user={user}
