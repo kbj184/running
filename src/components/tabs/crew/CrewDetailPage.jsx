@@ -32,6 +32,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const [courseViewMode, setCourseViewMode] = useState('list'); // 'list', 'detail', 'create_select', 'create_form'
     const [courseRefreshKey, setCourseRefreshKey] = useState(0);
     const [followRunningCourse, setFollowRunningCourse] = useState(null);
+    const [runningSessionId, setRunningSessionId] = useState(0);
 
     useEffect(() => {
         console.log('followRunningCourse state changed:', followRunningCourse);
@@ -671,7 +672,10 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                 course={selectedCourse}
                                 user={user}
                                 onClose={handleCloseCourseView}
-                                onFollowRunning={(course) => setFollowRunningCourse(course)}
+                                onFollowRunning={(course) => {
+                                    setFollowRunningCourse(course);
+                                    setRunningSessionId(Date.now());
+                                }}
                             />
                         )}
                         {(courseViewMode === 'create_select' || courseViewMode === 'create_form') && (
@@ -861,7 +865,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
             {/* Follow Course Running Screen */}
             {followRunningCourse && (
                 <FollowCourseRunningScreen
-                    key={followRunningCourse.id ? `${followRunningCourse.id}-${Date.now()}` : Date.now()}
+                    key={runningSessionId}
                     course={followRunningCourse}
                     user={user}
                     onStop={(result) => {
