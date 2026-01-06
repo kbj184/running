@@ -1,15 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../../utils/api';
 import { generateRouteThumbImage } from '../../../utils/mapThumbnail';
-import CourseSelectionPage from './CourseSelectionPage';
-import CourseDetailPage from './CourseDetailPage';
-import CourseViewPage from './CourseViewPage';
 
-function CrewCourseTab({ crew, user, userRole, onCourseClick }) {
+function CrewCourseTab({ crew, user, userRole, onCourseClick, onCourseCreate }) {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showSelectionPage, setShowSelectionPage] = useState(false);
-    const [selectedRecord, setSelectedRecord] = useState(null);
 
     useEffect(() => {
         fetchCourses();
@@ -39,43 +34,6 @@ function CrewCourseTab({ crew, user, userRole, onCourseClick }) {
         }
     };
 
-    const handleSelectRecord = (record) => {
-        setSelectedRecord(record);
-    };
-
-    const handleCloseDetailPage = () => {
-        setSelectedRecord(null);
-    };
-
-    const handleRegistrationSuccess = () => {
-        setSelectedRecord(null);
-        setShowSelectionPage(false);
-        fetchCourses();
-    };
-
-    // Show selection page
-    if (showSelectionPage) {
-        return (
-            <>
-                <CourseSelectionPage
-                    user={user}
-                    crewId={crew.id}
-                    onBack={() => setShowSelectionPage(false)}
-                    onSelectRecord={handleSelectRecord}
-                />
-                {selectedRecord && (
-                    <CourseDetailPage
-                        user={user}
-                        crewId={crew.id}
-                        selectedRecord={selectedRecord}
-                        onClose={handleCloseDetailPage}
-                        onSuccess={handleRegistrationSuccess}
-                    />
-                )}
-            </>
-        );
-    }
-
     if (loading) {
         return (
             <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>
@@ -100,7 +58,7 @@ function CrewCourseTab({ crew, user, userRole, onCourseClick }) {
                 </h3>
                 {user && (
                     <button
-                        onClick={() => setShowSelectionPage(true)}
+                        onClick={onCourseCreate}
                         style={{
                             padding: '10px 20px',
                             backgroundColor: '#FF9A56',

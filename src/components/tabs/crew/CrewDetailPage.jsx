@@ -6,6 +6,8 @@ import PostDetailPage from './PostDetailPage';
 import PostEditorPage from './PostEditorPage';
 import CrewCourseTab from './CrewCourseTab';
 import CourseViewPage from './CourseViewPage';
+import CourseSelectionPage from './CourseSelectionPage';
+import CourseCreatePage from './CourseDetailPage';
 
 function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const navigate = useNavigate();
@@ -26,6 +28,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const [selectedPost, setSelectedPost] = useState(null);
     const [editingPost, setEditingPost] = useState(null);
     const [selectedCourse, setSelectedCourse] = useState(null);
+    const [courseViewMode, setCourseViewMode] = useState('list'); // 'list', 'detail', 'create_select', 'create_form'
 
     // URL에서 탭 상태 동기화
     useEffect(() => {
@@ -49,27 +52,39 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 }
             } else if (pathParts[4] === 'course') {
                 if (pathParts[5]) {
-                    const courseId = parseInt(pathParts[5]);
-                    if (location.state?.course) {
-                        setSelectedCourse(location.state.course);
+                    if (pathParts[5] === 'create') {
+                        setCourseViewMode('create_select');
+                        setSelectedCourse(null);
+                    } else if (pathParts[5] === 'write') {
+                        setCourseViewMode('create_form');
+                        setSelectedCourse(null);
                     } else {
-                        // URL로 직접 접근 시 데이터 fetch
-                        const crewId = pathParts[3];
-                        const token = user?.accessToken || '';
-                        const headers = token ? { 'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}` } : {};
+                        setCourseViewMode('detail');
+                        const courseId = parseInt(pathParts[5]);
+                        if (!isNaN(courseId)) {
+                            if (location.state?.course) {
+                                setSelectedCourse(location.state.course);
+                            } else {
+                                // URL로 직접 접근 시 데이터 fetch
+                                const crewId = pathParts[3];
+                                const token = user?.accessToken || '';
+                                const headers = token ? { 'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}` } : {};
 
-                        api.request(`${import.meta.env.VITE_API_URL}/crew/${crewId}/courses`, { headers })
-                            .then(res => {
-                                if (res.ok) return res.json();
-                                throw new Error('Failed to fetch');
-                            })
-                            .then(data => {
-                                const found = data.find(c => c.id === courseId);
-                                if (found) setSelectedCourse(found);
-                            })
-                            .catch(console.error);
+                                api.request(`${import.meta.env.VITE_API_URL}/crew/${crewId}/courses`, { headers })
+                                    .then(res => {
+                                        if (res.ok) return res.json();
+                                        throw new Error('Failed to fetch');
+                                    })
+                                    .then(data => {
+                                        const found = data.find(c => c.id === courseId);
+                                        if (found) setSelectedCourse(found);
+                                    })
+                                    .catch(console.error);
+                            }
+                        }
                     }
                 } else {
+                    setCourseViewMode('list');
                     setSelectedCourse(null);
                 }
             }
@@ -634,10 +649,25 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 )}
 
                 {activeTab === 'course' && (
-                    selectedCourse ? (
+                    courseViewMode === 'detail' && selectedCourse ? (
                         <CourseViewPage
                             course={selectedCourse}
                             onClose={handleCloseCourseView}
+                        />
+                    ) : courseViewMode === 'create_select' ? (
+                        <CourseSelectionPage
+                            user={user}
+                            crewId={crew.id}
+                            onBack={() => navigate(`/crew/detail/${crew.id}/course`)}
+                            onSelectRecord={(record) => navigate(`/crew/detail/${crew.id}/course/write`, { state: { record } })}
+                        />
+                    ) : courseViewMode === 'create_form' ? (
+                        <CourseCreatePage
+                            user={user}
+                            crewId={crew.id}
+                            selectedRecord={location.state?.record}
+                            onClose={() => navigate(`/crew/detail/${crew.id}/course/create`)}
+                            onSuccess={() => navigate(`/crew/detail/${crew.id}/course`)}
                         />
                     ) : (
                         <CrewCourseTab
@@ -645,6 +675,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                             user={user}
                             userRole={userRole}
                             onCourseClick={handleCourseClick}
+                            onCourseCreate={() => navigate(`/crew/detail/${crew.id}/course/create`)}
                         />
                     )
                 )}
