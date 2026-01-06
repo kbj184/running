@@ -54,6 +54,24 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
     const [map, setMap] = useState(null);
     const [currentPosition, setCurrentPosition] = useState(null);
 
+    const googleMapOptions = useMemo(() => ({
+        ...mapOptions,
+        mapId: MAP_ID,
+        isFractionalZoomEnabled: true
+    }), []);
+
+    useEffect(() => {
+        if (!map) return;
+        console.log('[FollowCourseRunningScreen] Debug Markers:', {
+            mapId: MAP_ID,
+            startPoint,
+            endPoint,
+            hasMap: !!map,
+            hasMarkerLib: !!window.google?.maps?.marker,
+            mapCapabilities: map.getMapCapabilities ? map.getMapCapabilities() : 'unknown'
+        });
+    }, [map, startPoint, endPoint]);
+
     // 코스 경로 파싱
     const courseRoute = useMemo(() => {
         if (course.routeData) {
@@ -832,10 +850,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                     dataRef.current.currentPosition = newPos;
                                 }
                             }}
-                            options={{
-                                ...mapOptions,
-                                mapId: MAP_ID
-                            }}
+                            options={googleMapOptions}
                         >
                             {/* 코스 경로 */}
                             <PolylineF
@@ -1011,10 +1026,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                 }
                             }
                         }}
-                        options={{
-                            ...mapOptions,
-                            mapId: MAP_ID
-                        }}
+                        options={googleMapOptions}
                     >
                         {/* 코스 경로 (배경) */}
                         <PolylineF
