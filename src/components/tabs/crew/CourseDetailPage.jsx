@@ -17,6 +17,7 @@ const getSpeedColor = (speedKmh) => {
 };
 
 function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) {
+    const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [registering, setRegistering] = useState(false);
     const [showInteractiveMap, setShowInteractiveMap] = useState(false);
@@ -139,6 +140,7 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
 
             const courseData = {
                 name: `러닝 코스 - ${new Date(selectedRecord.timestamp || Date.now()).toLocaleDateString()}`,
+                title: title.trim(),
                 description: description.trim() || `거리: ${selectedRecord.distance?.toFixed(2)}km, 시간: ${Math.floor(selectedRecord.duration / 60)}분`,
                 distance: selectedRecord.distance,
                 routeData: selectedRecord.route,
@@ -390,6 +392,36 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                             {Math.floor(selectedRecord.duration / 60)}분
                         </div>
                     </div>
+                </div>
+
+                {/* Title Input */}
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#333',
+                        marginBottom: '8px'
+                    }}>
+                        코스 제목
+                    </label>
+                    <input
+                        type="text"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="코스 제목을 입력하세요"
+                        maxLength={50}
+                        style={{
+                            width: '100%',
+                            padding: '12px',
+                            fontSize: '14px',
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '8px',
+                            fontFamily: 'inherit',
+                            boxSizing: 'border-box',
+                            outline: 'none'
+                        }}
+                    />
                 </div>
 
                 {/* Description Input */}

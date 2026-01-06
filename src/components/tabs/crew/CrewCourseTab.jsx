@@ -148,7 +148,7 @@ function CrewCourseTab({ crew, user, userRole, onCourseClick, onCourseCreate }) 
                                         color: '#333',
                                         marginBottom: '8px'
                                     }}>
-                                        {course.name}
+                                        {course.title || course.name}
                                     </div>
                                     {course.description && (
                                         <div style={{

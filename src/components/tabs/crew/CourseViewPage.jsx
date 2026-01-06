@@ -166,7 +166,7 @@ function CourseViewPage({ course, onClose }) {
                     ←
                 </button>
                 <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
-                    {course.name}
+                    {course.title || course.name}
                 </div>
                 <div style={{ marginLeft: 'auto', fontSize: '14px', color: '#666' }}>
                     {formatDate(course.createdAt)}
