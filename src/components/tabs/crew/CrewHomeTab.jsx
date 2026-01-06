@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LocationFilter from './LocationFilter';
 
 
 function CrewHomeTab({ allCrews, onCrewClick, onRefreshCrews, user }) {
     const [activeFilter, setActiveFilter] = useState({ level1: null, level2: null });
+
+    // 컴포넌트 마운트 시 크루 목록 로드
+    useEffect(() => {
+        if (onRefreshCrews) {
+            onRefreshCrews(activeFilter);
+        }
+    }, []); // 빈 배열로 마운트 시 한 번만 실행
 
     const handleFilterChange = (filter) => {
         setActiveFilter(filter);

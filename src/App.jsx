@@ -509,6 +509,7 @@ function App() {
                                         onRecordClick={handleRecordClick}
                                         onLogout={handleLogout}
                                         onUserUpdate={handleUserUpdate}
+                                        onTabChange={handleProfileTabChange}
                                     />
                                 } />
                             </Route>
