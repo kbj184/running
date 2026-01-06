@@ -39,7 +39,7 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
 
     // route 데이터 파싱
     const parsedRoute = useMemo(() => {
-        if (selectedRecord.route) {
+        if (selectedRecord?.route) {
             try {
                 let route = selectedRecord.route;
                 if (typeof route === 'string') {
@@ -53,7 +53,7 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
             }
         }
         return null;
-    }, [selectedRecord.route]);
+    }, [selectedRecord?.route]);
 
     // 정적 지도 이미지 생성
     const mapImageUrl = useMemo(() => {
@@ -61,8 +61,8 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
             const wateringSegments = selectedRecord.wateringSegments || [];
             return generateRouteMapImage(parsedRoute, wateringSegments);
         }
-        return selectedRecord.thumbnail;
-    }, [parsedRoute, selectedRecord.wateringSegments, selectedRecord.thumbnail]);
+        return selectedRecord?.thumbnail;
+    }, [parsedRoute, selectedRecord?.wateringSegments, selectedRecord?.thumbnail]);
 
     // 지도 중심점 계산
     const mapCenter = useMemo(() => {
@@ -169,6 +169,10 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
         }
     };
 
+    if (!selectedRecord) {
+        return null; // Should not happen if parent handles it correct
+    }
+
     return (
         <div style={{
             position: 'fixed',
@@ -176,63 +180,51 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            backgroundColor: '#fff',
             zIndex: 2000,
-            padding: '20px'
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
         }}>
+            {/* Header */}
             <div style={{
-                backgroundColor: '#fff',
-                borderRadius: '16px',
-                padding: '24px',
-                maxWidth: '600px',
-                width: '100%',
-                maxHeight: '90vh',
+                padding: '16px',
+                borderBottom: '1px solid #e0e0e0',
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '20px',
-                overflowY: 'auto'
+                alignItems: 'center',
+                backgroundColor: '#fff',
+                gap: '12px'
             }}>
-                {/* Header */}
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}>
-                    <h3 style={{
-                        margin: 0,
-                        fontSize: '18px',
-                        fontWeight: '700',
-                        color: '#333'
-                    }}>
-                        코스 등록
-                    </h3>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            fontSize: '24px',
-                            cursor: 'pointer',
-                            color: '#999',
-                            padding: 0,
-                            lineHeight: 1
-                        }}
-                    >
-                        ×
-                    </button>
+                <button
+                    onClick={onClose}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '20px',
+                        cursor: 'pointer',
+                        color: '#333',
+                        padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}
+                >
+                    ←
+                </button>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
+                    코스 등록
                 </div>
+            </div>
 
+            {/* Scrollable Content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
                 {/* Map - Static or Interactive */}
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative', marginBottom: '20px' }}>
                     {!showInteractiveMap ? (
                         // Static Map
                         <div
                             style={{
                                 width: '100%',
-                                height: '400px',
+                                height: '240px',
                                 borderRadius: '12px',
                                 overflow: 'hidden',
                                 backgroundColor: '#f0f0f0',
@@ -269,7 +261,7 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                         // Interactive Map
                         <div style={{
                             width: '100%',
-                            height: '400px',
+                            height: '240px',
                             borderRadius: '12px',
                             overflow: 'hidden',
                             position: 'relative'
@@ -379,7 +371,8 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                 <div style={{
                     padding: '16px',
                     backgroundColor: '#f8f8f8',
-                    borderRadius: '12px'
+                    borderRadius: '12px',
+                    marginBottom: '20px'
                 }}>
                     <div style={{
                         display: 'flex',
@@ -429,7 +422,8 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                             borderRadius: '8px',
                             resize: 'vertical',
                             fontFamily: 'inherit',
-                            boxSizing: 'border-box'
+                            boxSizing: 'border-box',
+                            outline: 'none'
                         }}
                     />
                     <div style={{
@@ -441,47 +435,49 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                         {description.length} / 500
                     </div>
                 </div>
+            </div>
 
-                {/* Action Buttons */}
-                <div style={{
-                    display: 'flex',
-                    gap: '12px',
-                    marginTop: '8px'
-                }}>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            flex: 1,
-                            padding: '14px',
-                            backgroundColor: '#f0f0f0',
-                            color: '#666',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontSize: '15px',
-                            fontWeight: '600',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        취소
-                    </button>
-                    <button
-                        onClick={handleRegister}
-                        disabled={registering}
-                        style={{
-                            flex: 1,
-                            padding: '14px',
-                            backgroundColor: registering ? '#ccc' : '#FF9A56',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontSize: '15px',
-                            fontWeight: '600',
-                            cursor: registering ? 'not-allowed' : 'pointer'
-                        }}
-                    >
-                        {registering ? '등록 중...' : '등록'}
-                    </button>
-                </div>
+            {/* Footer Action Buttons */}
+            <div style={{
+                padding: '16px 20px',
+                borderTop: '1px solid #f0f0f0',
+                backgroundColor: '#fff',
+                display: 'flex',
+                gap: '12px'
+            }}>
+                <button
+                    onClick={onClose}
+                    style={{
+                        flex: 1,
+                        padding: '14px',
+                        backgroundColor: '#f0f0f0',
+                        color: '#666',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '15px',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                    }}
+                >
+                    취소
+                </button>
+                <button
+                    onClick={handleRegister}
+                    disabled={registering}
+                    style={{
+                        flex: 1,
+                        padding: '14px',
+                        backgroundColor: registering ? '#ccc' : '#FF9A56',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '15px',
+                        fontWeight: '600',
+                        cursor: registering ? 'not-allowed' : 'pointer'
+                    }}
+                >
+                    {registering ? '등록 중...' : '등록'}
+                </button>
             </div>
         </div>
     );

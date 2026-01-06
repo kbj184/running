@@ -287,7 +287,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     };
 
     const handleCloseCourseView = () => {
-        navigate(`/crew/detail/${crew.id}/course`);
+        navigate(-1);
     };
 
     // 크루 이미지 파싱
@@ -658,7 +658,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                         <CourseSelectionPage
                             user={user}
                             crewId={crew.id}
-                            onBack={() => navigate(`/crew/detail/${crew.id}/course`)}
+                            onBack={() => navigate(-1)}
                             onSelectRecord={(record) => navigate(`/crew/detail/${crew.id}/course/write`, { state: { record } })}
                         />
                     ) : courseViewMode === 'create_form' ? (
@@ -666,7 +666,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                             user={user}
                             crewId={crew.id}
                             selectedRecord={location.state?.record}
-                            onClose={() => navigate(`/crew/detail/${crew.id}/course/create`)}
+                            onClose={() => navigate(-1)}
                             onSuccess={() => navigate(`/crew/detail/${crew.id}/course`)}
                         />
                     ) : (
