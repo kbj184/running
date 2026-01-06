@@ -4,7 +4,7 @@ import CrewSubHeader from './CrewSubHeader';
 
 function CrewLayout() {
     return (
-        <div>
+        <div style={{ marginTop: 'var(--header-height)' }}>
             <CrewSubHeader />
             <Outlet />
         </div>
