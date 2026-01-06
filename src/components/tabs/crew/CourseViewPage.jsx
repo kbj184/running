@@ -29,6 +29,10 @@ function CourseViewPage({ course, user, onClose }) {
     const [loadingAttempts, setLoadingAttempts] = useState(false);
 
     useEffect(() => {
+        console.log('showFollowRunning changed:', showFollowRunning);
+    }, [showFollowRunning]);
+
+    useEffect(() => {
         fetchComments();
         fetchAttempts();
     }, [course.id]);
