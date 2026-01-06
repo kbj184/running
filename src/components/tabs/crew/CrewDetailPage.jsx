@@ -28,10 +28,13 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const [boardView, setBoardView] = useState('list'); // 'list', 'detail', 'editor'
     const [selectedPost, setSelectedPost] = useState(null);
     const [editingPost, setEditingPost] = useState(null);
-    const [selectedCourse, setSelectedCourse] = useState(null);
     const [courseViewMode, setCourseViewMode] = useState('list'); // 'list', 'detail', 'create_select', 'create_form'
     const [courseRefreshKey, setCourseRefreshKey] = useState(0);
     const [followRunningCourse, setFollowRunningCourse] = useState(null);
+
+    useEffect(() => {
+        console.log('followRunningCourse state changed:', followRunningCourse);
+    }, [followRunningCourse]);
 
     // URL에서 탭 상태 동기화
     useEffect(() => {

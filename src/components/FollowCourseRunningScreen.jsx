@@ -84,6 +84,13 @@ function FollowCourseRunningScreen({ course, onStop, user }) {
     const [hasStarted, setHasStarted] = useState(false);
     const [error, setError] = useState(null);
 
+    useEffect(() => {
+        console.log('FollowCourseRunningScreen mounted. Course:', course);
+        return () => {
+            console.log('FollowCourseRunningScreen unmounted');
+        };
+    }, [course]);
+
     // 시작/종료 거리 상태
     const [distanceToStart, setDistanceToStart] = useState(null);
     const [distanceToEnd, setDistanceToEnd] = useState(null);
