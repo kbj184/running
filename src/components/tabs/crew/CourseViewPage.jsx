@@ -511,11 +511,16 @@ function CourseViewPage({ course, user, onClose, onFollowRunning }) {
                             e.preventDefault();
                             e.stopPropagation();
                             console.log('Follow running button clicked!');
+                            console.log('onFollowRunning prop:', onFollowRunning);
                             if (onFollowRunning) {
                                 onFollowRunning(course);
+                            } else {
+                                console.error('onFollowRunning prop is missing!');
                             }
                         }}
                         style={{
+                            position: 'relative',
+                            zIndex: 10,
                             width: '100%',
                             padding: '16px',
                             backgroundColor: '#10b981',
