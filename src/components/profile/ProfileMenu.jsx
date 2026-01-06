@@ -10,7 +10,7 @@ function ProfileMenu({ profileTab, user, refreshRecords, onRecordClick, onLogout
             {/* ProfileSubHeader 추가 */}
             <div style={{
                 position: 'sticky',
-                top: 'var(--header-height)',
+                top: 'calc(var(--header-height) - 28px)',
                 zIndex: 90,
                 backgroundColor: '#fff'
             }}>
