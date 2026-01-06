@@ -372,6 +372,11 @@ function App() {
     const handleTabChange = (tab) => {
         setActiveTab(tab);
         setShowProfileMenu(false);
+
+        // 크루 탭으로 이동 시 항상 크루 홈으로 리셋
+        if (tab === 'crew') {
+            setUser(prev => ({ ...prev, crewTab: 'home' }));
+        }
     };
 
     const handleProfileClick = () => {

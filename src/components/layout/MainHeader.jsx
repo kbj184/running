@@ -69,43 +69,63 @@ function MainHeader({ user, onProfileClick, onGradeClick }) {
                     );
                 })()}
 
-                {/* User Avatar */}
+                {/* User Avatar + Nickname */}
                 <div
                     onClick={onProfileClick}
                     style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '50%',
-                        overflow: 'hidden',
-                        background: '#e0e0e0',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '2px solid #ffffff',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                        gap: '8px',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                     }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'scale(1.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                    }}
                 >
-                    {user.nicknameImage ? (
-                        <img
-                            src={user.nicknameImage}
-                            alt={user.nickname}
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover'
-                            }}
-                        />
-                    ) : (
-                        <div style={{ fontSize: '22px' }}>👤</div>
-                    )}
+                    <div
+                        style={{
+                            width: '42px',
+                            height: '42px',
+                            borderRadius: '50%',
+                            overflow: 'hidden',
+                            background: '#e0e0e0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '2px solid #ffffff',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                    >
+                        {user.nicknameImage ? (
+                            <img
+                                src={user.nicknameImage}
+                                alt={user.nickname}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover'
+                                }}
+                            />
+                        ) : (
+                            <div style={{ fontSize: '22px' }}>👤</div>
+                        )}
+                    </div>
+                    <span style={{
+                        fontSize: '15px',
+                        fontWeight: '600',
+                        color: '#1a1a1a',
+                        maxWidth: '80px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                    }}>
+                        {user.nickname}
+                    </span>
                 </div>
             </div>
         </div>

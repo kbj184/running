@@ -96,7 +96,9 @@ function BottomNavigation({ activeTab, onTabChange, onStartRunning, onProfileCli
             {/* Crew */}
             <div
                 style={navItemStyle(activeTab === 'crew')}
-                onClick={() => onTabChange('crew')}
+                onClick={() => {
+                    onTabChange('crew');
+                }}
             >
                 <div style={iconStyle}>👥</div>
                 <span>Crew</span>
