@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Polyline, Marker } from '@react-google-maps/api';
 import { generateRouteMapImage } from '../../../utils/mapThumbnail';
 import { api } from '../../../utils/api';
-import FollowCourseRunningScreen from '../../FollowCourseRunningScreen';
 
 const LIBRARIES = ['places', 'marker'];
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
@@ -16,7 +15,7 @@ const getSpeedColor = (speedKmh) => {
     return "#7c3aed";
 };
 
-function CourseViewPage({ course, user, onClose }) {
+function CourseViewPage({ course, user, onClose, onFollowRunning }) {
     const [showInteractiveMap, setShowInteractiveMap] = useState(false);
     const [map, setMap] = useState(null);
     const [isLiked, setIsLiked] = useState(!!course.liked);
@@ -24,13 +23,8 @@ function CourseViewPage({ course, user, onClose }) {
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [loadingComments, setLoadingComments] = useState(false);
-    const [showFollowRunning, setShowFollowRunning] = useState(false);
     const [attempts, setAttempts] = useState([]);
     const [loadingAttempts, setLoadingAttempts] = useState(false);
-
-    useEffect(() => {
-        console.log('showFollowRunning changed:', showFollowRunning);
-    }, [showFollowRunning]);
 
     useEffect(() => {
         fetchComments();
@@ -230,23 +224,7 @@ function CourseViewPage({ course, user, onClose }) {
         return `${date.getFullYear()}년${date.getMonth() + 1}월${date.getDate()}일`;
     };
 
-    const handleFollowRunningStop = (result) => {
-        setShowFollowRunning(false);
-        if (result.saved) {
-            fetchAttempts(); // 기록 새로고침
-        }
-    };
 
-    // 따라 달리기 화면 표시
-    if (showFollowRunning) {
-        return (
-            <FollowCourseRunningScreen
-                course={course}
-                user={user}
-                onStop={handleFollowRunningStop}
-            />
-        );
-    }
 
     return (
         <div style={{
@@ -533,8 +511,9 @@ function CourseViewPage({ course, user, onClose }) {
                             e.preventDefault();
                             e.stopPropagation();
                             console.log('Follow running button clicked!');
-                            setShowFollowRunning(true);
-                            console.log('showFollowRunning set to true');
+                            if (onFollowRunning) {
+                                onFollowRunning(course);
+                            }
                         }}
                         style={{
                             width: '100%',

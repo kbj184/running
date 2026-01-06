@@ -8,6 +8,7 @@ import CrewCourseTab from './CrewCourseTab';
 import CourseViewPage from './CourseViewPage';
 import CourseSelectionPage from './CourseSelectionPage';
 import CourseCreatePage from './CourseDetailPage';
+import FollowCourseRunningScreen from '../../FollowCourseRunningScreen';
 
 function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const navigate = useNavigate();
@@ -30,6 +31,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [courseViewMode, setCourseViewMode] = useState('list'); // 'list', 'detail', 'create_select', 'create_form'
     const [courseRefreshKey, setCourseRefreshKey] = useState(0);
+    const [followRunningCourse, setFollowRunningCourse] = useState(null);
 
     // URL에서 탭 상태 동기화
     useEffect(() => {
@@ -665,6 +667,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                 course={selectedCourse}
                                 user={user}
                                 onClose={handleCloseCourseView}
+                                onFollowRunning={(course) => setFollowRunningCourse(course)}
                             />
                         )}
                         {(courseViewMode === 'create_select' || courseViewMode === 'create_form') && (
@@ -851,6 +854,23 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 )}
             </div>
         </div>
+
+        {/* Follow Course Running Screen */ }
+    {
+        followRunningCourse && (
+            <FollowCourseRunningScreen
+                course={followRunningCourse}
+                user={user}
+                onStop={(result) => {
+                    setFollowRunningCourse(null);
+                    if (result.saved) {
+                        setCourseRefreshKey(prev => prev + 1);
+                    }
+                }}
+            />
+        )
+    }
+    </div >
     );
 }
 
