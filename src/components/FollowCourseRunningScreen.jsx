@@ -856,16 +856,21 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                     <div style={{
                                         width: '30px',
                                         height: '30px',
-                                        backgroundColor: '#10b981',
-                                        borderRadius: '50%',
-                                        border: '3px solid white',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '16px'
-                                    }}>
-                                        🏁
+                                    < div style={{
+                                            width: '32px',
+                                            height: '32px',
+                                            backgroundColor: '#22c55e',
+                                            borderRadius: '50%',
+                                            border: '3px solid white',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '14px',
+                                            fontWeight: '800',
+                                            color: 'white'
+                                        }}>
+                                        S
                                     </div>
                                 </AdvancedMarker>
                             )}
@@ -877,8 +882,8 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                     position={endPoint}
                                 >
                                     <div style={{
-                                        width: '30px',
-                                        height: '30px',
+                                        width: '32px',
+                                        height: '32px',
                                         backgroundColor: '#ef4444',
                                         borderRadius: '50%',
                                         border: '3px solid white',
@@ -886,9 +891,11 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        fontSize: '16px'
+                                        fontSize: '14px',
+                                        fontWeight: '800',
+                                        color: 'white'
                                     }}>
-                                        🎯
+                                        G
                                     </div>
                                 </AdvancedMarker>
                             )}
@@ -1042,18 +1049,20 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                 position={startPoint}
                             >
                                 <div style={{
-                                    width: '30px',
-                                    height: '30px',
-                                    backgroundColor: '#10b981',
+                                    width: '32px',
+                                    height: '32px',
+                                    backgroundColor: '#22c55e',
                                     borderRadius: '50%',
                                     border: '3px solid white',
                                     boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    fontSize: '16px'
+                                    fontSize: '14px',
+                                    fontWeight: '800',
+                                    color: 'white'
                                 }}>
-                                    🏁
+                                    S
                                 </div>
                             </AdvancedMarker>
                         )}
@@ -1065,8 +1074,8 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                 position={endPoint}
                             >
                                 <div style={{
-                                    width: '30px',
-                                    height: '30px',
+                                    width: '32px',
+                                    height: '32px',
                                     backgroundColor: '#ef4444',
                                     borderRadius: '50%',
                                     border: '3px solid white',
@@ -1074,9 +1083,11 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    fontSize: '16px'
+                                    fontSize: '14px',
+                                    fontWeight: '800',
+                                    color: 'white'
                                 }}>
-                                    🎯
+                                    G
                                 </div>
                             </AdvancedMarker>
                         )}
