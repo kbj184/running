@@ -171,7 +171,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
     }, [currentPosition, startPoint, endPoint, hasStarted]);
 
     // MariaDB 동기화 함수
-    const syncToBackend = useCallback(async (isFinal = false) => {
+    const syncToBackend = useCallback(async (isFinal = false, completedOverride = null) => {
         const data = dataRef.current;
         if (!user || !user.accessToken) {
             console.warn("⚠️ Sync skipped: User not logged in");
@@ -193,7 +193,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                 splits: JSON.stringify(data.splits),
                 isComplete: isFinal,
                 courseId: course.id,
-                courseCompleted: courseCompleted
+                courseCompleted: completedOverride !== null ? completedOverride : courseCompleted
             };
 
             const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/session/sync`, {
@@ -221,7 +221,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
     }, [sessionId, user, course.id, courseCompleted]);
 
     // IndexedDB 저장 함수
-    const triggerSave = useCallback(async (isFinal = false) => {
+    const triggerSave = useCallback(async (isFinal = false, completedOverride = null) => {
         const data = dataRef.current;
         if (data.currentPosition && (data.route.length > 0 || isFinal)) {
             try {
@@ -240,7 +240,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                     totalAscent: data.totalAscent,
                     totalDescent: data.totalDescent,
                     courseId: course.id,
-                    courseCompleted: courseCompleted
+                    courseCompleted: completedOverride !== null ? completedOverride : courseCompleted
                 });
                 lastSavedDistanceRef.current = data.distance;
                 lastSavedTimeRef.current = Date.now();
@@ -391,14 +391,22 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
         setIsTracking(false);
         const data = dataRef.current;
 
-        // 완주 여부 체크
-        const completed = distanceToEnd !== null && distanceToEnd <= VALIDATION_RADIUS.END;
+        // 완주 여부 정밀 체크
+        let completed = false;
+        if (endPoint && (currentPosition || data.currentPosition)) {
+            const pos = currentPosition || data.currentPosition;
+            const dist = calculateDistance(pos.lat, pos.lng, endPoint.lat, endPoint.lng);
+            completed = dist <= VALIDATION_RADIUS.END;
+        } else if (distanceToEnd !== null && distanceToEnd <= VALIDATION_RADIUS.END) {
+            completed = true;
+        }
+
         setCourseCompleted(completed);
 
         const thumbnailUrl = generateRouteThumbImage(data.route);
 
-        await triggerSave(true);
-        const syncResult = await syncToBackend(true);
+        await triggerSave(true, completed);
+        const syncResult = await syncToBackend(true, completed);
 
         if (watchIdRef.current) clearWatch(watchIdRef.current);
 

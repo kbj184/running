@@ -15,7 +15,7 @@ const getSpeedColor = (speedKmh) => {
     return "#7c3aed";
 };
 
-function CourseViewPage({ course, user, onClose, onFollowRunning }) {
+function CourseViewPage({ course, user, onClose, onFollowRunning, refreshKey }) {
     const [showInteractiveMap, setShowInteractiveMap] = useState(false);
     const [map, setMap] = useState(null);
     const [isLiked, setIsLiked] = useState(!!course.liked);
@@ -29,7 +29,7 @@ function CourseViewPage({ course, user, onClose, onFollowRunning }) {
     useEffect(() => {
         fetchComments();
         fetchAttempts();
-    }, [course.id]);
+    }, [course.id, refreshKey]);
 
     const fetchComments = async () => {
         try {

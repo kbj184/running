@@ -676,6 +676,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                     setFollowRunningCourse(course);
                                     setRunningSessionId(Date.now());
                                 }}
+                                refreshKey={courseRefreshKey}
                             />
                         )}
                         {(courseViewMode === 'create_select' || courseViewMode === 'create_form') && (
