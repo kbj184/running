@@ -522,7 +522,12 @@ function CourseViewPage({ course, user, onClose }) {
                     borderTop: '1px solid #f0f0f0'
                 }}>
                     <button
-                        onClick={() => setShowFollowRunning(true)}
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setShowFollowRunning(true);
+                        }}
                         style={{
                             width: '100%',
                             padding: '16px',
