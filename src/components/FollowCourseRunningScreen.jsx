@@ -54,23 +54,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
     const [map, setMap] = useState(null);
     const [currentPosition, setCurrentPosition] = useState(null);
 
-    const googleMapOptions = useMemo(() => ({
-        ...mapOptions,
-        mapId: MAP_ID,
-        isFractionalZoomEnabled: true
-    }), []);
 
-    useEffect(() => {
-        if (!map) return;
-        console.log('[FollowCourseRunningScreen] Debug Markers:', {
-            mapId: MAP_ID,
-            startPoint,
-            endPoint,
-            hasMap: !!map,
-            hasMarkerLib: !!window.google?.maps?.marker,
-            mapCapabilities: map.getMapCapabilities ? map.getMapCapabilities() : 'unknown'
-        });
-    }, [map, startPoint, endPoint]);
 
     // 코스 경로 파싱
     const courseRoute = useMemo(() => {
@@ -100,6 +84,25 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
         console.log('🎯 End Point:', point);
         return point;
     }, [courseRoute]);
+
+
+    const googleMapOptions = useMemo(() => ({
+        ...mapOptions,
+        mapId: MAP_ID,
+        isFractionalZoomEnabled: true
+    }), []);
+
+    useEffect(() => {
+        if (!map) return;
+        console.log('[FollowCourseRunningScreen] Debug Markers:', {
+            mapId: MAP_ID,
+            startPoint,
+            endPoint,
+            hasMap: !!map,
+            hasMarkerLib: !!window.google?.maps?.marker,
+            mapCapabilities: map.getMapCapabilities ? map.getMapCapabilities() : 'unknown'
+        });
+    }, [map, startPoint, endPoint]);
 
     // 러닝 상태
     const [route, setRoute] = useState([]);
