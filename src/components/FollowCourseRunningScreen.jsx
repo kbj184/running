@@ -76,13 +76,21 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
     const startPoint = useMemo(() => {
         const point = courseRoute[0];
         console.log('📍 Start Point:', point);
-        return point;
+        if (!point) return null;
+        return {
+            lat: Number(point.lat !== undefined ? point.lat : point.latitude),
+            lng: Number(point.lng !== undefined ? point.lng : point.longitude)
+        };
     }, [courseRoute]);
 
     const endPoint = useMemo(() => {
         const point = courseRoute[courseRoute.length - 1];
         console.log('🎯 End Point:', point);
-        return point;
+        if (!point) return null;
+        return {
+            lat: Number(point.lat !== undefined ? point.lat : point.latitude),
+            lng: Number(point.lng !== undefined ? point.lng : point.longitude)
+        };
     }, [courseRoute]);
 
 
@@ -870,6 +878,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                 <AdvancedMarker
                                     map={map}
                                     position={startPoint}
+                                    zIndex={100}
                                 >
                                     <div style={{
                                         width: '32px',
@@ -895,6 +904,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                 <AdvancedMarker
                                     map={map}
                                     position={endPoint}
+                                    zIndex={100}
                                 >
                                     <div style={{
                                         width: '32px',
@@ -1059,6 +1069,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                             <AdvancedMarker
                                 map={map}
                                 position={startPoint}
+                                zIndex={100}
                             >
                                 <div style={{
                                     width: '32px',
@@ -1084,6 +1095,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                             <AdvancedMarker
                                 map={map}
                                 position={endPoint}
+                                zIndex={100}
                             >
                                 <div style={{
                                     width: '32px',
