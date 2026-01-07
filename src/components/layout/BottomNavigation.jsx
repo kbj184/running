@@ -26,10 +26,9 @@ function BottomNavigation({ activeTab, onTabChange, onStartRunning, onProfileCli
 
     return (
         <div style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
+            position: 'relative', // Changed from fixed
+            // bottom, left, right removed
+            width: '100%', // Ensure full width
             height: '68px',
             background: '#ffffff',
             borderTop: '1px solid #e8e8e8',
