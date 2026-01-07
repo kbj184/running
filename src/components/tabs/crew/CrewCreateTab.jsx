@@ -282,7 +282,13 @@ function CrewCreateTab({ user, onCreate }) {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{
+            padding: '20px',
+            maxWidth: '800px',
+            margin: '0 auto',
+            maxHeight: 'calc(100vh - var(--header-height) - 60px)',
+            overflowY: 'auto'
+        }}>
             <h2 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '800' }}>새 크루 만들기</h2>
 
             {error && (

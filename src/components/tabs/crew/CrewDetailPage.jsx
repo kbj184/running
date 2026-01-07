@@ -203,7 +203,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
         try {
             setActionLoading(true);
             const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/leave`, {
-                method: 'POST',
+                method: 'DELETE',
                 headers: getAuthHeaders()
             });
             if (response.ok) {
