@@ -734,13 +734,24 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                     return (
                                         <div
                                             key={member.id}
+                                            onClick={() => navigate(`/user/${member.userId}/profile`)}
                                             style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: '12px',
                                                 padding: '12px',
                                                 backgroundColor: '#f8f9fa',
-                                                borderRadius: '12px'
+                                                borderRadius: '12px',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#e9ecef';
+                                                e.currentTarget.style.transform = 'translateX(4px)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#f8f9fa';
+                                                e.currentTarget.style.transform = 'translateX(0)';
                                             }}
                                         >
                                             {/* 프로필 이미지 */}

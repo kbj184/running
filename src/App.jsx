@@ -45,6 +45,7 @@ import RunningScreen from './components/RunningScreen';
 import ResultScreen from './components/ResultScreen';
 import LoginScreen from './components/auth/LoginScreen';
 import NicknameRegistration from './components/auth/NicknameRegistration';
+import UserProfileScreen from './components/UserProfileScreen';
 
 // Existing Modals
 
@@ -556,6 +557,9 @@ function App() {
                                         </ProfileMenu>
                                     } />
                                 </Route>
+
+                                {/* User Profile - 독립적인 풀페이지 라우트 */}
+                                <Route path="/user/:userId/profile" element={<UserProfileScreen />} />
                             </Route>
                         </Routes>
                     )
