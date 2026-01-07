@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ProfileSubHeader from '../layout/ProfileSubHeader';
 
-function ProfileMenu({ profileTab, children }) {
+function ProfileMenu({ profileTab, children, unreadCount }) {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -25,6 +25,7 @@ function ProfileMenu({ profileTab, children }) {
                 <ProfileSubHeader
                     profileTab={currentTab}
                     onTabChange={handleTabChange}
+                    unreadCount={unreadCount}
                 />
             </div>
 

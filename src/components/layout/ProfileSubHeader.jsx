@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-function ProfileSubHeader({ profileTab, onTabChange }) {
+function ProfileSubHeader({ profileTab, onTabChange, unreadCount }) {
     const { t } = useTranslation();
 
     return (
@@ -70,10 +70,32 @@ function ProfileSubHeader({ profileTab, onTabChange }) {
                         transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        position: 'relative'
                     }}
                 >
                     <span>🔔</span>
+                    {unreadCount > 0 && (
+                        <span style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: 'calc(50% - 14px)',
+                            backgroundColor: '#ff4d4f',
+                            color: 'white',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            height: '16px',
+                            minWidth: '16px',
+                            padding: '0 4px',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 0 0 2px #fff'
+                        }}>
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                    )}
                 </button>
                 <button
                     onClick={() => onTabChange('settings')}

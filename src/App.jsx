@@ -90,6 +90,33 @@ function App() {
     // Initialize FCM
     useFcm(user);
 
+    // Notification State
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const fetchUnreadCount = async () => {
+        if (!user) return;
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/notifications/unread-count`, {
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setUnreadCount(data.count);
+            }
+        } catch (error) {
+            console.error('Failed to fetch unread count:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (user) {
+            fetchUnreadCount();
+        }
+    }, [user, activeTab]); // Refresh on tab change
+
+
     // Token Refresh Event Listener
     useEffect(() => {
         const handleTokenRefresh = (e) => {
@@ -550,11 +577,13 @@ function App() {
                                     } />
                                 </Route>
 
-                                {/* Profile Tab - URL 기반 서브 라우팅 */}
+
+
+                                /* Profile Tab - URL 기반 서브 라우팅 */
                                 <Route path="profile">
                                     <Route index element={<Navigate to="records" replace />} />
                                     <Route path="records" element={
-                                        <ProfileMenu profileTab="records">
+                                        <ProfileMenu profileTab="records" unreadCount={unreadCount}>
                                             <MyRecordsTab
                                                 refreshRecords={refreshRecords}
                                                 onRecordClick={handleRecordClick}
@@ -563,17 +592,23 @@ function App() {
                                         </ProfileMenu>
                                     } />
                                     <Route path="info" element={
-                                        <ProfileMenu profileTab="info">
+                                        <ProfileMenu profileTab="info" unreadCount={unreadCount}>
                                             <MyInfoTab user={user} />
                                         </ProfileMenu>
                                     } />
                                     <Route path="notifications" element={
-                                        <ProfileMenu profileTab="notifications">
-                                            <MyNotificationsTab user={user} />
+                                        <ProfileMenu profileTab="notifications" unreadCount={unreadCount}>
+                                            <MyNotificationsTab
+                                                user={user}
+                                                onRead={() => {
+                                                    // Decrease global count locally or re-fetch
+                                                    setUnreadCount(prev => Math.max(0, prev - 1));
+                                                }}
+                                            />
                                         </ProfileMenu>
                                     } />
                                     <Route path="settings" element={
-                                        <ProfileMenu profileTab="settings">
+                                        <ProfileMenu profileTab="settings" unreadCount={unreadCount}>
                                             <SettingsTab
                                                 user={user}
                                                 onLogout={handleLogout}

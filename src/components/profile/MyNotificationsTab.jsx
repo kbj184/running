@@ -90,7 +90,7 @@ const NotificationItem = ({ notification, onRead }) => {
     );
 };
 
-function MyNotificationsTab({ user }) {
+function MyNotificationsTab({ user, onRead }) {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
@@ -137,6 +137,11 @@ function MyNotificationsTab({ user }) {
                 setNotifications(prev => prev.map(n =>
                     n.id === notification.id ? { ...n, read: true } : n
                 ));
+
+                // Callback to update global unread count
+                if (onRead) {
+                    onRead();
+                }
             } catch (error) {
                 console.error('Failed to mark as read:', error);
             }
