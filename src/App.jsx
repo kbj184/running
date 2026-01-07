@@ -7,6 +7,7 @@ import { RUNNER_GRADES } from './constants/runnerGrades';
 import { generateRunners } from './utils/runnerUtils';
 import { deleteSession } from './utils/db';
 import { api } from './utils/api';
+import { useFcm } from './hooks/useFcm';
 
 // Google Maps 라이브러리 배열을 상수로 선언 (재렌더링 시 재생성 방지)
 const GOOGLE_MAPS_LIBRARIES = ['marker', 'places'];
@@ -84,6 +85,9 @@ function App() {
 
     // Modal State
     const [showRunnerGradeModal, setShowRunnerGradeModal] = useState(false);
+
+    // Initialize FCM
+    useFcm(user);
 
     // Token Refresh Event Listener
     useEffect(() => {
