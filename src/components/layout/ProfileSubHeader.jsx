@@ -56,6 +56,26 @@ function ProfileSubHeader({ profileTab, onTabChange }) {
                     {t('profile.tabs.info')}
                 </button>
                 <button
+                    onClick={() => onTabChange('notifications')}
+                    style={{
+                        flex: 1,
+                        padding: '16px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        borderBottom: profileTab === 'notifications' ? '3px solid #1a1a1a' : '3px solid transparent',
+                        color: profileTab === 'notifications' ? '#1a1a1a' : '#888',
+                        fontWeight: profileTab === 'notifications' ? '700' : '500',
+                        fontSize: '15px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
+                    <span>🔔</span>
+                </button>
+                <button
                     onClick={() => onTabChange('settings')}
                     style={{
                         flex: 1,

@@ -29,6 +29,7 @@ import MyRunTab from './components/tabs/MyRunTab';
 import ProfileMenu from './components/profile/ProfileMenu';
 import MyRecordsTab from './components/profile/MyRecordsTab';
 import MyInfoTab from './components/profile/MyInfoTab';
+import MyNotificationsTab from './components/profile/MyNotificationsTab';
 import SettingsTab from './components/profile/SettingsTab';
 
 // Crew Components
@@ -549,6 +550,11 @@ function App() {
                                     <Route path="info" element={
                                         <ProfileMenu profileTab="info">
                                             <MyInfoTab user={user} />
+                                        </ProfileMenu>
+                                    } />
+                                    <Route path="notifications" element={
+                                        <ProfileMenu profileTab="notifications">
+                                            <MyNotificationsTab user={user} />
                                         </ProfileMenu>
                                     } />
                                     <Route path="settings" element={
