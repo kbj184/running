@@ -31,7 +31,7 @@ export function useFcm(user) {
         } catch (error) {
             console.error('Error requesting notification permission:', error);
         }
-    }, []);
+    }, [user]);
 
     // Get FCM token
     const getFcmToken = async () => {
@@ -50,6 +50,8 @@ export function useFcm(user) {
                 // Send token to server
                 if (user && user.accessToken) {
                     await sendTokenToServer(token);
+                } else {
+                    console.warn('⚠️ FCM Token generated but user not ready to save yet (accessToken missing)');
                 }
             } else {
                 console.warn('No FCM token available');
