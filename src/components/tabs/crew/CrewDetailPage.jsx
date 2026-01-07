@@ -734,7 +734,6 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                     return (
                                         <div
                                             key={member.id}
-                                            onClick={() => navigate(`/user/${member.userId}/profile`)}
                                             style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
@@ -742,7 +741,6 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                                 padding: '12px',
                                                 backgroundColor: '#f8f9fa',
                                                 borderRadius: '12px',
-                                                cursor: 'pointer',
                                                 transition: 'all 0.2s'
                                             }}
                                             onMouseEnter={(e) => {
@@ -754,18 +752,22 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                                 e.currentTarget.style.transform = 'translateX(0)';
                                             }}
                                         >
-                                            {/* 프로필 이미지 */}
-                                            <div style={{
-                                                width: '48px',
-                                                height: '48px',
-                                                borderRadius: '50%',
-                                                overflow: 'hidden',
-                                                backgroundColor: '#e0e0e0',
-                                                flexShrink: 0,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
+                                            {/* 프로필 이미지 (클릭 시 이동) */}
+                                            <div
+                                                onClick={() => navigate(`/user/${member.userId}/profile`)}
+                                                style={{
+                                                    width: '48px',
+                                                    height: '48px',
+                                                    borderRadius: '50%',
+                                                    overflow: 'hidden',
+                                                    backgroundColor: '#e0e0e0',
+                                                    flexShrink: 0,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
                                                 {profileImage ? (
                                                     <img src={profileImage} alt={member.nickname} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 ) : (
@@ -776,7 +778,15 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                             {/* 멤버 정보 */}
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                                    <span style={{ fontSize: '15px', fontWeight: '600', color: '#1a1a1a' }}>
+                                                    <span
+                                                        onClick={() => navigate(`/user/${member.userId}/profile`)}
+                                                        style={{
+                                                            fontSize: '15px',
+                                                            fontWeight: '600',
+                                                            color: '#1a1a1a',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
                                                         {member.nickname}
                                                     </span>
                                                     {member.role === 'captain' && (
@@ -801,7 +811,10 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                                         {userRole?.toUpperCase() === 'CAPTAIN' ? (
                                                             <>
                                                                 <button
-                                                                    onClick={() => handleApproveMember(member.userId)}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleApproveMember(member.userId);
+                                                                    }}
                                                                     style={{
                                                                         padding: '6px 12px',
                                                                         backgroundColor: '#10b981',
@@ -816,7 +829,10 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                                                     승인
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => handleRejectMember(member.userId)}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleRejectMember(member.userId);
+                                                                    }}
                                                                     style={{
                                                                         padding: '6px 12px',
                                                                         backgroundColor: '#ef4444',
