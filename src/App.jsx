@@ -96,9 +96,21 @@ function App() {
     // Listen for incoming notifications to update unread count
     useEffect(() => {
         if (incomingNotification) {
-            setUnreadCount(prev => prev + 1);
+            console.log("🔔 Notification received, refreshing unread count");
+            fetchUnreadCount();
         }
     }, [incomingNotification]);
+
+    // Refetch count when app becomes visible/focused
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && user) {
+                fetchUnreadCount();
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [user]);
 
     const fetchUnreadCount = async () => {
         if (!user) return;
