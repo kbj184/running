@@ -112,10 +112,12 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
 
     useEffect(() => {
         if (crew) {
-            console.log('Crew data (full):', JSON.stringify(crew, null, 2));
-            fetchMembers();
+            // console.log('Crew data (full):', JSON.stringify(crew, null, 2));
+            if (activeTab === 'members') {
+                fetchMembers();
+            }
         }
-    }, [crew]);
+    }, [crew, activeTab]);
 
     useEffect(() => {
         const handleScroll = () => {
