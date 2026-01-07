@@ -7,11 +7,30 @@ import CrewDetailPage from './crew/CrewDetailPage';
 import CrewSubHeader from '../layout/CrewSubHeader';
 import CrewEditPage from './crew/CrewEditPage';
 
+import { api } from '../../utils/api';
+
 function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabChange }) {
     const location = useLocation();
     const navigate = useNavigate();
     const [selectedCrew, setSelectedCrew] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+
+    const fetchCrewDetail = async (crewId) => {
+        if (!user) return;
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crewId}`, {
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setSelectedCrew(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch crew detail:', error);
+        }
+    };
 
     // URL 기반 크루 상세 페이지 감지
     useEffect(() => {
@@ -19,18 +38,21 @@ function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabCh
         // URL 구조: /crew/detail/:id
         if (pathParts[2] === 'detail' && pathParts[3]) {
             const crewId = parseInt(pathParts[3]);
-            // state에서 먼저 찾고, 없으면 allCrews에서 찾기 (새로고침 시 allCrews 로딩 대기 필요할 수 있음)
+            // state에서 먼저 찾고, 없으면 allCrews에서 찾기
             const crew = location.state?.crew || allCrews.find(c => c.id === crewId);
             if (crew) {
                 setSelectedCrew(crew);
                 setIsEditing(false);
+            } else {
+                // 목록에 없으면(딥링크 등) 직접 패치
+                fetchCrewDetail(crewId);
             }
         } else {
             // 상세 페이지가 아니면 크루 선택 해제 (브라우저 뒤로가기 지원)
             setSelectedCrew(null);
             setIsEditing(false);
         }
-    }, [location.pathname, allCrews, location.state]);
+    }, [location.pathname, allCrews, location.state, user]);
 
     const handleCrewCreated = (newCrew) => {
         if (onCrewTabChange) {
