@@ -129,7 +129,7 @@ function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabCh
                 {crewTab === 'create' && (
                     <CrewCreateTab
                         user={user}
-                        onCrewCreated={handleCrewCreated}
+                        onCreate={handleCrewCreated}
                     />
                 )}
 
