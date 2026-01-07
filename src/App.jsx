@@ -88,10 +88,17 @@ function App() {
     const [showRunnerGradeModal, setShowRunnerGradeModal] = useState(false);
 
     // Initialize FCM
-    useFcm(user);
+    const { notification: incomingNotification } = useFcm(user);
 
     // Notification State
     const [unreadCount, setUnreadCount] = useState(0);
+
+    // Listen for incoming notifications to update unread count
+    useEffect(() => {
+        if (incomingNotification) {
+            setUnreadCount(prev => prev + 1);
+        }
+    }, [incomingNotification]);
 
     const fetchUnreadCount = async () => {
         if (!user) return;
