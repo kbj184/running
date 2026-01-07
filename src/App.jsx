@@ -578,7 +578,7 @@ function App() {
                                     <Route path="create" element={
                                         <CrewCreateTab
                                             user={user}
-                                            onCrewCreated={() => {
+                                            onCreate={() => {
                                                 window.location.href = '/crew';
                                                 fetchCrews();
                                             }}
