@@ -16,6 +16,12 @@ function ChatRoomScreen() {
     const currentUser = JSON.parse(localStorage.getItem('running_user'));
 
     useEffect(() => {
+        // Get other user nickname from URL state if available
+        const state = window.history.state?.usr;
+        if (state?.otherUserNickname) {
+            setOtherUser({ nickname: state.otherUserNickname });
+        }
+
         fetchMessages();
         markAsRead();
 

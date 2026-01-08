@@ -452,7 +452,9 @@ function UserProfileScreen() {
                                         });
                                         if (response.ok) {
                                             const data = await response.json();
-                                            navigate(`/chat/${data.roomId}`);
+                                            navigate(`/chat/${data.roomId}`, {
+                                                state: { otherUserNickname: data.otherUserNickname || profile?.nickname }
+                                            });
                                         }
                                     } catch (error) {
                                         console.error('Failed to create chat room:', error);
