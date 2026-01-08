@@ -160,7 +160,7 @@ function PostDetailPage({ postId, crew, user, userRole, onBack, onEdit }) {
 
         try {
             const response = await api.request(`${import.meta.env.VITE_API_URL}/board/posts/${post.id}/filter`, {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
                 }
@@ -183,7 +183,7 @@ function PostDetailPage({ postId, crew, user, userRole, onBack, onEdit }) {
 
         try {
             const response = await api.request(`${import.meta.env.VITE_API_URL}/board/comments/${commentId}/filter`, {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
                 }

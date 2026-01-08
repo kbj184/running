@@ -83,7 +83,7 @@ function CrewBoardTab({ crew, user, userRole, onPostClick, onCreatePost, onBack 
 
         try {
             const response = await api.request(`${import.meta.env.VITE_API_URL}/board/posts/${post.id}/filter`, {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
                 }
