@@ -49,6 +49,8 @@ import ResultScreen from './components/ResultScreen';
 import LoginScreen from './components/auth/LoginScreen';
 import NicknameRegistration from './components/auth/NicknameRegistration';
 import UserProfileScreen from './components/UserProfileScreen';
+import ChatListScreen from './components/ChatListScreen';
+import ChatRoomScreen from './components/ChatRoomScreen';
 
 // Existing Modals
 
@@ -646,6 +648,9 @@ function App() {
                                 {/* User Profile - 독립적인 풀페이지 라우트 */}
                                 <Route path="/user/:userId/profile" element={<UserProfileScreen />} />
                             </Route>
+                            {/* Chat - 독립적인 풀페이지 라우트 */}
+                            <Route path="/chat" element={<ChatListScreen />} />
+                            <Route path="/chat/:roomId" element={<ChatRoomScreen />} />
                         </Routes>
                     )
                 )}

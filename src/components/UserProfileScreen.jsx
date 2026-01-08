@@ -410,30 +410,70 @@ function UserProfileScreen() {
                         </div>
                     </div>
 
-                    {/* Follow Button - Only show for other users' profiles */}
+                    {/* Action Buttons - Only show for other users' profiles */}
                     {!isOwnProfile() && (
-                        <button
-                            onClick={handleFollowToggle}
-                            disabled={followLoading}
-                            style={{
-                                padding: '12px 32px',
-                                backgroundColor: followStatus.isFollowing ? '#f5f5f5' : '#FF9A56',
-                                color: followStatus.isFollowing ? '#666' : '#fff',
-                                border: followStatus.isFollowing ? '1px solid #e0e0e0' : 'none',
-                                borderRadius: '8px',
-                                fontSize: '15px',
-                                fontWeight: '600',
-                                cursor: followLoading ? 'not-allowed' : 'pointer',
-                                transition: 'all 0.2s',
-                                opacity: followLoading ? 0.6 : 1
-                            }}
-                        >
-                            {followLoading ? '처리중...' :
-                                followStatus.isMutual ? '맞팔로우' :
-                                    followStatus.isFollowing ? '팔로잉' :
-                                        followStatus.isFollower ? '팔로우 백' :
-                                            '팔로우'}
-                        </button>
+                        <div style={{
+                            display: 'flex',
+                            gap: '8px',
+                            justifyContent: 'center'
+                        }}>
+                            <button
+                                onClick={handleFollowToggle}
+                                disabled={followLoading}
+                                style={{
+                                    flex: 1,
+                                    padding: '12px 24px',
+                                    backgroundColor: followStatus.isFollowing ? '#f5f5f5' : '#FF9A56',
+                                    color: followStatus.isFollowing ? '#666' : '#fff',
+                                    border: followStatus.isFollowing ? '1px solid #e0e0e0' : 'none',
+                                    borderRadius: '8px',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    cursor: followLoading ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.2s',
+                                    opacity: followLoading ? 0.6 : 1
+                                }}
+                            >
+                                {followLoading ? '처리중...' :
+                                    followStatus.isMutual ? '맞팔로우' :
+                                        followStatus.isFollowing ? '팔로잉' :
+                                            followStatus.isFollower ? '팔로우 백' :
+                                                '팔로우'}
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const user = JSON.parse(localStorage.getItem('running_user'));
+                                        const response = await api.request(`${import.meta.env.VITE_API_URL}/api/chat/room/${userId}`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                                            }
+                                        });
+                                        if (response.ok) {
+                                            const data = await response.json();
+                                            navigate(`/chat/${data.roomId}`);
+                                        }
+                                    } catch (error) {
+                                        console.error('Failed to create chat room:', error);
+                                    }
+                                }}
+                                style={{
+                                    flex: 1,
+                                    padding: '12px 24px',
+                                    backgroundColor: '#fff',
+                                    color: '#FF9A56',
+                                    border: '1px solid #FF9A56',
+                                    borderRadius: '8px',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                💬 메시지
+                            </button>
+                        </div>
                     )}
                 </div>
 
