@@ -556,77 +556,82 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 >
                     소개
                 </button>
-                <button
-                    onClick={() => handleTabChange('course')}
-                    style={{
-                        flex: 1,
-                        padding: '14px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        borderBottom: activeTab === 'course' ? '3px solid #FF9A56' : '3px solid transparent',
-                        fontSize: '15px',
-                        fontWeight: activeTab === 'course' ? '700' : '600',
-                        color: activeTab === 'course' ? '#FF9A56' : '#666',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                    }}
-                >
-                    코스
-                </button>
-                <button
-                    onClick={() => handleTabChange('members')}
-                    style={{
-                        flex: 1,
-                        padding: '14px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        borderBottom: activeTab === 'members' ? '3px solid #FF9A56' : '3px solid transparent',
-                        fontSize: '15px',
-                        fontWeight: activeTab === 'members' ? '700' : '600',
-                        color: activeTab === 'members' ? '#FF9A56' : '#666',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                    }}
-                >
-                    멤버
-                </button>
-                <button
-                    onClick={() => handleTabChange('notice')}
-                    style={{
-                        flex: 1,
-                        padding: '14px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        borderBottom: activeTab === 'notice' ? '3px solid #FF9A56' : '3px solid transparent',
-                        fontSize: '15px',
-                        fontWeight: activeTab === 'notice' ? '700' : '600',
-                        color: activeTab === 'notice' ? '#FF9A56' : '#666',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                    }}
-                >
-                    공지사항
-                </button>
-                <button
-                    onClick={() => {
-                        handleTabChange('board');
-                        setBoardView('list');
-                    }}
-                    style={{
-                        flex: 1,
-                        padding: '14px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        borderBottom: activeTab === 'board' ? '3px solid #FF9A56' : '3px solid transparent',
-                        fontSize: '15px',
-                        fontWeight: activeTab === 'board' ? '700' : '600',
-                        color: activeTab === 'board' ? '#FF9A56' : '#666',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                    }}
-                >
-                    게시판
-                </button>
+                {/* 크루 멤버만 다른 탭 접근 가능 */}
+                {userStatus === 'APPROVED' && (
+                    <>
+                        <button
+                            onClick={() => handleTabChange('course')}
+                            style={{
+                                flex: 1,
+                                padding: '14px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                borderBottom: activeTab === 'course' ? '3px solid #FF9A56' : '3px solid transparent',
+                                fontSize: '15px',
+                                fontWeight: activeTab === 'course' ? '700' : '600',
+                                color: activeTab === 'course' ? '#FF9A56' : '#666',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            코스
+                        </button>
+                        <button
+                            onClick={() => handleTabChange('members')}
+                            style={{
+                                flex: 1,
+                                padding: '14px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                borderBottom: activeTab === 'members' ? '3px solid #FF9A56' : '3px solid transparent',
+                                fontSize: '15px',
+                                fontWeight: activeTab === 'members' ? '700' : '600',
+                                color: activeTab === 'members' ? '#FF9A56' : '#666',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            멤버
+                        </button>
+                        <button
+                            onClick={() => handleTabChange('notice')}
+                            style={{
+                                flex: 1,
+                                padding: '14px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                borderBottom: activeTab === 'notice' ? '3px solid #FF9A56' : '3px solid transparent',
+                                fontSize: '15px',
+                                fontWeight: activeTab === 'notice' ? '700' : '600',
+                                color: activeTab === 'notice' ? '#FF9A56' : '#666',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            공지사항
+                        </button>
+                        <button
+                            onClick={() => {
+                                handleTabChange('board');
+                                setBoardView('list');
+                            }}
+                            style={{
+                                flex: 1,
+                                padding: '14px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                borderBottom: activeTab === 'board' ? '3px solid #FF9A56' : '3px solid transparent',
+                                fontSize: '15px',
+                                fontWeight: activeTab === 'board' ? '700' : '600',
+                                color: activeTab === 'board' ? '#FF9A56' : '#666',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            게시판
+                        </button>
+                    </>
+                )}
             </div>
 
             {isTabFixed && <div style={{ height: '50px' }} />}
