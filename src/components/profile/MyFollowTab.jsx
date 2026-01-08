@@ -228,7 +228,7 @@ function MyFollowTab({ user }) {
                 display: 'flex',
                 gap: '8px',
                 marginBottom: '20px',
-                borderBottom: '2px solid #f0f0f0'
+                borderBottom: '2px solid rgba(255,255,255,0.1)'
             }}>
                 <button
                     onClick={() => setActiveSubTab('followers')}
@@ -237,8 +237,8 @@ function MyFollowTab({ user }) {
                         padding: '12px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        borderBottom: activeSubTab === 'followers' ? '3px solid #1a1a1a' : '3px solid transparent',
-                        color: activeSubTab === 'followers' ? '#1a1a1a' : '#888',
+                        borderBottom: activeSubTab === 'followers' ? '3px solid #FF9A56' : '3px solid transparent',
+                        color: activeSubTab === 'followers' ? '#fff' : 'rgba(255,255,255,0.6)',
                         fontWeight: activeSubTab === 'followers' ? '700' : '500',
                         fontSize: '14px',
                         cursor: 'pointer',
@@ -254,8 +254,8 @@ function MyFollowTab({ user }) {
                         padding: '12px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        borderBottom: activeSubTab === 'following' ? '3px solid #1a1a1a' : '3px solid transparent',
-                        color: activeSubTab === 'following' ? '#1a1a1a' : '#888',
+                        borderBottom: activeSubTab === 'following' ? '3px solid #FF9A56' : '3px solid transparent',
+                        color: activeSubTab === 'following' ? '#fff' : 'rgba(255,255,255,0.6)',
                         fontWeight: activeSubTab === 'following' ? '700' : '500',
                         fontSize: '14px',
                         cursor: 'pointer',
@@ -271,8 +271,8 @@ function MyFollowTab({ user }) {
                         padding: '12px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        borderBottom: activeSubTab === 'mutual' ? '3px solid #1a1a1a' : '3px solid transparent',
-                        color: activeSubTab === 'mutual' ? '#1a1a1a' : '#888',
+                        borderBottom: activeSubTab === 'mutual' ? '3px solid #FF9A56' : '3px solid transparent',
+                        color: activeSubTab === 'mutual' ? '#fff' : 'rgba(255,255,255,0.6)',
                         fontWeight: activeSubTab === 'mutual' ? '700' : '500',
                         fontSize: '14px',
                         cursor: 'pointer',

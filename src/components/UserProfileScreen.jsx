@@ -107,6 +107,11 @@ function UserProfileScreen() {
         }
     };
 
+    const isOwnProfile = () => {
+        const user = JSON.parse(localStorage.getItem('running_user'));
+        return user && user.id && user.id.toString() === userId;
+    };
+
     const handleBack = () => {
         navigate(-1);
     };
@@ -405,29 +410,31 @@ function UserProfileScreen() {
                         </div>
                     </div>
 
-                    {/* Follow Button */}
-                    <button
-                        onClick={handleFollowToggle}
-                        disabled={followLoading}
-                        style={{
-                            padding: '12px 32px',
-                            backgroundColor: followStatus.isFollowing ? '#f5f5f5' : '#FF9A56',
-                            color: followStatus.isFollowing ? '#666' : '#fff',
-                            border: followStatus.isFollowing ? '1px solid #e0e0e0' : 'none',
-                            borderRadius: '8px',
-                            fontSize: '15px',
-                            fontWeight: '600',
-                            cursor: followLoading ? 'not-allowed' : 'pointer',
-                            transition: 'all 0.2s',
-                            opacity: followLoading ? 0.6 : 1
-                        }}
-                    >
-                        {followLoading ? '처리중...' :
-                            followStatus.isMutual ? '맞팔로우' :
-                                followStatus.isFollowing ? '팔로잉' :
-                                    followStatus.isFollower ? '팔로우 백' :
-                                        '팔로우'}
-                    </button>
+                    {/* Follow Button - Only show for other users' profiles */}
+                    {!isOwnProfile() && (
+                        <button
+                            onClick={handleFollowToggle}
+                            disabled={followLoading}
+                            style={{
+                                padding: '12px 32px',
+                                backgroundColor: followStatus.isFollowing ? '#f5f5f5' : '#FF9A56',
+                                color: followStatus.isFollowing ? '#666' : '#fff',
+                                border: followStatus.isFollowing ? '1px solid #e0e0e0' : 'none',
+                                borderRadius: '8px',
+                                fontSize: '15px',
+                                fontWeight: '600',
+                                cursor: followLoading ? 'not-allowed' : 'pointer',
+                                transition: 'all 0.2s',
+                                opacity: followLoading ? 0.6 : 1
+                            }}
+                        >
+                            {followLoading ? '처리중...' :
+                                followStatus.isMutual ? '맞팔로우' :
+                                    followStatus.isFollowing ? '팔로잉' :
+                                        followStatus.isFollower ? '팔로우 백' :
+                                            '팔로우'}
+                        </button>
+                    )}
                 </div>
 
                 {/* Statistics Grid */}
