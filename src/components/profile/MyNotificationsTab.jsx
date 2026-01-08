@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 
-const NotificationItem = ({ notification, onRead }) => {
+const NotificationItem = ({ notification, onRead, onDelete }) => {
+    const navigate = useNavigate();
     const isRead = notification.read;
+    const [showDelete, setShowDelete] = useState(false);
 
     // Format date relative to now
     const formatDate = (dateString) => {
@@ -27,9 +30,27 @@ const NotificationItem = ({ notification, onRead }) => {
         }
     };
 
+    const handleClick = () => {
+        // Mark as read first
+        onRead(notification);
+
+        // Navigate based on relatedUrl
+        if (notification.relatedUrl && notification.relatedUrl !== '/') {
+            console.log("Navigating to:", notification.relatedUrl);
+            navigate(notification.relatedUrl);
+        }
+    };
+
+    const handleDeleteClick = (e) => {
+        e.stopPropagation(); // Prevent navigation when clicking delete
+        if (window.confirm('이 알림을 삭제하시겠습니까?')) {
+            onDelete(notification.id);
+        }
+    };
+
     return (
         <div
-            onClick={() => onRead(notification)}
+            onClick={handleClick}
             style={{
                 padding: '16px',
                 backgroundColor: isRead ? '#fff' : '#fff9f0',
@@ -37,7 +58,8 @@ const NotificationItem = ({ notification, onRead }) => {
                 display: 'flex',
                 gap: '12px',
                 cursor: 'pointer',
-                transition: 'background-color 0.2s'
+                transition: 'background-color 0.2s',
+                position: 'relative'
             }}
         >
             <div style={{
@@ -49,11 +71,12 @@ const NotificationItem = ({ notification, onRead }) => {
                 height: '40px',
                 borderRadius: '50%',
                 backgroundColor: isRead ? '#f5f5f5' : '#fff',
-                border: isRead ? 'none' : '1px solid #FF9A56'
+                border: isRead ? 'none' : '1px solid #FF9A56',
+                flexShrink: 0
             }}>
                 {getIcon(notification.type)}
             </div>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                     fontSize: '14px',
                     fontWeight: isRead ? '500' : '700',
@@ -77,15 +100,43 @@ const NotificationItem = ({ notification, onRead }) => {
                     {formatDate(notification.createdDate)}
                 </div>
             </div>
-            {!isRead && (
-                <div style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: '#FF9A56',
-                    marginTop: '8px'
-                }} />
-            )}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+            }}>
+                {!isRead && (
+                    <div style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: '#FF9A56'
+                    }} />
+                )}
+                <button
+                    onClick={handleDeleteClick}
+                    style={{
+                        padding: '6px 10px',
+                        fontSize: '12px',
+                        color: '#999',
+                        backgroundColor: 'transparent',
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.target.style.color = '#ff4444';
+                        e.target.style.borderColor = '#ff4444';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.target.style.color = '#999';
+                        e.target.style.borderColor = '#e0e0e0';
+                    }}
+                >
+                    삭제
+                </button>
+            </div>
         </div>
     );
 };
@@ -146,13 +197,29 @@ function MyNotificationsTab({ user, onRead }) {
                 console.error('Failed to mark as read:', error);
             }
         }
+    };
 
-        // Navigate if there is a related URL
-        // Currently we just alert for demo or if url parsing is needed
-        if (notification.relatedUrl && notification.relatedUrl !== '/') {
-            // naive navigation - in real app use useNavigate or window.location depending on router
-            // Since we are inside a tab, we probably want useNavigate but we need to check if it's internal or external
-            console.log("Navigating to:", notification.relatedUrl);
+    const handleDelete = async (notificationId) => {
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/notifications/${notificationId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                // Remove from local state
+                setNotifications(prev => prev.filter(n => n.id !== notificationId));
+
+                // Update unread count if needed
+                if (onRead) {
+                    onRead();
+                }
+            }
+        } catch (error) {
+            console.error('Failed to delete notification:', error);
+            alert('알림 삭제에 실패했습니다.');
         }
     };
 
@@ -188,6 +255,7 @@ function MyNotificationsTab({ user, onRead }) {
                     key={notification.id}
                     notification={notification}
                     onRead={handleRead}
+                    onDelete={handleDelete}
                 />
             ))}
 
