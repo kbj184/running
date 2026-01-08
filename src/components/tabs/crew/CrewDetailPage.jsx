@@ -329,6 +329,30 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
         }
     };
 
+    const handleUnkickMember = async (memberId, nickname) => {
+        if (!confirm(`${nickname} 님의 강퇴를 해제하시겠습니까?\n해제 후 다시 가입할 수 있습니다.`)) return;
+
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members/${memberId}/unkick`, {
+                method: 'PUT',
+                headers: getAuthHeaders()
+            });
+
+            if (response.ok) {
+                alert('강퇴가 해제되었습니다.');
+                fetchMembers();
+            } else {
+                const error = await response.text();
+                alert(error || '강퇴 해제 실패');
+            }
+        } catch (error) {
+            console.error('Unkick member error:', error);
+            alert('오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
 
 
     // 게시판 핸들러
@@ -783,207 +807,256 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
 
                 {activeTab === 'members' && (
                     <div style={{ padding: '20px' }}>
-                        <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#1a1a1a' }}>
-                            크루 멤버 ({members.length})
-                        </h3>
-                        {loading ? (
-                            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
-                                로딩 중...
-                            </div>
-                        ) : members.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
-                                아직 멤버가 없습니다.
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {members.map(member => {
-                                    // 프로필 이미지 파싱
-                                    let profileImage = null;
-                                    try {
-                                        if (member.nicknameImage) {
-                                            const parsed = JSON.parse(member.nicknameImage);
-                                            profileImage = parsed.url || null;
-                                        }
-                                    } catch {
-                                        if (member.nicknameImage && member.nicknameImage.startsWith('http')) {
-                                            profileImage = member.nicknameImage;
-                                        }
-                                    }
+                        {(() => {
+                            // 일반 멤버: APPROVED만 표시, 크루장: 모든 멤버 표시
+                            const visibleMembers = isCaptain
+                                ? members
+                                : members.filter(m => m.status === 'APPROVED');
 
-                                    return (
-                                        <div
-                                            key={member.id}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '12px',
-                                                padding: '12px',
-                                                backgroundColor: '#f8f9fa',
-                                                borderRadius: '12px',
-                                                transition: 'all 0.2s'
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = '#e9ecef';
-                                                e.currentTarget.style.transform = 'translateX(4px)';
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = '#f8f9fa';
-                                                e.currentTarget.style.transform = 'translateX(0)';
-                                            }}
-                                        >
-                                            {/* 프로필 이미지 (클릭 시 이동) */}
-                                            <div
-                                                onClick={() => navigate(`/user/${member.userId}/profile`)}
-                                                style={{
-                                                    width: '48px',
-                                                    height: '48px',
-                                                    borderRadius: '50%',
-                                                    overflow: 'hidden',
-                                                    backgroundColor: '#e0e0e0',
-                                                    flexShrink: 0,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                {profileImage ? (
-                                                    <img src={profileImage} alt={member.nickname} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                ) : (
-                                                    <span style={{ fontSize: '24px' }}>👤</span>
-                                                )}
-                                            </div>
+                            return (
+                                <>
+                                    <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700', color: '#1a1a1a' }}>
+                                        크루 멤버 ({visibleMembers.length})
+                                    </h3>
+                                    {loading ? (
+                                        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+                                            로딩 중...
+                                        </div>
+                                    ) : visibleMembers.length === 0 ? (
+                                        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+                                            아직 멤버가 없습니다.
+                                        </div>
+                                    ) : (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                            {visibleMembers.map(member => {
+                                                // 프로필 이미지 파싱
+                                                let profileImage = null;
+                                                try {
+                                                    if (member.nicknameImage) {
+                                                        const parsed = JSON.parse(member.nicknameImage);
+                                                        profileImage = parsed.url || null;
+                                                    }
+                                                } catch {
+                                                    if (member.nicknameImage && member.nicknameImage.startsWith('http')) {
+                                                        profileImage = member.nicknameImage;
+                                                    }
+                                                }
 
-                                            {/* 멤버 정보 */}
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                                    <span
-                                                        onClick={() => navigate(`/user/${member.userId}/profile`)}
+                                                return (
+                                                    <div
+                                                        key={member.id}
                                                         style={{
-                                                            fontSize: '15px',
-                                                            fontWeight: '600',
-                                                            color: '#1a1a1a',
-                                                            cursor: 'pointer'
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '12px',
+                                                            padding: '12px',
+                                                            backgroundColor: '#f8f9fa',
+                                                            borderRadius: '12px',
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.backgroundColor = '#e9ecef';
+                                                            e.currentTarget.style.transform = 'translateX(4px)';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.backgroundColor = '#f8f9fa';
+                                                            e.currentTarget.style.transform = 'translateX(0)';
                                                         }}
                                                     >
-                                                        {member.nickname}
-                                                    </span>
-                                                    {member.role === 'captain' && (
-                                                        <span style={{
-                                                            fontSize: '11px',
-                                                            fontWeight: '700',
-                                                            color: '#FF9A56',
-                                                            backgroundColor: 'rgba(255, 154, 86, 0.15)',
-                                                            padding: '2px 8px',
-                                                            borderRadius: '10px'
-                                                        }}>
-                                                            크루장
-                                                        </span>
-                                                    )}
-                                                    {member.role === 'vice_captain' && (
-                                                        <span style={{
-                                                            fontSize: '11px',
-                                                            fontWeight: '700',
-                                                            color: '#3b82f6',
-                                                            backgroundColor: 'rgba(59, 130, 246, 0.15)',
-                                                            padding: '2px 8px',
-                                                            borderRadius: '10px'
-                                                        }}>
-                                                            부크루장
-                                                        </span>
-                                                    )}
-
-                                                </div>
-
-                                                {/* Role Management (Captain Only) */}
-                                                {userRole === 'captain' && member.userId !== user.id && member.status === 'APPROVED' && (
-                                                    <div style={{ marginTop: '4px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                                        {member.role === 'member' && (
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); handleUpdateRole(member.id, 'vice_captain'); }}
-                                                                style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #3b82f6', color: '#3b82f6', background: 'none', cursor: 'pointer' }}
-                                                            >
-                                                                부크루장 임명
-                                                            </button>
-                                                        )}
-                                                        {member.role === 'vice_captain' && (
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); handleUpdateRole(member.id, 'member'); }}
-                                                                style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #9ca3af', color: '#6b7280', background: 'none', cursor: 'pointer' }}
-                                                            >
-                                                                일반멤버로 변경
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleKickMember(member.id, member.nickname); }}
-                                                            style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ef4444', color: '#ef4444', background: 'none', cursor: 'pointer' }}
+                                                        {/* 프로필 이미지 (클릭 시 이동) */}
+                                                        <div
+                                                            onClick={() => navigate(`/user/${member.userId}/profile`)}
+                                                            style={{
+                                                                width: '48px',
+                                                                height: '48px',
+                                                                borderRadius: '50%',
+                                                                overflow: 'hidden',
+                                                                backgroundColor: '#e0e0e0',
+                                                                flexShrink: 0,
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                cursor: 'pointer'
+                                                            }}
                                                         >
-                                                            강퇴
-                                                        </button>
+                                                            {profileImage ? (
+                                                                <img src={profileImage} alt={member.nickname} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            ) : (
+                                                                <span style={{ fontSize: '24px' }}>👤</span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* 멤버 정보 */}
+                                                        <div style={{ flex: 1 }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                                                <span
+                                                                    onClick={() => navigate(`/user/${member.userId}/profile`)}
+                                                                    style={{
+                                                                        fontSize: '15px',
+                                                                        fontWeight: '600',
+                                                                        color: '#1a1a1a',
+                                                                        cursor: 'pointer'
+                                                                    }}
+                                                                >
+                                                                    {member.nickname}
+                                                                </span>
+                                                                {member.role === 'captain' && (
+                                                                    <span style={{
+                                                                        fontSize: '11px',
+                                                                        fontWeight: '700',
+                                                                        color: '#FF9A56',
+                                                                        backgroundColor: 'rgba(255, 154, 86, 0.15)',
+                                                                        padding: '2px 8px',
+                                                                        borderRadius: '10px'
+                                                                    }}>
+                                                                        크루장
+                                                                    </span>
+                                                                )}
+                                                                {member.role === 'vice_captain' && (
+                                                                    <span style={{
+                                                                        fontSize: '11px',
+                                                                        fontWeight: '700',
+                                                                        color: '#3b82f6',
+                                                                        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                                                                        padding: '2px 8px',
+                                                                        borderRadius: '10px'
+                                                                    }}>
+                                                                        부크루장
+                                                                    </span>
+                                                                )}
+
+                                                            </div>
+
+                                                            {/* Role Management (Captain Only) */}
+                                                            {userRole === 'captain' && member.userId !== user.id && member.status === 'APPROVED' && (
+                                                                <div style={{ marginTop: '4px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                                    {member.role === 'member' && (
+                                                                        <button
+                                                                            onClick={(e) => { e.stopPropagation(); handleUpdateRole(member.id, 'vice_captain'); }}
+                                                                            style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #3b82f6', color: '#3b82f6', background: 'none', cursor: 'pointer' }}
+                                                                        >
+                                                                            부크루장 임명
+                                                                        </button>
+                                                                    )}
+                                                                    {member.role === 'vice_captain' && (
+                                                                        <button
+                                                                            onClick={(e) => { e.stopPropagation(); handleUpdateRole(member.id, 'member'); }}
+                                                                            style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #9ca3af', color: '#6b7280', background: 'none', cursor: 'pointer' }}
+                                                                        >
+                                                                            일반멤버로 변경
+                                                                        </button>
+                                                                    )}
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); handleKickMember(member.id, member.nickname); }}
+                                                                        style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ef4444', color: '#ef4444', background: 'none', cursor: 'pointer' }}
+                                                                    >
+                                                                        강퇴
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {member.status === 'PENDING' && (
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                gap: '8px',
+                                                                alignItems: 'center'
+                                                            }}>
+                                                                {userRole?.toUpperCase() === 'CAPTAIN' ? (
+                                                                    <>
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleApproveMember(member.userId);
+                                                                            }}
+                                                                            style={{
+                                                                                padding: '6px 12px',
+                                                                                backgroundColor: '#10b981',
+                                                                                color: 'white',
+                                                                                border: 'none',
+                                                                                borderRadius: '6px',
+                                                                                fontSize: '12px',
+                                                                                fontWeight: '600',
+                                                                                cursor: 'pointer'
+                                                                            }}
+                                                                        >
+                                                                            승인
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleRejectMember(member.userId);
+                                                                            }}
+                                                                            style={{
+                                                                                padding: '6px 12px',
+                                                                                backgroundColor: '#ef4444',
+                                                                                color: 'white',
+                                                                                border: 'none',
+                                                                                borderRadius: '6px',
+                                                                                fontSize: '12px',
+                                                                                fontWeight: '600',
+                                                                                cursor: 'pointer'
+                                                                            }}
+                                                                        >
+                                                                            거절
+                                                                        </button>
+                                                                    </>
+                                                                ) : (
+                                                                    <span style={{
+                                                                        fontSize: '12px',
+                                                                        color: '#f59e0b',
+                                                                        fontWeight: '600'
+                                                                    }}>
+                                                                        승인 대기중
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        {member.status === 'KICKED' && (
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                gap: '8px',
+                                                                alignItems: 'center'
+                                                            }}>
+                                                                <span style={{
+                                                                    fontSize: '12px',
+                                                                    color: '#dc2626',
+                                                                    fontWeight: '600',
+                                                                    backgroundColor: '#fee2e2',
+                                                                    padding: '4px 8px',
+                                                                    borderRadius: '4px'
+                                                                }}>
+                                                                    ⛔ 강퇴됨
+                                                                </span>
+                                                                {userRole === 'captain' && (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleUnkickMember(member.id, member.nickname);
+                                                                        }}
+                                                                        style={{
+                                                                            padding: '6px 12px',
+                                                                            backgroundColor: '#10b981',
+                                                                            color: 'white',
+                                                                            border: 'none',
+                                                                            borderRadius: '6px',
+                                                                            fontSize: '12px',
+                                                                            fontWeight: '600',
+                                                                            cursor: 'pointer'
+                                                                        }}
+                                                                    >
+                                                                        강퇴 해제
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                            {member.status === 'PENDING' && (
-                                                <div style={{
-                                                    display: 'flex',
-                                                    gap: '8px',
-                                                    alignItems: 'center'
-                                                }}>
-                                                    {userRole?.toUpperCase() === 'CAPTAIN' ? (
-                                                        <>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleApproveMember(member.userId);
-                                                                }}
-                                                                style={{
-                                                                    padding: '6px 12px',
-                                                                    backgroundColor: '#10b981',
-                                                                    color: 'white',
-                                                                    border: 'none',
-                                                                    borderRadius: '6px',
-                                                                    fontSize: '12px',
-                                                                    fontWeight: '600',
-                                                                    cursor: 'pointer'
-                                                                }}
-                                                            >
-                                                                승인
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleRejectMember(member.userId);
-                                                                }}
-                                                                style={{
-                                                                    padding: '6px 12px',
-                                                                    backgroundColor: '#ef4444',
-                                                                    color: 'white',
-                                                                    border: 'none',
-                                                                    borderRadius: '6px',
-                                                                    fontSize: '12px',
-                                                                    fontWeight: '600',
-                                                                    cursor: 'pointer'
-                                                                }}
-                                                            >
-                                                                거절
-                                                            </button>
-                                                        </>
-                                                    ) : (
-                                                        <span style={{
-                                                            fontSize: '12px',
-                                                            color: '#f59e0b',
-                                                            fontWeight: '600'
-                                                        }}>
-                                                            승인 대기중
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
+                                                );
+                                            })}
                                         </div>
-                                    );
-                                })}
-                            </div>
-                        )}
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
                 )}
 
