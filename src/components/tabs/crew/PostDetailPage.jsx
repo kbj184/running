@@ -162,8 +162,12 @@ function PostDetailPage({ postId, crew, user, userRole, onBack, onEdit }) {
             const response = await api.request(`${import.meta.env.VITE_API_URL}/board/posts/${post.id}/filter`, {
                 method: 'PUT',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
-                }
+                },
+                body: JSON.stringify({
+                    isFiltered: !post.isFiltered
+                })
             });
 
             if (response.ok) {
@@ -185,8 +189,12 @@ function PostDetailPage({ postId, crew, user, userRole, onBack, onEdit }) {
             const response = await api.request(`${import.meta.env.VITE_API_URL}/board/comments/${commentId}/filter`, {
                 method: 'PUT',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
-                }
+                },
+                body: JSON.stringify({
+                    isFiltered: !isFiltered
+                })
             });
 
             if (response.ok) {
