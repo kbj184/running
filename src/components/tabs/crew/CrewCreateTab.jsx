@@ -31,6 +31,10 @@ function CrewCreateTab({ user, onCreate }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [joinType, setJoinType] = useState('AUTO'); // 'AUTO' or 'APPROVAL'
 
+    // 크루 이름 중복 확인 상태
+    const [isCheckingName, setIsCheckingName] = useState(false);
+    const [nameCheckResult, setNameCheckResult] = useState(null); // null | 'available' | 'unavailable'
+
     // 활동 지역 관련 상태
     const [activityAreas, setActivityAreas] = useState([]);
     const [selectedAddress, setSelectedAddress] = useState('');
@@ -53,6 +57,53 @@ function CrewCreateTab({ user, onCreate }) {
             );
         }
     }, []);
+
+    // 크루 이름 중복 확인
+    const handleCheckName = async () => {
+        if (!name.trim()) {
+            setError('크루 이름을 입력해주세요.');
+            return;
+        }
+
+        setIsCheckingName(true);
+        setError('');
+
+        try {
+            const response = await api.request(
+                `${import.meta.env.VITE_API_URL}/crew/check-name?name=${encodeURIComponent(name)}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': user.accessToken.startsWith('Bearer ')
+                            ? user.accessToken
+                            : `Bearer ${user.accessToken}`
+                    }
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                setNameCheckResult(data.available ? 'available' : 'unavailable');
+                if (!data.available) {
+                    setError(data.message);
+                }
+            } else {
+                setError('중복 확인 중 오류가 발생했습니다.');
+            }
+        } catch (err) {
+            console.error('Name check error:', err);
+            setError('중복 확인 중 오류가 발생했습니다.');
+        } finally {
+            setIsCheckingName(false);
+        }
+    };
+
+    // 이름 변경 시 중복 확인 결과 초기화
+    const handleNameChange = (e) => {
+        setName(e.target.value);
+        setNameCheckResult(null);
+        setError('');
+    };
 
     const handleMapClick = async (event) => {
         if (activityAreas.length >= 1) {
@@ -310,21 +361,49 @@ function CrewCreateTab({ user, onCreate }) {
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
                         크루 이름 *
                     </label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="멋진 크루 이름을 입력하세요"
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            borderRadius: '10px',
-                            border: '1px solid #e0e0e0',
-                            fontSize: '16px',
-                            boxSizing: 'border-box'
-                        }}
-                        required
-                    />
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={handleNameChange}
+                            placeholder="멋진 크루 이름을 입력하세요"
+                            style={{
+                                flex: 1,
+                                padding: '12px',
+                                borderRadius: '10px',
+                                border: nameCheckResult === 'unavailable' ? '2px solid #ef4444' : (nameCheckResult === 'available' ? '2px solid #10b981' : '1px solid #e0e0e0'),
+                                fontSize: '16px',
+                                boxSizing: 'border-box',
+                                transition: 'all 0.2s'
+                            }}
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={handleCheckName}
+                            disabled={!name.trim() || isCheckingName}
+                            style={{
+                                padding: '0 20px',
+                                borderRadius: '10px',
+                                border: 'none',
+                                backgroundColor: nameCheckResult === 'available' ? '#10b981' : '#1a1a1a',
+                                color: 'white',
+                                fontWeight: '600',
+                                cursor: (!name.trim() || isCheckingName) ? 'not-allowed' : 'pointer',
+                                whiteSpace: 'nowrap',
+                                minWidth: '100px',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {isCheckingName ? '확인 중' : (nameCheckResult === 'available' ? '변 경' : '중복 확인')}
+                        </button>
+                    </div>
+                    {/* 중복 확인 결과 메시지 */}
+                    {nameCheckResult === 'available' && (
+                        <p style={{ margin: '6px 0 0 4px', fontSize: '13px', color: '#10b981', fontWeight: '500' }}>
+                            ✓ 사용 가능한 크루 이름입니다.
+                        </p>
+                    )}
                 </div>
 
                 {/* 크루 설명 */}
