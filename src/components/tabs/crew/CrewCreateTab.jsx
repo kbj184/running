@@ -34,6 +34,18 @@ function CrewCreateTab({ user, onCreate }) {
     // 크루 이름 중복 확인 상태
     const [isCheckingName, setIsCheckingName] = useState(false);
     const [nameCheckResult, setNameCheckResult] = useState(null); // null | 'available' | 'unavailable'
+    const [nameCheckMessage, setNameCheckMessage] = useState(''); // 중복 확인 결과 메시지
+
+    // Toast 알림 상태
+    const [toast, setToast] = useState({ show: false, message: '' });
+
+    // Toast 표시 함수
+    const showToast = (message) => {
+        setToast({ show: true, message });
+        setTimeout(() => {
+            setToast({ show: false, message: '' });
+        }, 3000); // 3초 후 사라짐
+    };
 
     // 활동 지역 관련 상태
     const [activityAreas, setActivityAreas] = useState([]);
@@ -61,12 +73,12 @@ function CrewCreateTab({ user, onCreate }) {
     // 크루 이름 중복 확인
     const handleCheckName = async () => {
         if (!name.trim()) {
-            setError('크루 이름을 입력해주세요.');
+            showToast('크루 이름을 입력해주세요.');
             return;
         }
 
         setIsCheckingName(true);
-        setError('');
+        setError(''); // 기존 에러 초기화 (혹시 남아있다면)
 
         try {
             const response = await api.request(
@@ -84,15 +96,13 @@ function CrewCreateTab({ user, onCreate }) {
             if (response.ok) {
                 const data = await response.json();
                 setNameCheckResult(data.available ? 'available' : 'unavailable');
-                if (!data.available) {
-                    setError(data.message);
-                }
+                setNameCheckMessage(data.message);
             } else {
-                setError('중복 확인 중 오류가 발생했습니다.');
+                showToast('중복 확인 중 오류가 발생했습니다.');
             }
         } catch (err) {
             console.error('Name check error:', err);
-            setError('중복 확인 중 오류가 발생했습니다.');
+            showToast('중복 확인 중 오류가 발생했습니다.');
         } finally {
             setIsCheckingName(false);
         }
@@ -102,12 +112,12 @@ function CrewCreateTab({ user, onCreate }) {
     const handleNameChange = (e) => {
         setName(e.target.value);
         setNameCheckResult(null);
-        setError('');
+        setNameCheckMessage('');
     };
 
     const handleMapClick = async (event) => {
         if (activityAreas.length >= 1) {
-            setError('활동 지역은 1개만 선택할 수 있습니다. 기존 지역을 삭제 후 다시 선택해주세요.');
+            showToast('활동 지역은 1개만 선택할 수 있습니다. 기존 지역을 삭제 후 다시 선택해주세요.');
             return;
         }
 
@@ -141,29 +151,23 @@ function CrewCreateTab({ user, onCreate }) {
                     });
 
                     // adminLevel2와 adminLevel3를 올바르게 매핑하기 위해 두 번째 패스
-                    // 먼저 sublocality_level_2 (동/읍/면)를 찾고, 그 다음 sublocality_level_1 (구/군)을 찾음
                     addressComponents.forEach(component => {
-                        // adminLevel3: 동/읍/면 (가장 구체적인 레벨)
                         if (component.types.includes('sublocality_level_2')) {
                             adminLevel3 = component.long_name;
                         }
                     });
 
                     addressComponents.forEach(component => {
-                        // adminLevel2: 시/군/구
                         if (component.types.includes('locality')) {
                             adminLevel2 = component.long_name;
                         }
-                        // sublocality_level_1은 보통 구/군
                         if (component.types.includes('sublocality_level_1')) {
                             if (!adminLevel2) {
                                 adminLevel2 = component.long_name;
                             } else if (!adminLevel3) {
-                                // adminLevel2가 이미 있고 adminLevel3가 없으면 이것이 동
                                 adminLevel3 = component.long_name;
                             }
                         }
-                        // sublocality는 폴백
                         if (component.types.includes('sublocality') && !adminLevel2 && !adminLevel3) {
                             adminLevel2 = component.long_name;
                         }
@@ -183,24 +187,22 @@ function CrewCreateTab({ user, onCreate }) {
                         longitude: lng
                     };
 
-                    // 단일 활동 지역만 허용 (기존 지역 교체)
                     setActivityAreas([newArea]);
                     setSelectedAddress(adminLevelFull);
                 } else {
-                    setError('주소 정보를 가져올 수 없습니다.');
+                    showToast('주소 정보를 가져올 수 없습니다.');
                 }
                 setIsLoadingLocation(false);
             });
         } catch (err) {
             console.error('Geocoding error:', err);
-            setError('주소 정보를 가져오는 중 오류가 발생했습니다.');
+            showToast('주소 정보를 가져오는 중 오류가 발생했습니다.');
             setIsLoadingLocation(false);
         }
     };
 
     const removeActivityArea = (areaId) => {
         setActivityAreas(activityAreas.filter(area => area.id !== areaId));
-        setError('');
     };
 
     const handleImageUpload = async (e) => {
@@ -208,17 +210,16 @@ function CrewCreateTab({ user, onCreate }) {
         if (!file) return;
 
         if (file.size > 5 * 1024 * 1024) {
-            setError('파일 크기는 5MB 이하여야 합니다.');
+            showToast('파일 크기는 5MB 이하여야 합니다.');
             return;
         }
 
         if (!file.type.startsWith('image/')) {
-            setError('이미지 파일만 업로드 가능합니다.');
+            showToast('이미지 파일만 업로드 가능합니다.');
             return;
         }
 
         setIsUploading(true);
-        setError('');
 
         try {
             const formData = new FormData();
@@ -243,7 +244,7 @@ function CrewCreateTab({ user, onCreate }) {
             setSelectedImageId(null);
         } catch (err) {
             console.error('Upload error:', err);
-            setError('이미지 업로드 중 오류가 발생했습니다.');
+            showToast('이미지 업로드 중 오류가 발생했습니다.');
         } finally {
             setIsUploading(false);
         }
@@ -253,26 +254,23 @@ function CrewCreateTab({ user, onCreate }) {
         e.preventDefault();
 
         if (!name.trim()) {
-            setError('크루 이름을 입력해주세요.');
+            showToast('크루 이름을 입력해주세요.');
             return;
         }
 
         if (activityAreas.length === 0) {
-            setError('최소 1개 이상의 활동 지역을 선택해주세요.');
+            showToast('최소 1개 이상의 활동 지역을 선택해주세요.');
             return;
         }
 
-        // 이미지 선택 확인 (업로드된 이미지 또는 기본 이미지)
         if (!uploadedImage && !selectedImageId) {
-            setError('크루 이미지를 선택해주세요.');
+            showToast('크루 이미지를 선택해주세요.');
             return;
         }
 
         setIsSubmitting(true);
-        setError('');
 
         try {
-            // 이미지 URL 생성 (업로드된 이미지 우선, 없으면 기본 이미지)
             const selectedImage = CREW_IMAGES.find(img => img.id === selectedImageId) || CREW_IMAGES[0];
             let imageUrl;
             if (uploadedImage) {
@@ -281,7 +279,6 @@ function CrewCreateTab({ user, onCreate }) {
                 imageUrl = JSON.stringify(selectedImage);
             }
 
-            // 활동 지역 데이터에서 임시 ID 제거
             const areasToSend = activityAreas.map(({ id, ...area }) => area);
 
             const requestBody = {
@@ -291,8 +288,6 @@ function CrewCreateTab({ user, onCreate }) {
                 joinType,
                 activityAreas: areasToSend
             };
-
-            console.log('🚀 Crew creation request:', requestBody);
 
             const response = await api.request(`${import.meta.env.VITE_API_URL}/crew`, {
                 method: 'POST',
@@ -310,23 +305,22 @@ function CrewCreateTab({ user, onCreate }) {
                     image: uploadedImage ? { url: uploadedImage } : selectedImage
                 });
 
-                // 폼 초기화
                 setName('');
                 setDescription('');
                 setUploadedImage(null);
                 setSelectedImageId(CREW_IMAGES[0].id);
                 setActivityAreas([]);
                 setJoinType('AUTO');
+                setNameCheckResult(null); // 중복 확인 결과 초기화
 
                 alert('크루가 성공적으로 생성되었습니다!');
             } else {
                 const errorText = await response.text();
-                console.error('❌ Crew creation failed:', response.status, errorText);
-                setError(errorText || '크루 생성에 실패했습니다.');
+                showToast(errorText || '크루 생성에 실패했습니다.');
             }
         } catch (err) {
             console.error('Crew creation error:', err);
-            setError('크루 생성 중 오류가 발생했습니다.');
+            showToast('크루 생성 중 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);
         }
@@ -338,20 +332,31 @@ function CrewCreateTab({ user, onCreate }) {
             maxWidth: '800px',
             margin: '0 auto',
             maxHeight: 'calc(100vh - var(--header-height) - 60px)',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            position: 'relative' // Toast 포지셔닝을 위해
         }}>
             <h2 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '800' }}>새 크루 만들기</h2>
 
-            {error && (
+            {/* Toast 메시지 */}
+            {toast.show && (
                 <div style={{
-                    padding: '12px',
-                    marginBottom: '16px',
-                    backgroundColor: '#fee2e2',
-                    color: '#dc2626',
-                    borderRadius: '8px',
-                    fontSize: '14px'
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    color: 'white',
+                    padding: '12px 24px',
+                    borderRadius: '50px',
+                    zIndex: 1000,
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    pointerEvents: 'none', // 클릭 통과
+                    animation: 'fadeInOut 3s ease-in-out forwards',
+                    whiteSpace: 'nowrap',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                 }}>
-                    {error}
+                    {toast.message}
                 </div>
             )}
 
@@ -374,7 +379,8 @@ function CrewCreateTab({ user, onCreate }) {
                                 border: nameCheckResult === 'unavailable' ? '2px solid #ef4444' : (nameCheckResult === 'available' ? '2px solid #10b981' : '1px solid #e0e0e0'),
                                 fontSize: '16px',
                                 boxSizing: 'border-box',
-                                transition: 'all 0.2s'
+                                transition: 'all 0.2s',
+                                outline: 'none'
                             }}
                             required
                         />
@@ -386,7 +392,7 @@ function CrewCreateTab({ user, onCreate }) {
                                 padding: '0 20px',
                                 borderRadius: '10px',
                                 border: 'none',
-                                backgroundColor: nameCheckResult === 'available' ? '#10b981' : '#1a1a1a',
+                                backgroundColor: nameCheckResult === 'available' ? '#10b981' : (nameCheckResult === 'unavailable' ? '#ef4444' : '#1a1a1a'),
                                 color: 'white',
                                 fontWeight: '600',
                                 cursor: (!name.trim() || isCheckingName) ? 'not-allowed' : 'pointer',
@@ -395,13 +401,19 @@ function CrewCreateTab({ user, onCreate }) {
                                 transition: 'all 0.2s'
                             }}
                         >
-                            {isCheckingName ? '확인 중' : (nameCheckResult === 'available' ? '변 경' : '중복 확인')}
+                            {isCheckingName ? '확인 중' : (nameCheckResult === 'available' ? '확인 완료' : (nameCheckResult === 'unavailable' ? '사용 불가' : '중복 확인'))}
                         </button>
                     </div>
-                    {/* 중복 확인 결과 메시지 */}
-                    {nameCheckResult === 'available' && (
-                        <p style={{ margin: '6px 0 0 4px', fontSize: '13px', color: '#10b981', fontWeight: '500' }}>
-                            ✓ 사용 가능한 크루 이름입니다.
+                    {/* 중복 확인 결과 메시지 - 성공/실패 모두 여기에 표시 */}
+                    {nameCheckResult && (
+                        <p style={{
+                            margin: '6px 0 0 4px',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            color: nameCheckResult === 'available' ? '#10b981' : '#ef4444'
+                        }}>
+                            {nameCheckResult === 'available' ? '✓ ' : '⚠ '}
+                            {nameCheckMessage}
                         </p>
                     )}
                 </div>
