@@ -112,12 +112,17 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
 
     useEffect(() => {
         if (crew) {
-            // console.log('Crew data (full):', JSON.stringify(crew, null, 2));
-            if (activeTab === 'members') {
-                fetchMembers();
-            }
+            // 항상 멤버 정보를 가져와서 사용자 상태 확인
+            fetchMembers();
         }
-    }, [crew, activeTab]);
+    }, [crew]);
+
+    // 멤버 탭 활성화 시 멤버 목록 새로고침
+    useEffect(() => {
+        if (crew && activeTab === 'members') {
+            fetchMembers();
+        }
+    }, [activeTab]);
 
     useEffect(() => {
         const handleScroll = () => {
