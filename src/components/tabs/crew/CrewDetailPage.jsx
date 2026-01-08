@@ -117,9 +117,9 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
         }
     }, [crew]);
 
-    // 멤버 탭 활성화 시 멤버 목록 새로고침
+    // 탭 전환 시마다 멤버 정보 새로고침 (강퇴 등 실시간 상태 반영)
     useEffect(() => {
-        if (crew && activeTab === 'members') {
+        if (crew && activeTab) {
             fetchMembers();
         }
     }, [activeTab]);
