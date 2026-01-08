@@ -299,6 +299,31 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
         }
     };
 
+    const handleKickMember = async (memberId, nickname) => {
+        if (!confirm(`정말로 ${nickname} 님을 크루에서 강퇴하시겠습니까?`)) return;
+
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members/${memberId}/kick`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+
+            if (response.ok) {
+                alert('멤버를 강퇴했습니다.');
+                fetchMembers();
+            } else {
+                const error = await response.text();
+                alert(error || '강퇴 실패');
+            }
+        } catch (error) {
+            console.error('Kick member error:', error);
+            alert('오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
 
 
     // 게시판 핸들러
@@ -852,7 +877,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
 
                                                 {/* Role Management (Captain Only) */}
                                                 {userRole === 'captain' && member.userId !== user.id && member.status === 'APPROVED' && (
-                                                    <div style={{ marginTop: '4px', display: 'flex', gap: '8px' }}>
+                                                    <div style={{ marginTop: '4px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                                         {member.role === 'member' && (
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); handleUpdateRole(member.id, 'vice_captain'); }}
@@ -869,6 +894,12 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                                                 일반멤버로 변경
                                                             </button>
                                                         )}
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleKickMember(member.id, member.nickname); }}
+                                                            style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ef4444', color: '#ef4444', background: 'none', cursor: 'pointer' }}
+                                                        >
+                                                            강퇴
+                                                        </button>
                                                     </div>
                                                 )}
                                             </div>
