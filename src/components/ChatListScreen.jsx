@@ -36,7 +36,7 @@ function ChatListScreen() {
     };
 
     const handleBack = () => {
-        navigate(-1);
+        navigate('/'); // Go to home instead of -1
     };
 
     const formatTime = (dateString) => {
