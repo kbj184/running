@@ -56,6 +56,27 @@ function ProfileSubHeader({ profileTab, onTabChange, unreadCount }) {
                     {t('profile.tabs.info')}
                 </button>
                 <button
+                    onClick={() => onTabChange('follow')}
+                    style={{
+                        flex: 1,
+                        padding: '16px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        borderBottom: profileTab === 'follow' ? '3px solid #1a1a1a' : '3px solid transparent',
+                        color: profileTab === 'follow' ? '#1a1a1a' : '#888',
+                        fontWeight: profileTab === 'follow' ? '700' : '500',
+                        fontSize: '15px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px'
+                    }}
+                >
+                    <span>👥</span>
+                </button>
+                <button
                     onClick={() => onTabChange('notifications')}
                     style={{
                         flex: 1,

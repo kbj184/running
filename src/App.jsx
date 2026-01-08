@@ -30,6 +30,7 @@ import ProfileMenu from './components/profile/ProfileMenu';
 import MyRecordsTab from './components/profile/MyRecordsTab';
 import MyInfoTab from './components/profile/MyInfoTab';
 import MyNotificationsTab from './components/profile/MyNotificationsTab';
+import MyFollowTab from './components/profile/MyFollowTab';
 import SettingsTab from './components/profile/SettingsTab';
 
 // Crew Components
@@ -626,6 +627,11 @@ function App() {
                                             />
                                         </ProfileMenu>
                                     } />
+                                    <Route path="follow" element={
+                                        <ProfileMenu profileTab="follow" unreadCount={unreadCount}>
+                                            <MyFollowTab user={user} />
+                                        </ProfileMenu>
+                                    } />
                                     <Route path="settings" element={
                                         <ProfileMenu profileTab="settings" unreadCount={unreadCount}>
                                             <SettingsTab
@@ -652,7 +658,7 @@ function App() {
                     />
                 )}
             </LoadScript>
-        </BrowserRouter>
+        </BrowserRouter >
     );
 }
 

@@ -9,9 +9,14 @@ function UserProfileScreen() {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [followStatus, setFollowStatus] = useState({ isFollowing: false, isFollower: false });
+    const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
+    const [followLoading, setFollowLoading] = useState(false);
 
     useEffect(() => {
         fetchUserProfile();
+        fetchFollowStatus();
+        fetchFollowCounts();
     }, [userId]);
 
     const fetchUserProfile = async () => {
@@ -36,6 +41,69 @@ function UserProfileScreen() {
             setError('프로필을 불러오는 중 오류가 발생했습니다.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchFollowStatus = async () => {
+        try {
+            const user = JSON.parse(localStorage.getItem('running_user'));
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/follow/status/${userId}`, {
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setFollowStatus(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch follow status:', error);
+        }
+    };
+
+    const fetchFollowCounts = async () => {
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/follow/counts/${userId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setFollowCounts(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch follow counts:', error);
+        }
+    };
+
+    const handleFollowToggle = async () => {
+        setFollowLoading(true);
+        try {
+            const user = JSON.parse(localStorage.getItem('running_user'));
+            const method = followStatus.isFollowing ? 'DELETE' : 'POST';
+
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/follow/${userId}`, {
+                method,
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                // Update follow status
+                setFollowStatus(prev => ({
+                    ...prev,
+                    isFollowing: !prev.isFollowing
+                }));
+                // Update counts
+                setFollowCounts(prev => ({
+                    ...prev,
+                    followers: prev.followers + (followStatus.isFollowing ? -1 : 1)
+                }));
+            }
+        } catch (error) {
+            console.error('Failed to toggle follow:', error);
+            alert('팔로우 처리에 실패했습니다.');
+        } finally {
+            setFollowLoading(false);
         }
     };
 
@@ -290,12 +358,76 @@ function UserProfileScreen() {
                             justifyContent: 'center',
                             gap: '6px',
                             color: '#666',
-                            fontSize: '14px'
+                            fontSize: '14px',
+                            marginBottom: '16px'
                         }}>
                             <span>📍</span>
                             <span>{profile.activityAreaLevel2}</span>
                         </div>
                     )}
+
+                    {/* Follow Counts */}
+                    <div style={{
+                        display: 'flex',
+                        gap: '24px',
+                        justifyContent: 'center',
+                        marginBottom: '16px'
+                    }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{
+                                fontSize: '20px',
+                                fontWeight: '700',
+                                color: '#1a1a1a'
+                            }}>
+                                {followCounts.followers}
+                            </div>
+                            <div style={{
+                                fontSize: '13px',
+                                color: '#666'
+                            }}>
+                                팔로워
+                            </div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{
+                                fontSize: '20px',
+                                fontWeight: '700',
+                                color: '#1a1a1a'
+                            }}>
+                                {followCounts.following}
+                            </div>
+                            <div style={{
+                                fontSize: '13px',
+                                color: '#666'
+                            }}>
+                                팔로잉
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Follow Button */}
+                    <button
+                        onClick={handleFollowToggle}
+                        disabled={followLoading}
+                        style={{
+                            padding: '12px 32px',
+                            backgroundColor: followStatus.isFollowing ? '#f5f5f5' : '#FF9A56',
+                            color: followStatus.isFollowing ? '#666' : '#fff',
+                            border: followStatus.isFollowing ? '1px solid #e0e0e0' : 'none',
+                            borderRadius: '8px',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            cursor: followLoading ? 'not-allowed' : 'pointer',
+                            transition: 'all 0.2s',
+                            opacity: followLoading ? 0.6 : 1
+                        }}
+                    >
+                        {followLoading ? '처리중...' :
+                            followStatus.isMutual ? '맞팔로우' :
+                                followStatus.isFollowing ? '팔로잉' :
+                                    followStatus.isFollower ? '팔로우 백' :
+                                        '팔로우'}
+                    </button>
                 </div>
 
                 {/* Statistics Grid */}
