@@ -684,6 +684,21 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                     >
                                         {actionLoading ? '처리 중...' : '탈퇴하기'}
                                     </button>
+                                ) : userStatus === 'KICKED' ? (
+                                    <div style={{
+                                        padding: '16px',
+                                        backgroundColor: '#fee2e2',
+                                        border: '1px solid #dc2626',
+                                        borderRadius: '12px',
+                                        textAlign: 'center',
+                                        color: '#991b1b',
+                                        fontWeight: '600'
+                                    }}>
+                                        ⛔ 강퇴당한 크루입니다<br />
+                                        <span style={{ fontSize: '13px', fontWeight: '500' }}>
+                                            재가입을 원하시면 크루장에게 문의하세요
+                                        </span>
+                                    </div>
                                 ) : (
                                     <div style={{
                                         padding: '16px',

@@ -31,18 +31,16 @@ const NotificationItem = ({ notification, onRead, onDelete }) => {
     };
 
     const handleClick = () => {
+        // 알림 클릭 시 항상 읽음 처리
+        onRead(notification);
+
         // Navigate based on relatedUrl
         if (notification.relatedUrl && notification.relatedUrl !== '/') {
             // 이동 확인 메시지
             if (window.confirm(`${notification.title}\n\n해당 페이지로 이동하시겠습니까?`)) {
-                // Mark as read first
-                onRead(notification);
                 console.log("Navigating to:", notification.relatedUrl);
                 navigate(notification.relatedUrl);
             }
-        } else {
-            // URL이 없는 경우 읽음 처리만
-            onRead(notification);
         }
     };
 
