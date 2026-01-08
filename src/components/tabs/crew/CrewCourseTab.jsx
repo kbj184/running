@@ -34,6 +34,33 @@ function CrewCourseTab({ crew, user, userRole, refreshKey, onCourseClick, onCour
         }
     };
 
+    const handleOfficialStatus = async (e, course) => {
+        e.stopPropagation();
+        const action = course.isOfficial ? '해제' : '지정';
+        if (!window.confirm(`'${course.title}' 코스를 공식 코스로 ${action}하시겠습니까?`)) return;
+
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/courses/${course.id}/official`, {
+                method: 'PUT',
+                headers: {
+                    ...getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ isOfficial: !course.isOfficial })
+            });
+
+            if (response.ok) {
+                alert(`공식 코스 ${action} 완료`);
+                fetchCourses();
+            } else {
+                alert('요청 실패');
+            }
+        } catch (error) {
+            console.error('Official status error:', error);
+            alert('오류가 발생했습니다.');
+        }
+    };
+
     if (loading) {
         return (
             <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>
@@ -42,7 +69,7 @@ function CrewCourseTab({ crew, user, userRole, refreshKey, onCourseClick, onCour
         );
     }
 
-    const isMember = userRole === 'CAPTAIN' || userRole === 'MEMBER';
+    const isMember = ['captain', 'vice_captain', 'member'].includes(userRole?.toLowerCase());
 
     return (
         <div style={{ padding: '20px' }}>
@@ -146,8 +173,23 @@ function CrewCourseTab({ crew, user, userRole, refreshKey, onCourseClick, onCour
                                         fontSize: '16px',
                                         fontWeight: '700',
                                         color: '#333',
-                                        marginBottom: '8px'
+                                        marginBottom: '8px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
                                     }}>
+                                        {course.isOfficial && (
+                                            <span style={{
+                                                fontSize: '10px',
+                                                fontWeight: '700',
+                                                color: '#fff',
+                                                background: '#FF9A56',
+                                                padding: '2px 6px',
+                                                borderRadius: '4px'
+                                            }}>
+                                                OFFICIAL
+                                            </span>
+                                        )}
                                         {course.title || course.name}
                                     </div>
                                     {course.description && (
@@ -193,7 +235,25 @@ function CrewCourseTab({ crew, user, userRole, refreshKey, onCourseClick, onCour
                                             <span style={{ fontSize: '12px' }}>🏃</span>
                                             <span style={{ fontWeight: '500' }}>{course.runCount || 0}</span>
                                         </div>
-                                        <span>{course.creatorNickname}</span>
+
+                                        {/* Official Toggle for Admin */}
+                                        {(userRole === 'captain' || userRole === 'vice_captain') && (
+                                            <button
+                                                onClick={(e) => handleOfficialStatus(e, course)}
+                                                style={{
+                                                    padding: '2px 6px',
+                                                    fontSize: '10px',
+                                                    backgroundColor: course.isOfficial ? '#fff' : '#DCFCE7',
+                                                    border: `1px solid ${course.isOfficial ? '#d1d5db' : '#16A34A'}`,
+                                                    color: course.isOfficial ? '#6b7280' : '#16A34A',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                    fontWeight: '600'
+                                                }}
+                                            >
+                                                {course.isOfficial ? '해제' : '공식등록'}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>

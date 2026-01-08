@@ -270,6 +270,37 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
         }
     };
 
+    const handleUpdateRole = async (memberId, newRole) => {
+        if (!confirm(`해당 멤버의 역할을 ${newRole === 'vice_captain' ? '부크루장' : '일반 멤버'} (으)로 변경하시겠습니까?`)) return;
+
+        setActionLoading(true);
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/crew/${crew.id}/members/${memberId}/role`, {
+                method: 'PUT',
+                headers: {
+                    ...getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ role: newRole })
+            });
+
+            if (response.ok) {
+                alert('역할이 변경되었습니다.');
+                fetchMembers();
+            } else {
+                const error = await response.text();
+                alert(error || '역할 변경 실패');
+            }
+        } catch (error) {
+            console.error('Role update error:', error);
+            alert('오류가 발생했습니다.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+
+
     // 게시판 핸들러
     const handlePostClick = (post) => {
         navigate(`/crew/detail/${crew.id}/board/view/${post.id}`);
@@ -323,6 +354,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 postId={selectedPost.id}
                 crew={crew}
                 user={user}
+                userRole={userRole}
                 onBack={handleBackToBoard}
                 onEdit={handleEditPost}
             />
@@ -803,64 +835,99 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                                                             크루장
                                                         </span>
                                                     )}
+                                                    {member.role === 'vice_captain' && (
+                                                        <span style={{
+                                                            fontSize: '11px',
+                                                            fontWeight: '700',
+                                                            color: '#3b82f6',
+                                                            backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                                                            padding: '2px 8px',
+                                                            borderRadius: '10px'
+                                                        }}>
+                                                            부크루장
+                                                        </span>
+                                                    )}
+
                                                 </div>
-                                                {member.status === 'PENDING' && (
-                                                    <div style={{
-                                                        display: 'flex',
-                                                        gap: '8px',
-                                                        alignItems: 'center'
-                                                    }}>
-                                                        {userRole?.toUpperCase() === 'CAPTAIN' ? (
-                                                            <>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        handleApproveMember(member.userId);
-                                                                    }}
-                                                                    style={{
-                                                                        padding: '6px 12px',
-                                                                        backgroundColor: '#10b981',
-                                                                        color: 'white',
-                                                                        border: 'none',
-                                                                        borderRadius: '6px',
-                                                                        fontSize: '12px',
-                                                                        fontWeight: '600',
-                                                                        cursor: 'pointer'
-                                                                    }}
-                                                                >
-                                                                    승인
-                                                                </button>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        handleRejectMember(member.userId);
-                                                                    }}
-                                                                    style={{
-                                                                        padding: '6px 12px',
-                                                                        backgroundColor: '#ef4444',
-                                                                        color: 'white',
-                                                                        border: 'none',
-                                                                        borderRadius: '6px',
-                                                                        fontSize: '12px',
-                                                                        fontWeight: '600',
-                                                                        cursor: 'pointer'
-                                                                    }}
-                                                                >
-                                                                    거절
-                                                                </button>
-                                                            </>
-                                                        ) : (
-                                                            <span style={{
-                                                                fontSize: '12px',
-                                                                color: '#f59e0b',
-                                                                fontWeight: '600'
-                                                            }}>
-                                                                승인 대기중
-                                                            </span>
+
+                                                {/* Role Management (Captain Only) */}
+                                                {userRole === 'captain' && member.userId !== user.id && member.status === 'APPROVED' && (
+                                                    <div style={{ marginTop: '4px', display: 'flex', gap: '8px' }}>
+                                                        {member.role === 'member' && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleUpdateRole(member.id, 'vice_captain'); }}
+                                                                style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #3b82f6', color: '#3b82f6', background: 'none', cursor: 'pointer' }}
+                                                            >
+                                                                부크루장 임명
+                                                            </button>
+                                                        )}
+                                                        {member.role === 'vice_captain' && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleUpdateRole(member.id, 'member'); }}
+                                                                style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #9ca3af', color: '#6b7280', background: 'none', cursor: 'pointer' }}
+                                                            >
+                                                                일반멤버로 변경
+                                                            </button>
                                                         )}
                                                     </div>
                                                 )}
                                             </div>
+                                            {member.status === 'PENDING' && (
+                                                <div style={{
+                                                    display: 'flex',
+                                                    gap: '8px',
+                                                    alignItems: 'center'
+                                                }}>
+                                                    {userRole?.toUpperCase() === 'CAPTAIN' ? (
+                                                        <>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleApproveMember(member.userId);
+                                                                }}
+                                                                style={{
+                                                                    padding: '6px 12px',
+                                                                    backgroundColor: '#10b981',
+                                                                    color: 'white',
+                                                                    border: 'none',
+                                                                    borderRadius: '6px',
+                                                                    fontSize: '12px',
+                                                                    fontWeight: '600',
+                                                                    cursor: 'pointer'
+                                                                }}
+                                                            >
+                                                                승인
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleRejectMember(member.userId);
+                                                                }}
+                                                                style={{
+                                                                    padding: '6px 12px',
+                                                                    backgroundColor: '#ef4444',
+                                                                    color: 'white',
+                                                                    border: 'none',
+                                                                    borderRadius: '6px',
+                                                                    fontSize: '12px',
+                                                                    fontWeight: '600',
+                                                                    cursor: 'pointer'
+                                                                }}
+                                                            >
+                                                                거절
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <span style={{
+                                                            fontSize: '12px',
+                                                            color: '#f59e0b',
+                                                            fontWeight: '600'
+                                                        }}>
+                                                            승인 대기중
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
@@ -884,6 +951,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                         <CrewBoardTab
                             crew={crew}
                             user={user}
+                            userRole={userRole}
                             onPostClick={handlePostClick}
                             onCreatePost={handleCreatePost}
                             onBack={() => setActiveTab('intro')}
@@ -893,21 +961,23 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
             </div>
 
             {/* Follow Course Running Screen */}
-            {followRunningCourse && (
-                <FollowCourseRunningScreen
-                    key={runningSessionId}
-                    course={followRunningCourse}
-                    user={user}
-                    onStop={(result) => {
-                        setFollowRunningCourse(null);
-                        if (result && result.saved) {
-                            setCourseRefreshKey(prev => prev + 1);
-                        }
-                    }}
-                    onClose={() => setFollowRunningCourse(null)}
-                />
-            )}
-        </div>
+            {
+                followRunningCourse && (
+                    <FollowCourseRunningScreen
+                        key={runningSessionId}
+                        course={followRunningCourse}
+                        user={user}
+                        onStop={(result) => {
+                            setFollowRunningCourse(null);
+                            if (result && result.saved) {
+                                setCourseRefreshKey(prev => prev + 1);
+                            }
+                        }}
+                        onClose={() => setFollowRunningCourse(null)}
+                    />
+                )
+            }
+        </div >
     );
 }
 

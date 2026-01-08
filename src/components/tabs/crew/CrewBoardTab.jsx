@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../utils/api';
 
-function CrewBoardTab({ crew, user, onPostClick, onCreatePost, onBack }) {
+function CrewBoardTab({ crew, user, userRole, onPostClick, onCreatePost, onBack }) {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
@@ -77,6 +77,32 @@ function CrewBoardTab({ crew, user, onPostClick, onCreatePost, onBack }) {
         return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
     };
 
+    const handleFilterPost = async (e, post) => {
+        e.stopPropagation();
+        if (!window.confirm(post.isFiltered ? '게시글 필터를 해제하시겠습니까?' : '게시글을 필터링(숨김) 하시겠습니까?')) return;
+
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/board/posts/${post.id}/filter`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                alert(post.isFiltered ? '필터가 해제되었습니다.' : '게시글이 필터링되었습니다.');
+                fetchPosts();
+            } else {
+                alert('요청 실패');
+            }
+        } catch (error) {
+            console.error('Filter error:', error);
+            alert('오류가 발생했습니다.');
+        }
+    };
+
+    const isAdmin = userRole === 'captain' || userRole === 'vice_captain';
+
     return (
         <div style={{ padding: '20px', paddingBottom: '80px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
             {/* 검색 및 글쓰기 */}
@@ -142,61 +168,99 @@ function CrewBoardTab({ crew, user, onPostClick, onCreatePost, onBack }) {
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {posts.map((post) => (
-                        <div
-                            key={post.id}
-                            onClick={() => handlePostClick(post)}
-                            style={{
-                                backgroundColor: post.isPinned ? '#fffbeb' : '#fff',
-                                border: post.isPinned ? '1px solid #fcd34d' : '1px solid #e0e0e0',
-                                borderRadius: '12px',
-                                padding: '16px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                ':hover': { boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }
-                            }}
-                        >
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                                        {post.isPinned && (
-                                            <span style={{
-                                                fontSize: '10px',
+                    {posts.map((post) => {
+                        const isHidden = post.isFiltered && !isAdmin;
+
+                        return (
+                            <div
+                                key={post.id}
+                                onClick={() => !isHidden && handlePostClick(post)}
+                                style={{
+                                    backgroundColor: post.isPinned ? '#fffbeb' : (post.isFiltered ? '#f3f4f6' : '#fff'),
+                                    border: post.isPinned ? '1px solid #fcd34d' : '1px solid #e0e0e0',
+                                    borderRadius: '12px',
+                                    padding: '16px',
+                                    cursor: isHidden ? 'default' : 'pointer',
+                                    transition: 'all 0.2s',
+                                    opacity: isHidden ? 0.7 : 1,
+                                    position: 'relative'
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                                            {post.isPinned && (
+                                                <span style={{
+                                                    fontSize: '10px',
+                                                    fontWeight: '700',
+                                                    color: '#92400e',
+                                                    background: '#fef3c7',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '4px'
+                                                }}>
+                                                    📌 공지
+                                                </span>
+                                            )}
+                                            {post.isFiltered && (
+                                                <span style={{
+                                                    fontSize: '10px',
+                                                    fontWeight: '700',
+                                                    color: '#ef4444',
+                                                    background: '#fee2e2',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '4px'
+                                                }}>
+                                                    ⚠️ 관리자에 의해 숨겨짐
+                                                </span>
+                                            )}
+                                            <h3 style={{
+                                                margin: 0,
+                                                fontSize: '16px',
                                                 fontWeight: '700',
-                                                color: '#92400e',
-                                                background: '#fef3c7',
-                                                padding: '2px 8px',
-                                                borderRadius: '4px'
+                                                color: isHidden ? '#9ca3af' : '#1a1a1a',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap'
                                             }}>
-                                                📌 공지
-                                            </span>
+                                                {isHidden ? '관리자에 의해 숨겨진 게시글입니다.' : post.title}
+                                            </h3>
+                                        </div>
+
+                                        {!isHidden && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', color: '#999' }}>
+                                                <span>{post.authorNickname || '익명'}</span>
+                                                <span>•</span>
+                                                <span>{formatDate(post.createdAt)}</span>
+                                                <span>•</span>
+                                                <span>👁️ {post.viewCount}</span>
+                                                <span>•</span>
+                                                <span>💬 {post.commentCount}</span>
+                                            </div>
                                         )}
-                                        <h3 style={{
-                                            margin: 0,
-                                            fontSize: '16px',
-                                            fontWeight: '700',
-                                            color: '#1a1a1a',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap'
-                                        }}>
-                                            {post.title}
-                                        </h3>
                                     </div>
-                                    {/* Content preview removed */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', color: '#999' }}>
-                                        <span>{post.authorNickname || '익명'}</span>
-                                        <span>•</span>
-                                        <span>{formatDate(post.createdAt)}</span>
-                                        <span>•</span>
-                                        <span>👁️ {post.viewCount}</span>
-                                        <span>•</span>
-                                        <span>💬 {post.commentCount}</span>
-                                    </div>
+
+                                    {/* Admin Actions */}
+                                    {isAdmin && (
+                                        <button
+                                            onClick={(e) => handleFilterPost(e, post)}
+                                            style={{
+                                                padding: '4px 8px',
+                                                fontSize: '12px',
+                                                color: post.isFiltered ? '#10b981' : '#ef4444',
+                                                backgroundColor: 'white',
+                                                border: `1px solid ${post.isFiltered ? '#10b981' : '#ef4444'}`,
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                marginLeft: '8px'
+                                            }}
+                                        >
+                                            {post.isFiltered ? '숨김 해제' : '숨김'}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 

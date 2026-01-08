@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../utils/api';
 
-function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
+function PostDetailPage({ postId, crew, user, userRole, onBack, onEdit }) {
     const [post, setPost] = useState(null);
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -155,6 +155,52 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
         }
     };
 
+    const handleFilterPost = async () => {
+        if (!confirm(post.isFiltered ? '게시글 필터를 해제하시겠습니까?' : '게시글을 필터링(숨김) 하시겠습니까?')) return;
+
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/board/posts/${post.id}/filter`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                alert(post.isFiltered ? '필터가 해제되었습니다.' : '게시글이 필터링되었습니다.');
+                fetchPost();
+            } else {
+                alert('요청 실패');
+            }
+        } catch (error) {
+            console.error('Filter error:', error);
+            alert('오류가 발생했습니다.');
+        }
+    };
+
+    const handleFilterComment = async (commentId, isFiltered) => {
+        if (!confirm(isFiltered ? '댓글 필터를 해제하시겠습니까?' : '댓글을 필터링(숨김) 하시겠습니까?')) return;
+
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/board/comments/${commentId}/filter`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                fetchComments();
+                // We don't need to fetch post, comment count is same
+            } else {
+                alert('요청 실패');
+            }
+        } catch (error) {
+            console.error('Filter error:', error);
+            alert('오류가 발생했습니다.');
+        }
+    };
+
     const handleDeletePost = async () => {
         if (!confirm('게시글을 삭제하시겠습니까?')) return;
 
@@ -211,6 +257,7 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
     const isAuthor = post.authorId === user.id;
     const isCaptain = crew && crew.captainId === user.id;
     const canEdit = isAuthor || isCaptain;
+    const isAdmin = userRole === 'captain' || userRole === 'vice_captain';
 
     return (
         <div style={{ padding: '20px', paddingBottom: '80px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
@@ -271,21 +318,37 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
                     </div>
                 </div>
 
-                <div
-                    className="post-content"
-                    style={{ fontSize: '15px', lineHeight: 1.8, color: '#1a1a1a', marginBottom: '24px' }}
-                >
-                    <style>{`
-                        .post-content img {
-                            max-width: 100%;
-                            height: auto;
-                            border-radius: 8px;
-                            margin: 12px 0;
-                            display: block;
-                        }
-                    `}</style>
-                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                </div>
+                {/* Filter Warning for Admin */}
+                {post.isFiltered && isAdmin && (
+                    <div style={{ padding: '12px', backgroundColor: '#fee2e2', borderRadius: '8px', marginBottom: '16px', color: '#dc2626', fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>⚠️</span>
+                        <span>관리자에 의해 필터링(숨김) 처리된 게시글입니다. 일반 사용자에게는 내용이 보이지 않습니다.</span>
+                    </div>
+                )}
+
+                {/* Post Content */}
+                {(!post.isFiltered || isAdmin) ? (
+                    <div
+                        className="post-content"
+                        style={{ fontSize: '15px', lineHeight: 1.8, color: '#1a1a1a', marginBottom: '24px', opacity: post.isFiltered ? 0.6 : 1 }}
+                    >
+                        <style>{`
+                            .post-content img {
+                                max-width: 100%;
+                                height: auto;
+                                border-radius: 8px;
+                                margin: 12px 0;
+                                display: block;
+                            }
+                        `}</style>
+                        <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                    </div>
+                ) : (
+                    <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f9fafb', borderRadius: '8px', marginBottom: '24px', color: '#6b7280' }}>
+                        <div style={{ fontSize: '40px', marginBottom: '16px' }}>🔒</div>
+                        <div style={{ fontSize: '16px', fontWeight: '600' }}>관리자에 의해 숨겨진 게시글입니다.</div>
+                    </div>
+                )}
 
                 {/* 좋아요 버튼 */}
                 <div style={{
@@ -320,36 +383,58 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
 
                 {canEdit && (
                     <div style={{ display: 'flex', gap: '8px', paddingTop: '16px', borderTop: '1px solid #f0f0f0' }}>
-                        <button
-                            onClick={() => onEdit(post)}
-                            style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#f3f4f6',
-                                border: '1px solid #e0e0e0',
-                                borderRadius: '8px',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                color: '#1a1a1a'
-                            }}
-                        >
-                            수정
-                        </button>
-                        <button
-                            onClick={handleDeletePost}
-                            style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#fff',
-                                border: '1px solid #fee2e2',
-                                borderRadius: '8px',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                color: '#ef4444'
-                            }}
-                        >
-                            삭제
-                        </button>
+                        {canEdit && (
+                            <>
+                                <button
+                                    onClick={() => onEdit(post)}
+                                    style={{
+                                        padding: '8px 16px',
+                                        backgroundColor: '#f3f4f6',
+                                        border: '1px solid #e0e0e0',
+                                        borderRadius: '8px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        color: '#1a1a1a'
+                                    }}
+                                >
+                                    수정
+                                </button>
+                                <button
+                                    onClick={handleDeletePost}
+                                    style={{
+                                        padding: '8px 16px',
+                                        backgroundColor: '#fff',
+                                        border: '1px solid #fee2e2',
+                                        borderRadius: '8px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        color: '#ef4444'
+                                    }}
+                                >
+                                    삭제
+                                </button>
+                            </>
+                        )}
+                        {isAdmin && (
+                            <button
+                                onClick={handleFilterPost}
+                                style={{
+                                    padding: '8px 16px',
+                                    backgroundColor: '#fff',
+                                    border: `1px solid ${post.isFiltered ? '#10b981' : '#f59e0b'}`,
+                                    borderRadius: '8px',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    color: post.isFiltered ? '#10b981' : '#f59e0b',
+                                    marginLeft: 'auto'
+                                }}
+                            >
+                                {post.isFiltered ? '숨김 해제' : '게시글 숨김'}
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
@@ -405,49 +490,61 @@ function PostDetailPage({ postId, crew, user, onBack, onEdit }) {
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {comments.map((comment) => (
-                            <div key={comment.id} style={{ paddingBottom: '16px', borderBottom: '1px solid #f0f0f0' }}>
-                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                                        {comment.authorImage ? (
-                                            <img src={comment.authorImage} alt={comment.authorNickname} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                        ) : (
-                                            <span style={{ fontSize: '14px' }}>👤</span>
-                                        )}
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                                            <span style={{ fontWeight: '600', fontSize: '14px', color: '#1a1a1a' }}>
-                                                {comment.authorNickname || '익명'}
-                                            </span>
-                                            <span style={{ fontSize: '12px', color: '#999' }}>
-                                                {formatDate(comment.createdAt)}
-                                            </span>
+                        {comments.map((comment) => {
+                            const isHidden = comment.isFiltered && !isAdmin;
+
+                            return (
+                                <div key={comment.id} style={{ paddingBottom: '16px', borderBottom: '1px solid #f0f0f0', opacity: isHidden ? 0.5 : 1 }}>
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                                            {comment.authorImage ? (
+                                                <img src={comment.authorImage} alt={comment.authorNickname} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <span style={{ fontSize: '14px' }}>👤</span>
+                                            )}
                                         </div>
-                                        <div style={{ fontSize: '14px', color: '#1a1a1a', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                                            {comment.content}
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                                <span style={{ fontWeight: '600', fontSize: '14px', color: '#1a1a1a' }}>
+                                                    {comment.authorNickname || '익명'}
+                                                </span>
+                                                <span style={{ fontSize: '12px', color: '#999' }}>
+                                                    {formatDate(comment.createdAt)}
+                                                </span>
+                                                {comment.isFiltered && (
+                                                    <span style={{ fontSize: '10px', color: '#ef4444', backgroundColor: '#fee2e2', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                                        Admin Hidden
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div style={{ fontSize: '14px', color: isHidden ? '#9ca3af' : '#1a1a1a', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                                                {isHidden ? '관리자에 의해 숨겨진 댓글입니다.' : comment.content}
+                                            </div>
+
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                {comment.authorId === user.id && !isHidden && (
+                                                    <button
+                                                        onClick={() => handleDeleteComment(comment.id)}
+                                                        style={{ marginTop: '8px', padding: '0', backgroundColor: 'transparent', border: 'none', fontSize: '12px', color: '#ef4444', cursor: 'pointer', fontWeight: '600' }}
+                                                    >
+                                                        삭제
+                                                    </button>
+                                                )}
+                                                {isAdmin && (
+                                                    <button
+                                                        onClick={() => handleFilterComment(comment.id, comment.isFiltered)}
+                                                        style={{ marginTop: '8px', padding: '0', backgroundColor: 'transparent', border: 'none', fontSize: '12px', color: comment.isFiltered ? '#10b981' : '#f59e0b', cursor: 'pointer', fontWeight: '600' }}
+                                                    >
+                                                        {comment.isFiltered ? '숨김 해제' : '숨김'}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
-                                        {comment.authorId === user.id && (
-                                            <button
-                                                onClick={() => handleDeleteComment(comment.id)}
-                                                style={{
-                                                    marginTop: '8px',
-                                                    padding: '4px 10px',
-                                                    backgroundColor: 'transparent',
-                                                    border: 'none',
-                                                    fontSize: '12px',
-                                                    color: '#ef4444',
-                                                    cursor: 'pointer',
-                                                    fontWeight: '600'
-                                                }}
-                                            >
-                                                삭제
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
