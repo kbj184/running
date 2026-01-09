@@ -315,8 +315,8 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading, embedded = fal
             </div>
 
             <div style={styles.resultCard}>
-                <span style={{ fontWeight: '700', color: embedded ? '#fff' : '#333' }}>선택된 지역: </span>
-                <span style={{ color: embedded ? 'rgba(255,255,255,0.7)' : '#666' }}>{selectedAddress || '지도를 클릭하여 선택해주세요'}</span>
+                <span style={{ fontWeight: '700', color: '#f8fafc' }}>선택된 지역: </span>
+                <span style={{ color: '#94a3b8' }}>{selectedAddress || '지도를 클릭하여 선택해주세요'}</span>
             </div>
 
             {!embedded && (
@@ -341,13 +341,12 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading, embedded = fal
 const styles = {
     container: {
         width: '100%',
-        maxWidth: '500px',
         margin: '0 auto',
         display: 'flex',
         flexDirection: 'column',
-        gap: '20px',
+        gap: '16px',
         padding: '24px 20px',
-        backgroundColor: '#fff',
+        backgroundColor: '#0f172a',
         minHeight: '100vh',
     },
     header: {
@@ -356,7 +355,7 @@ const styles = {
     title: {
         fontSize: '15px',
         fontWeight: '600',
-        color: '#666',
+        color: '#94a3b8',
         margin: 0,
     },
     searchWrapper: {
@@ -366,41 +365,42 @@ const styles = {
     searchContainer: {
         display: 'flex',
         alignItems: 'center',
-        background: '#f3f4f6',
-        borderRadius: '12px',
+        background: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: '14px',
         padding: '12px 16px',
-        border: '1px solid #e5e7eb',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        transition: 'all 0.2s',
     },
     searchIcon: {
         marginRight: '12px',
         fontSize: '14px',
-        color: '#9ca3af',
+        color: '#64748b',
     },
     searchInput: {
         flex: 1,
         background: 'none',
         border: 'none',
-        color: '#111827',
+        color: '#f8fafc',
         fontSize: '15px',
         outline: 'none',
         width: '100%',
     },
     mapWrapper: {
-        borderRadius: '16px',
+        borderRadius: '20px',
         overflow: 'hidden',
-        border: '1px solid #e5e7eb',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
         position: 'relative',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
     },
     mapContainer: {
         width: '100%',
-        height: '350px',
+        height: '300px',
     },
     resultCard: {
-        background: '#f9fafb',
-        borderRadius: '12px',
+        background: 'rgba(255, 255, 255, 0.03)',
+        borderRadius: '14px',
         padding: '16px',
-        border: '1px solid #e5e7eb',
+        border: '1px solid rgba(255, 255, 255, 0.05)',
         fontSize: '14px',
         lineHeight: '1.5',
     },
@@ -413,10 +413,10 @@ const styles = {
     backButton: {
         flex: 1,
         padding: '16px',
-        borderRadius: '12px',
-        border: '1px solid #e5e7eb',
-        background: '#fff',
-        color: '#6b7280',
+        borderRadius: '14px',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        background: 'rgba(255, 255, 255, 0.05)',
+        color: '#94a3b8',
         fontSize: '16px',
         fontWeight: '600',
         cursor: 'pointer',
@@ -424,14 +424,14 @@ const styles = {
     confirmButton: {
         flex: 2,
         padding: '16px',
-        borderRadius: '12px',
+        borderRadius: '14px',
         border: 'none',
-        background: '#10b981',
-        color: '#fff',
+        background: '#38bdf8',
+        color: '#0f172a',
         fontSize: '16px',
-        fontWeight: '700',
+        fontWeight: '800',
         cursor: 'pointer',
-        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)',
+        boxShadow: '0 10px 15px -3px rgba(56, 189, 248, 0.3)',
     },
     loadingContainer: {
         display: 'flex',
@@ -439,12 +439,13 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '300px',
+        color: '#94a3b8'
     },
     loadingSpinner: {
         width: '40px',
         height: '40px',
-        border: '3px solid #f3f4f6',
-        borderTop: '3px solid #10b981',
+        border: '3px solid rgba(255, 255, 255, 0.1)',
+        borderTop: '3px solid #38bdf8',
         borderRadius: '50%',
         animation: 'spin 1s linear infinite',
         marginBottom: '16px',
@@ -453,18 +454,19 @@ const styles = {
         position: 'absolute',
         right: '12px',
         bottom: '12px',
-        width: '40px',
-        height: '40px',
-        borderRadius: '10px',
-        backgroundColor: '#fff',
-        border: '1px solid #e5e7eb',
+        width: '44px',
+        height: '44px',
+        borderRadius: '12px',
+        backgroundColor: '#1e293b',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '18px',
+        fontSize: '20px',
         cursor: 'pointer',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)',
         zIndex: 10,
+        color: '#38bdf8'
     }
 };
 
