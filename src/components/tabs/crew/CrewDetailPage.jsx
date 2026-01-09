@@ -439,7 +439,7 @@ function CrewDetailPage({ crew, user, onBack, onUpdateUser, onEdit }) {
                 justifyContent: 'space-between'
             }}>
                 <div
-                    onClick={onBack}
+                    onClick={() => navigate(-1)}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
