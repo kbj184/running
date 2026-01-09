@@ -118,8 +118,8 @@ function LocationFilter({ onFilterChange, activeFilter, user }) {
                             padding: '8px 16px',
                             borderRadius: '20px',
                             border: 'none',
-                            backgroundColor: activeFilter.level1 === division.name ? '#1a1a1a' : '#f0f0f0',
-                            color: activeFilter.level1 === division.name ? '#fff' : '#666',
+                            backgroundColor: activeFilter.level1 === division.name && !activeFilter.level2 ? '#1a1a1a' : '#f0f0f0',
+                            color: activeFilter.level1 === division.name && !activeFilter.level2 ? '#fff' : '#666',
                             fontSize: '13px',
                             fontWeight: '600',
                             cursor: 'pointer',
@@ -134,7 +134,7 @@ function LocationFilter({ onFilterChange, activeFilter, user }) {
             </div>
 
             {/* 시/군/구 필터 (level1이 선택되었을 때만 표시) */}
-            {activeFilter.level1 && !activeFilter.level2 && getSubDivisions().length > 0 && (
+            {activeFilter.level1 && getSubDivisions().length > 0 && (
                 <div style={{
                     display: 'flex',
                     gap: '8px',
@@ -156,8 +156,8 @@ function LocationFilter({ onFilterChange, activeFilter, user }) {
                                 padding: '8px 16px',
                                 borderRadius: '20px',
                                 border: 'none',
-                                backgroundColor: '#f0f0f0',
-                                color: '#666',
+                                backgroundColor: activeFilter.level2 === subDivision ? '#1a1a1a' : '#f0f0f0',
+                                color: activeFilter.level2 === subDivision ? '#fff' : '#666',
                                 fontSize: '13px',
                                 fontWeight: '600',
                                 cursor: 'pointer',
@@ -169,41 +169,6 @@ function LocationFilter({ onFilterChange, activeFilter, user }) {
                             {subDivision}
                         </button>
                     ))}
-                </div>
-            )}
-
-            {/* 선택된 level2 표시 */}
-            {activeFilter.level2 && (
-                <div style={{
-                    marginTop: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                }}>
-                    <span style={{
-                        padding: '6px 14px',
-                        borderRadius: '20px',
-                        backgroundColor: '#1a1a1a',
-                        color: '#fff',
-                        fontSize: '13px',
-                        fontWeight: '600'
-                    }}>
-                        {activeFilter.level1} &gt; {activeFilter.level2}
-                    </span>
-                    <button
-                        onClick={() => onFilterChange({ level1: activeFilter.level1, level2: null })}
-                        style={{
-                            padding: '6px 12px',
-                            borderRadius: '20px',
-                            border: 'none',
-                            backgroundColor: '#f0f0f0',
-                            color: '#666',
-                            fontSize: '12px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        ✕
-                    </button>
                 </div>
             )}
         </div>
