@@ -627,17 +627,17 @@ function CrewCreateTab({ user, onCreate }) {
                     {/* 제출 버튼 */}
                     <button
                         type="submit"
-                        disabled={isSubmitting || isUploading || isLoadingLocation}
+                        disabled={isSubmitting || isUploading}
                         style={{
                             width: '100%',
                             padding: '16px',
-                            backgroundColor: isSubmitting || isUploading || isLoadingLocation ? '#9ca3af' : '#1a1a1a',
+                            backgroundColor: isSubmitting || isUploading ? '#9ca3af' : '#1a1a1a',
                             color: 'white',
                             border: 'none',
                             borderRadius: '12px',
                             fontSize: '16px',
                             fontWeight: '700',
-                            cursor: isSubmitting || isUploading || isLoadingLocation ? 'not-allowed' : 'pointer',
+                            cursor: isSubmitting || isUploading ? 'not-allowed' : 'pointer',
                             display: 'flex',
                             justifyContent: 'center',
                             alignItems: 'center',
