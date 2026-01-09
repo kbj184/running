@@ -517,17 +517,7 @@ function CrewCreateTab({ user, onCreate }) {
                     </div>
 
                     {/* 제출 버튼 */}
-                    <div style={{
-                        position: 'fixed',
-                        bottom: '0',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        width: '100%',
-                        maxWidth: '600px',
-                        padding: '20px',
-                        background: 'linear-gradient(to top, #0f172a 70%, transparent)',
-                        zIndex: 10
-                    }}>
+                    <div style={{ marginTop: '20px', paddingBottom: '40px' }}>
                         <button
                             type="submit"
                             disabled={isSubmitting || isUploading}
