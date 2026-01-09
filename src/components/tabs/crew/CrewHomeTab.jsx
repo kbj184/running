@@ -61,6 +61,23 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
         setActiveFilter({ level1: newLevel1, level2: newLevel2 });
     }, [searchParams]);
 
+    // 스크롤 위치 복원
+    useEffect(() => {
+        const savedScrollPosition = sessionStorage.getItem('crewHomeScrollPosition');
+        if (savedScrollPosition) {
+            // 약간의 지연을 주어 DOM이 완전히 렌더링된 후 스크롤
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(savedScrollPosition, 10));
+                sessionStorage.removeItem('crewHomeScrollPosition');
+            }, 100);
+        }
+    }, []);
+
+    // 스크롤 위치 저장 (크루 클릭 시)
+    const saveScrollPosition = () => {
+        sessionStorage.setItem('crewHomeScrollPosition', window.scrollY.toString());
+    };
+
     // 사용자 활동 지역 가져오기
     useEffect(() => {
         const fetchUserActivityArea = async () => {
@@ -150,6 +167,8 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
     };
 
     const handleCrewClick = (crew) => {
+        // 스크롤 위치 저장
+        saveScrollPosition();
         // CrewTab의 상세 페이지로 이동 (CrewTab이 처리)
         navigate(`/crew/detail/${crew.id}`, { state: { crew } });
     };
