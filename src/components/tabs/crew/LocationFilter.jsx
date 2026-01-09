@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // 대한민국 행정구역 모의 데이터
 // 실제로는 백엔드에서 가져오거나 더 완전한 데이터셋이 필요함
@@ -33,6 +33,8 @@ const KOREA_ADMIN_DIVISIONS = [
 
 function LocationFilter({ onFilterChange, activeFilter, user }) {
     const [initialized, setInitialized] = useState(false);
+    const level1ScrollRef = useRef(null);
+    const level2ScrollRef = useRef(null);
 
     // 유저 정보로 초기 필터 설정 (최초 1회만)
     useEffect(() => {
@@ -54,12 +56,46 @@ function LocationFilter({ onFilterChange, activeFilter, user }) {
         }
     }, [user, initialized, onFilterChange]);
 
+    // 스크롤 위치 복원
+    useEffect(() => {
+        const savedLevel1Scroll = sessionStorage.getItem('locationFilterLevel1Scroll');
+        const savedLevel2Scroll = sessionStorage.getItem('locationFilterLevel2Scroll');
+
+        if (savedLevel1Scroll && level1ScrollRef.current) {
+            setTimeout(() => {
+                level1ScrollRef.current.scrollLeft = parseInt(savedLevel1Scroll, 10);
+                sessionStorage.removeItem('locationFilterLevel1Scroll');
+            }, 100);
+        }
+
+        if (savedLevel2Scroll && level2ScrollRef.current) {
+            setTimeout(() => {
+                level2ScrollRef.current.scrollLeft = parseInt(savedLevel2Scroll, 10);
+                sessionStorage.removeItem('locationFilterLevel2Scroll');
+            }, 100);
+        }
+    }, [activeFilter]);
+
     const handleLevel1Click = (level1) => {
         if (activeFilter.level1 === level1) return; // 이미 선택됨
+
+        // 스크롤 위치 저장
+        if (level1ScrollRef.current) {
+            sessionStorage.setItem('locationFilterLevel1Scroll', level1ScrollRef.current.scrollLeft.toString());
+        }
+
         onFilterChange({ level1: level1, level2: null });
     };
 
     const handleLevel2Click = (level2) => {
+        // 스크롤 위치 저장
+        if (level1ScrollRef.current) {
+            sessionStorage.setItem('locationFilterLevel1Scroll', level1ScrollRef.current.scrollLeft.toString());
+        }
+        if (level2ScrollRef.current) {
+            sessionStorage.setItem('locationFilterLevel2Scroll', level2ScrollRef.current.scrollLeft.toString());
+        }
+
         onFilterChange({ ...activeFilter, level2: level2 });
     };
 
@@ -77,16 +113,18 @@ function LocationFilter({ onFilterChange, activeFilter, user }) {
     return (
         <div style={{ marginBottom: '8px' }}>
             {/* Horizontal scrollable pill filters */}
-            <div style={{
-                display: 'flex',
-                gap: '8px',
-                overflowX: 'auto',
-                overflowY: 'hidden',
-                paddingBottom: '4px',
-                scrollbarWidth: 'none', // Firefox
-                msOverflowStyle: 'none', // IE/Edge
-                WebkitOverflowScrolling: 'touch'
-            }}
+            <div
+                ref={level1ScrollRef}
+                style={{
+                    display: 'flex',
+                    gap: '8px',
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    paddingBottom: '4px',
+                    scrollbarWidth: 'none', // Firefox
+                    msOverflowStyle: 'none', // IE/Edge
+                    WebkitOverflowScrolling: 'touch'
+                }}
                 className="location-filter-scroll"
             >
                 {/* 전국 버튼 */}
@@ -135,17 +173,19 @@ function LocationFilter({ onFilterChange, activeFilter, user }) {
 
             {/* 시/군/구 필터 (level1이 선택되었을 때만 표시) */}
             {activeFilter.level1 && getSubDivisions().length > 0 && (
-                <div style={{
-                    display: 'flex',
-                    gap: '8px',
-                    overflowX: 'auto',
-                    overflowY: 'hidden',
-                    paddingBottom: '4px',
-                    marginTop: '8px',
-                    scrollbarWidth: 'none',
-                    msOverflowStyle: 'none',
-                    WebkitOverflowScrolling: 'touch'
-                }}
+                <div
+                    ref={level2ScrollRef}
+                    style={{
+                        display: 'flex',
+                        gap: '8px',
+                        overflowX: 'auto',
+                        overflowY: 'hidden',
+                        paddingBottom: '4px',
+                        marginTop: '8px',
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                        WebkitOverflowScrolling: 'touch'
+                    }}
                     className="location-filter-scroll"
                 >
                     {getSubDivisions().map((subDivision) => (
