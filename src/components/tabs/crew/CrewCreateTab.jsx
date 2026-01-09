@@ -47,7 +47,6 @@ function CrewCreateTab({ user, onCreate }) {
 
     // 활동 지역 관련 상태
     const [activityAreas, setActivityAreas] = useState([]);
-    const [showAreaSelection, setShowAreaSelection] = useState(false);
 
     // 크루 이름 중복 확인
     const handleCheckName = async () => {
@@ -95,19 +94,12 @@ function CrewCreateTab({ user, onCreate }) {
     };
 
     const handleAreaSelect = (locationData) => {
-        if (activityAreas.length >= 1) {
-            showToast('활동 지역은 1개만 선택할 수 있습니다. 기존 지역을 삭제 후 다시 선택해주세요.');
-            return;
-        }
-
         const newArea = {
             id: Date.now(),
             ...locationData
         };
 
         setActivityAreas([newArea]);
-        setShowAreaSelection(false);
-        showToast('활동 지역이 추가되었습니다.');
     };
 
     const removeActivityArea = (areaId) => {
@@ -235,25 +227,7 @@ function CrewCreateTab({ user, onCreate }) {
         }
     };
 
-    if (showAreaSelection) {
-        return (
-            <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: '#fff',
-                zIndex: 1000,
-                overflowY: 'auto'
-            }}>
-                <CrewActivityAreaSelection
-                    onSelect={handleAreaSelect}
-                    onBack={() => setShowAreaSelection(false)}
-                />
-            </div>
-        );
-    }
+
 
     return (
         <div style={{
@@ -460,64 +434,17 @@ function CrewCreateTab({ user, onCreate }) {
                             크루 활동 지역 *
                         </label>
 
-                        {activityAreas.length > 0 ? (
-                            <div style={{
-                                backgroundColor: '#f8f9fa',
-                                borderRadius: '12px',
-                                padding: '16px',
-                                border: '1px solid #e0e0e0',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
-                            }}>
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontSize: '13px', color: '#666', marginBottom: '4px' }}>선택된 지역:</div>
-                                    <div style={{ fontSize: '15px', fontWeight: '600', color: '#1a1a1a' }}>
-                                        {activityAreas[0].adminLevelFull || '지역 정보 없음'}
-                                    </div>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowAreaSelection(true)}
-                                    style={{
-                                        padding: '8px 16px',
-                                        borderRadius: '8px',
-                                        border: '1px solid #1a1a1a',
-                                        backgroundColor: '#fff',
-                                        color: '#1a1a1a',
-                                        fontSize: '13px',
-                                        fontWeight: '600',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    변경
-                                </button>
-                            </div>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={() => setShowAreaSelection(true)}
-                                style={{
-                                    width: '100%',
-                                    padding: '16px',
-                                    borderRadius: '12px',
-                                    border: '2px dashed #d1d5db',
-                                    backgroundColor: '#f9fafb',
-                                    color: '#4b5563',
-                                    fontSize: '15px',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: '8px'
-                                }}
-                            >
-                                <span style={{ fontSize: '24px' }}>📍</span>
-                                지도를 클릭하여 활동 지역을 선택하세요
-                            </button>
-                        )}
+                        <div style={{
+                            backgroundColor: '#1a1a1a',
+                            borderRadius: '16px',
+                            padding: '20px',
+                            border: '1px solid #333',
+                        }}>
+                            <CrewActivityAreaSelection
+                                onSelect={handleAreaSelect}
+                                embedded={true}
+                            />
+                        </div>
                     </div>
 
                     {/* 크루 이미지 */}

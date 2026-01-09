@@ -5,7 +5,7 @@ import AdvancedMarker from '../../common/AdvancedMarker';
 const SEOUL_CENTER = { lat: 37.5665, lng: 126.9780 };
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
-function CrewActivityAreaSelection({ onSelect, onBack, isLoading }) {
+function CrewActivityAreaSelection({ onSelect, onBack, isLoading, embedded = false }) {
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
@@ -18,7 +18,6 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading }) {
     const [markerPos, setMarkerPos] = useState(null);
     const [selectedAddress, setSelectedAddress] = useState('');
     const [extractedGu, setExtractedGu] = useState('');
-    const [isGeocoding, setIsGeocoding] = useState(false);
     const [isLocating, setIsLocating] = useState(false);
     const autocompleteRef = useRef(null);
 
@@ -104,6 +103,11 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading }) {
                 setMarkerPos({ lat: locationData.latitude, lng: locationData.longitude });
                 setSelectedAddress(locationData.formattedAddress);
                 setExtractedGu(locationData.adminLevel2);
+
+                // 임베디드 모드일 경우 즉시 상위 컴포넌트에 알림
+                if (embedded) {
+                    onSelect(locationData);
+                }
             }
         } catch (error) {
             console.error('Map click geocoding error:', error);
@@ -133,6 +137,11 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading }) {
                 if (map) {
                     map.panTo(newPos);
                     map.setZoom(15);
+                }
+
+                // 임베디드 모드일 경우 즉시 상위 컴포넌트에 알림
+                if (embedded) {
+                    onSelect(locationData);
                 }
             }
         }
@@ -168,6 +177,11 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading }) {
                             setMarkerPos({ lat: locationData.latitude, lng: locationData.longitude });
                             setSelectedAddress(locationData.formattedAddress);
                             setExtractedGu(locationData.adminLevel2);
+
+                            // 임베디드 모드일 경우 즉시 상위 컴포넌트에 알림
+                            if (embedded) {
+                                onSelect(locationData);
+                            }
                         } else {
                             alert('현재 위치에서 구 단위 정보를 찾을 수 없습니다. 지도를 드래그하여 정확한 위치를 클릭해주세요.');
                             setMarkerPos(newPos);
@@ -196,14 +210,12 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading }) {
             return;
         }
 
-        setIsGeocoding(true);
         try {
             const geocoder = new window.google.maps.Geocoder();
             const response = await geocoder.geocode({ location: markerPos });
 
             if (response.results && response.results.length > 0) {
                 const locationData = getLocationData(response.results[0], markerPos);
-                console.log('📍 Final Extracted Location (Crew Activity Area):', locationData);
                 onSelect(locationData);
             } else {
                 alert('해당 위치의 주소 정보를 가져올 수 없습니다.');
@@ -211,8 +223,6 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading }) {
         } catch (error) {
             console.error('Geocoding error:', error);
             alert('위치 정보를 처리하는 중 오류가 발생했습니다.');
-        } finally {
-            setIsGeocoding(false);
         }
     };
 
@@ -225,11 +235,17 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading }) {
         );
     }
 
+    const containerStyle = embedded ?
+        { ...styles.container, maxWidth: '100%', padding: '0', minHeight: 'auto', backgroundColor: 'transparent' } :
+        styles.container;
+
     return (
-        <div style={styles.container}>
-            <div style={styles.header}>
-                <h3 style={styles.title}>지도를 클릭하여 새로운 활동 지역을 선택하세요</h3>
-            </div>
+        <div style={containerStyle}>
+            {!embedded && (
+                <div style={styles.header}>
+                    <h3 style={styles.title}>지도를 클릭하여 새로운 활동 지역을 선택하세요</h3>
+                </div>
+            )}
 
             <div style={styles.searchWrapper}>
                 <Autocomplete
@@ -299,23 +315,25 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading }) {
             </div>
 
             <div style={styles.resultCard}>
-                <span style={{ fontWeight: '700', color: '#333' }}>선택된 지역: </span>
-                <span style={{ color: '#666' }}>{selectedAddress || '지도를 클릭하여 선택해주세요'}</span>
+                <span style={{ fontWeight: '700', color: embedded ? '#fff' : '#333' }}>선택된 지역: </span>
+                <span style={{ color: embedded ? 'rgba(255,255,255,0.7)' : '#666' }}>{selectedAddress || '지도를 클릭하여 선택해주세요'}</span>
             </div>
 
-            <div style={styles.buttonGroup}>
-                <button onClick={onBack} style={styles.backButton}>이전</button>
-                <button
-                    onClick={handleConfirm}
-                    disabled={isGeocoding || isLoading || !markerPos}
-                    style={{
-                        ...styles.confirmButton,
-                        opacity: (isGeocoding || isLoading || !markerPos) ? 0.6 : 1
-                    }}
-                >
-                    {isGeocoding || isLoading ? '처리 중...' : '활동 지역 확정'}
-                </button>
-            </div>
+            {!embedded && (
+                <div style={styles.buttonGroup}>
+                    <button onClick={onBack} style={styles.backButton}>이전</button>
+                    <button
+                        onClick={handleConfirm}
+                        disabled={isLoading || !markerPos}
+                        style={{
+                            ...styles.confirmButton,
+                            opacity: (isLoading || !markerPos) ? 0.6 : 1
+                        }}
+                    >
+                        {isLoading ? '처리 중...' : '활동 지역 확정'}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
