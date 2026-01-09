@@ -343,7 +343,7 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user, onCrewTabChange }) {
                 onClick={handleCreateCrew}
                 style={{
                     position: 'fixed',
-                    bottom: 'calc(var(--bottom-nav-height) + 20px)',
+                    bottom: '80px',
                     right: '20px',
                     width: '60px',
                     height: '60px',
