@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GoogleMap, Autocomplete } from '@react-google-maps/api';
 import AdvancedMarker from '../../common/AdvancedMarker';
 import { api } from '../../../utils/api';
+import { defaultMapOptions, MAP_ID } from '../../../utils/mapConfig';
 
 const CREW_IMAGES = [
     { id: 1, emoji: '🦁', bg: 'linear-gradient(135deg, #FF6B6B 0%, #C44569 100%)' },
@@ -16,7 +17,7 @@ const CREW_IMAGES = [
     { id: 10, emoji: '👑', bg: 'linear-gradient(135deg, #5352ed 0%, #70a1ff 100%)' },
 ];
 
-const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
+
 
 function CrewEditPage({ crew, user, onCancel, onComplete }) {
     const [name, setName] = useState('');
@@ -307,11 +308,8 @@ function CrewEditPage({ crew, user, onCancel, onComplete }) {
                             onClick={handleMapClick}
                             onLoad={(mapInstance) => setMap(mapInstance)}
                             options={{
-                                mapId: MAP_ID,
-                                disableDefaultUI: false,
-                                mapTypeControl: false,
-                                streetViewControl: false,
-                                fullscreenControl: false,
+                                ...defaultMapOptions,
+                                mapId: MAP_ID
                             }}
                         >
                             {markerPos && (

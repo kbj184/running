@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, Autocomplete } from '@react-google-maps/api';
 import AdvancedMarker from '../common/AdvancedMarker';
+import { defaultMapOptions } from '../../utils/mapConfig';
 
 const SEOUL_CENTER = { lat: 37.5665, lng: 126.9780 };
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
@@ -267,11 +268,8 @@ function LocationSelection({ onSelect, onBack, isLoading }) {
                     onLoad={onLoad}
                     onUnmount={onUnmount}
                     options={{
-                        mapId: MAP_ID,
-                        disableDefaultUI: false,
-                        mapTypeControl: false,
-                        streetViewControl: false,
-                        fullscreenControl: false,
+                        ...defaultMapOptions,
+                        mapId: MAP_ID
                     }}
                 >
                     {markerPos && (

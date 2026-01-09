@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, Marker } from '@react-google-maps/api';
+import { defaultMapOptions } from '../../utils/mapConfig';
+
 
 const mapContainerStyle = {
     width: '100%',
@@ -145,16 +147,7 @@ function EditActivityAreaModal({ isOpen, onClose, onSave, user, currentArea }) {
                     center={markerPos || { lat: 37.5665, lng: 126.9780 }}
                     zoom={13}
                     onClick={handleMapClick}
-                    options={{
-                        disableDefaultUI: true,  // 모든 기본 UI 숨기기
-                        zoomControl: true,       // 줌 컨트롤만 표시
-                        styles: [
-                            {
-                                featureType: 'poi',
-                                stylers: [{ visibility: 'off' }]
-                            }
-                        ]
-                    }}
+                    options={defaultMapOptions}
                 >
                     {markerPos && (
                         <Marker

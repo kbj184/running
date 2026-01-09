@@ -3,9 +3,7 @@ import { api } from '../../../utils/api';
 import { generateRouteMapImage } from '../../../utils/mapThumbnail';
 import { GoogleMap, useJsApiLoader, Polyline } from '@react-google-maps/api';
 import AdvancedMarker from '../../common/AdvancedMarker';
-
-const LIBRARIES = ['places', 'marker'];
-const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
+import { interactiveMapOptions, LIBRARIES, MAP_ID } from '../../../utils/mapConfig';
 
 // 속도에 따른 색상 반환
 const getSpeedColor = (speedKmh) => {
@@ -291,12 +289,8 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                                     onLoad={onLoad}
                                     onUnmount={() => setMap(null)}
                                     options={{
-                                        mapId: MAP_ID,
-                                        disableDefaultUI: false,
-                                        zoomControl: true,
-                                        mapTypeControl: false,
-                                        streetViewControl: false,
-                                        fullscreenControl: true,
+                                        ...interactiveMapOptions,
+                                        mapId: MAP_ID
                                     }}
                                 >
                                     {routeSegments.map((segment, idx) => (

@@ -3,10 +3,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { generateRouteMapImage } from '../utils/mapThumbnail';
 import { GoogleMap, useJsApiLoader, Polyline } from '@react-google-maps/api';
 import AdvancedMarker from './common/AdvancedMarker';
+import { interactiveMapOptions, LIBRARIES, MAP_ID } from '../utils/mapConfig';
 import './result-screen.css';
-
-const LIBRARIES = ['places', 'marker'];
-const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
 // 속도에 따른 색상 반환 (RunningScreen과 동일)
 const getSpeedColor = (speedKmh) => {
@@ -419,12 +417,8 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                     onLoad={onLoad}
                                     onUnmount={onUnmount}
                                     options={{
-                                        mapId: MAP_ID,
-                                        disableDefaultUI: false,
-                                        zoomControl: true,
-                                        mapTypeControl: false,
-                                        streetViewControl: false,
-                                        fullscreenControl: true,
+                                        ...interactiveMapOptions,
+                                        mapId: MAP_ID
                                     }}
                                 >
                                     {/* 속도별 경로 세그먼트 (속도에 따라 색상 변경) */}

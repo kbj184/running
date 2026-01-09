@@ -7,3 +7,18 @@
 .location-filter-scroll::-webkit-scrollbar {
     display: none;
 }
+
+/* Hide Google Maps copyright, terms, and shortcuts */
+.gm-style-cc,
+.gmnoprint,
+.gm-style-cc+div,
+a[href^="https://maps.google.com/maps"],
+.gm-control-active {
+    display: none !important;
+}
+
+/* Hide Google Maps keyboard shortcuts link */
+button[aria-label="키보드 단축키"],
+button[aria-label="Keyboard shortcuts"] {
+    display: none !important;
+}

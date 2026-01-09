@@ -13,6 +13,7 @@ import {
 import { saveRunningData } from '../utils/db';
 import { api } from '../utils/api';
 import { generateRouteThumbImage } from '../utils/mapThumbnail';
+import { runningMapOptions, MAP_ID } from '../utils/mapConfig';
 import './running-compact.css';
 
 const containerStyle = {
@@ -20,17 +21,7 @@ const containerStyle = {
     height: '100%'
 };
 
-const LIBRARIES = ['places', 'marker'];
-const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
-const mapOptions = {
-    disableDefaultUI: true,
-    zoomControl: false,
-    streetViewControl: false,
-    mapTypeControl: false,
-    fullscreenControl: false,
-    clickableIcons: false,
-};
 
 // 속도에 따른 색상 반환 (히트맵 스타일: Low-Green -> High-Red)
 const getSpeedColor = (speedKmh) => {
@@ -653,7 +644,7 @@ function RunningScreen({ onStop, sessionId, user }) {
                         onLoad={onLoad}
                         onUnmount={onUnmount}
                         options={{
-                            ...mapOptions,
+                            ...runningMapOptions,
                             mapId: MAP_ID
                         }}
                         onClick={onMapClick}

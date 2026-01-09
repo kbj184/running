@@ -4,14 +4,14 @@ import { SEOUL_CENTER } from '../../constants/runnerGrades';
 import MapController from './MapController';
 import RunnerMarkers from './RunnerMarkers';
 import ControlPanel from './ControlPanel';
+import { interactiveMapOptions, LIBRARIES, MAP_ID } from '../../utils/mapConfig';
 
 const containerStyle = {
     width: '100%',
     height: '100%'
 };
 
-const LIBRARIES = ['places', 'marker'];
-const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
+
 
 function MapView({
     runners,
@@ -32,15 +32,9 @@ function MapView({
 
     const [map, setMap] = useState(null);
 
-    // showLabels에 따라 동적으로 mapOptions 생성 (mapId가 있으면 styles는 클라우드 콘솔에서 설정해야 함)
     const mapOptions = {
-        mapId: MAP_ID,
-        disableDefaultUI: true, // 기본 UI 제거 (브라우저 기본 위치 팝업 방지용)
-        zoomControl: true,
-        streetViewControl: false,
-        mapTypeControl: false,
-        fullscreenControl: true,
-        gestureHandling: 'greedy', // 모바일에서 한 손가락으로 확대/축소 가능
+        ...interactiveMapOptions,
+        mapId: MAP_ID
     };
 
     const onLoad = useCallback(function callback(map) {

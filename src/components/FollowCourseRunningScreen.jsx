@@ -13,6 +13,7 @@ import {
 import { saveRunningData } from '../utils/db';
 import { api } from '../utils/api';
 import { generateRouteThumbImage } from '../utils/mapThumbnail';
+import { runningMapOptions, MAP_ID } from '../utils/mapConfig';
 import './running-compact.css';
 
 const containerStyle = {
@@ -20,17 +21,7 @@ const containerStyle = {
     height: '100%'
 };
 
-const LIBRARIES = ['places', 'marker'];
-const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
-const mapOptions = {
-    disableDefaultUI: true,
-    zoomControl: false,
-    streetViewControl: false,
-    mapTypeControl: false,
-    fullscreenControl: false,
-    clickableIcons: false,
-};
 
 // 거리 검증 상수 (km 단위)
 const VALIDATION_RADIUS = {
@@ -95,7 +86,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
 
 
     const googleMapOptions = useMemo(() => ({
-        ...mapOptions,
+        ...runningMapOptions,
         mapId: MAP_ID,
         isFractionalZoomEnabled: true
     }), []);

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, Autocomplete } from '@react-google-maps/api';
 import AdvancedMarker from '../../common/AdvancedMarker';
+import { defaultMapOptions } from '../../../utils/mapConfig';
 
 const SEOUL_CENTER = { lat: 37.5665, lng: 126.9780 };
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
@@ -241,6 +242,21 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading, embedded = fal
 
     return (
         <div style={containerStyle}>
+            {/* 구글 로고 및 하단 텍스트 제거를 위한 스타일 스타일 */}
+            <style>
+                {`
+                    .gm-style-cc, .gmnoprint, .gm-style-cc + div {
+                        display: none !important;
+                    }
+                    a[href^="https://maps.google.com/maps"] {
+                        display: none !important;
+                    }
+                    .gm-control-active {
+                        display: none !important;
+                    }
+                `}
+            </style>
+
             {!embedded && (
                 <div style={styles.header}>
                     <h3 style={styles.title}>지도를 클릭하여 새로운 활동 지역을 선택하세요</h3>
@@ -272,11 +288,9 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading, embedded = fal
                     onLoad={onLoad}
                     onUnmount={onUnmount}
                     options={{
+                        ...defaultMapOptions,
                         mapId: MAP_ID,
-                        disableDefaultUI: false,
-                        mapTypeControl: false,
-                        streetViewControl: false,
-                        fullscreenControl: false,
+                        gestureHandling: 'greedy'
                     }}
                 >
                     {markerPos && (
