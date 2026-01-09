@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GoogleMap, Marker } from '@react-google-maps/api';
 import { api } from '../../../utils/api';
+import CrewActivityAreaSelection from './CrewActivityAreaSelection';
 
 const CREW_IMAGES = [
     { id: 1, emoji: '🦁', bg: 'linear-gradient(135deg, #FF6B6B 0%, #C44569 100%)' },
@@ -16,11 +16,7 @@ const CREW_IMAGES = [
     { id: 10, emoji: '👑', bg: 'linear-gradient(135deg, #5352ed 0%, #70a1ff 100%)' },
 ];
 
-const mapContainerStyle = {
-    width: '100%',
-    height: '400px',
-    borderRadius: '12px'
-};
+
 
 function CrewCreateTab({ user, onCreate }) {
     const navigate = useNavigate();
@@ -51,26 +47,7 @@ function CrewCreateTab({ user, onCreate }) {
 
     // 활동 지역 관련 상태
     const [activityAreas, setActivityAreas] = useState([]);
-    const [selectedAddress, setSelectedAddress] = useState('');
-    const [mapCenter, setMapCenter] = useState({ lat: 37.5665, lng: 126.9780 }); // 서울 기본값
-    const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-
-    useEffect(() => {
-        // 사용자 현재 위치 가져오기
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setMapCenter({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    });
-                },
-                (error) => {
-                    console.log('위치 정보를 가져올 수 없습니다:', error);
-                }
-            );
-        }
-    }, []);
+    const [showAreaSelection, setShowAreaSelection] = useState(false);
 
     // 크루 이름 중복 확인
     const handleCheckName = async () => {
@@ -117,90 +94,20 @@ function CrewCreateTab({ user, onCreate }) {
         setNameCheckMessage('');
     };
 
-    const handleMapClick = async (event) => {
+    const handleAreaSelect = (locationData) => {
         if (activityAreas.length >= 1) {
             showToast('활동 지역은 1개만 선택할 수 있습니다. 기존 지역을 삭제 후 다시 선택해주세요.');
             return;
         }
 
-        const lat = event.latLng.lat();
-        const lng = event.latLng.lng();
+        const newArea = {
+            id: Date.now(),
+            ...locationData
+        };
 
-        setIsLoadingLocation(true);
-        setError('');
-
-        try {
-            // Google Geocoding API로 주소 정보 가져오기
-            const geocoder = new window.google.maps.Geocoder();
-            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                if (status === 'OK' && results[0]) {
-                    const addressComponents = results[0].address_components;
-
-                    let countryCode = '';
-                    let countryName = '';
-                    let adminLevel1 = '';
-                    let adminLevel2 = '';
-                    let adminLevel3 = '';
-
-                    addressComponents.forEach(component => {
-                        if (component.types.includes('country')) {
-                            countryCode = component.short_name;
-                            countryName = component.long_name;
-                        }
-                        if (component.types.includes('administrative_area_level_1')) {
-                            adminLevel1 = component.long_name;
-                        }
-                    });
-
-                    // adminLevel2와 adminLevel3를 올바르게 매핑하기 위해 두 번째 패스
-                    addressComponents.forEach(component => {
-                        if (component.types.includes('sublocality_level_2')) {
-                            adminLevel3 = component.long_name;
-                        }
-                    });
-
-                    addressComponents.forEach(component => {
-                        if (component.types.includes('locality')) {
-                            adminLevel2 = component.long_name;
-                        }
-                        if (component.types.includes('sublocality_level_1')) {
-                            if (!adminLevel2) {
-                                adminLevel2 = component.long_name;
-                            } else if (!adminLevel3) {
-                                adminLevel3 = component.long_name;
-                            }
-                        }
-                        if (component.types.includes('sublocality') && !adminLevel2 && !adminLevel3) {
-                            adminLevel2 = component.long_name;
-                        }
-                    });
-
-                    const adminLevelFull = results[0].formatted_address;
-
-                    const newArea = {
-                        id: Date.now(), // 임시 ID
-                        countryCode,
-                        countryName,
-                        adminLevel1,
-                        adminLevel2,
-                        adminLevel3,
-                        adminLevelFull,
-                        latitude: lat,
-                        longitude: lng
-                    };
-
-                    setActivityAreas([newArea]);
-                    setSelectedAddress(adminLevelFull);
-                } else {
-                    showToast('주소 정보를 가져올 수 없습니다.');
-                }
-                setIsLoadingLocation(false);
-            });
-        } catch (err) {
-            console.error('Geocoding error:', err);
-            showToast('주소 정보를 가져오는 중 오류가 발생했습니다.');
-            setIsLoadingLocation(false);
-        }
+        setActivityAreas([newArea]);
+        setShowAreaSelection(false);
+        showToast('활동 지역이 추가되었습니다.');
     };
 
     const removeActivityArea = (areaId) => {
@@ -327,6 +234,26 @@ function CrewCreateTab({ user, onCreate }) {
             setIsSubmitting(false);
         }
     };
+
+    if (showAreaSelection) {
+        return (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: '#fff',
+                zIndex: 1000,
+                overflowY: 'auto'
+            }}>
+                <CrewActivityAreaSelection
+                    onSelect={handleAreaSelect}
+                    onBack={() => setShowAreaSelection(false)}
+                />
+            </div>
+        );
+    }
 
     return (
         <div style={{
@@ -532,58 +459,64 @@ function CrewCreateTab({ user, onCreate }) {
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#1a1a1a' }}>
                             크루 활동 지역 *
                         </label>
-                        <p style={{ fontSize: '13px', color: '#666', marginBottom: '12px' }}>
-                            지도를 클릭하여 활동 지역을 선택하세요 (1개만 선택 가능)
-                        </p>
 
-                        {/* 지도 */}
-                        <GoogleMap
-                            mapContainerStyle={mapContainerStyle}
-                            center={mapCenter}
-                            zoom={13}
-                            onClick={handleMapClick}
-                            options={{
-                                styles: [
-                                    {
-                                        featureType: 'poi',
-                                        stylers: [{ visibility: 'off' }]
-                                    },
-                                    {
-                                        featureType: 'transit',
-                                        stylers: [{ visibility: 'off' }]
-                                    }
-                                ]
-                            }}
-                        >
-                            {activityAreas.map((area) => (
-                                <Marker
-                                    key={area.id}
-                                    position={{ lat: area.latitude, lng: area.longitude }}
-                                    icon={{
-                                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                                        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="16" cy="16" r="14" fill="#00f2fe" stroke="#fff" stroke-width="2"/>
-                                            <text x="16" y="21" font-size="16" text-anchor="middle" fill="#fff">📍</text>
-                                        </svg>
-                                    `),
-                                        scaledSize: new window.google.maps.Size(32, 32)
-                                    }}
-                                />
-                            ))}
-                        </GoogleMap>
-
-                        {/* 선택된 지역 표시 */}
-                        {selectedAddress && (
+                        {activityAreas.length > 0 ? (
                             <div style={{
-                                marginTop: '16px',
-                                padding: '12px',
                                 backgroundColor: '#f8f9fa',
-                                borderRadius: '8px',
-                                fontSize: '14px',
-                                color: '#333'
+                                borderRadius: '12px',
+                                padding: '16px',
+                                border: '1px solid #e0e0e0',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
                             }}>
-                                <strong>선택된 지역:</strong> {selectedAddress}
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '13px', color: '#666', marginBottom: '4px' }}>선택된 지역:</div>
+                                    <div style={{ fontSize: '15px', fontWeight: '600', color: '#1a1a1a' }}>
+                                        {activityAreas[0].adminLevelFull || '지역 정보 없음'}
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAreaSelection(true)}
+                                    style={{
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #1a1a1a',
+                                        backgroundColor: '#fff',
+                                        color: '#1a1a1a',
+                                        fontSize: '13px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    변경
+                                </button>
                             </div>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => setShowAreaSelection(true)}
+                                style={{
+                                    width: '100%',
+                                    padding: '16px',
+                                    borderRadius: '12px',
+                                    border: '2px dashed #d1d5db',
+                                    backgroundColor: '#f9fafb',
+                                    color: '#4b5563',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <span style={{ fontSize: '24px' }}>📍</span>
+                                지도를 클릭하여 활동 지역을 선택하세요
+                            </button>
                         )}
                     </div>
 
