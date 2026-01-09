@@ -1,14 +1,13 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import CrewSubHeader from './CrewSubHeader';
 
 function CrewLayout() {
     return (
-        <div style={{ marginTop: 'calc(var(--header-height) - 60px)' }}>
-            <CrewSubHeader />
+        <div>
             <Outlet />
         </div>
     );
 }
 
 export default CrewLayout;
+
