@@ -10,7 +10,7 @@ const scrollContainerStyle = `
     }
 `;
 
-function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
+function CrewHomeTab({ allCrews, onRefreshCrews, user, onCrewTabChange }) {
     const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState({ level1: null, level2: null });
     const [myCrews, setMyCrews] = useState({ primaryCrew: null, secondaryCrews: [] });
@@ -67,6 +67,12 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
         navigate(`/crew/detail/${crew.id}`, { state: { crew } });
     };
 
+    const handleCreateCrew = () => {
+        if (onCrewTabChange) {
+            onCrewTabChange('create');
+        }
+    };
+
     // 내 크루 전체 목록 (대표 + 보조)
     const allMyCrews = [
         ...(myCrews.primaryCrew ? [myCrews.primaryCrew] : []),
@@ -77,7 +83,7 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
     const hasMyCrews = allMyCrews.length > 0;
 
     return (
-        <div style={{ backgroundColor: '#f8f9fa', minHeight: 'calc(100vh - var(--header-height) - 60px)' }}>
+        <div style={{ backgroundColor: '#f8f9fa', minHeight: 'calc(100vh - var(--header-height) - 60px)', position: 'relative' }}>
             <style>{scrollContainerStyle}</style>
             {/* 내 크루 섹션 - 크루가 있을 때만 표시 */}
             {!isLoadingMyCrews && hasMyCrews && (
@@ -331,6 +337,41 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
                     </div>
                 )}
             </div>
+
+            {/* 플로팅 액션 버튼 - 크루 만들기 */}
+            <button
+                onClick={handleCreateCrew}
+                style={{
+                    position: 'fixed',
+                    bottom: 'calc(var(--bottom-nav-height) + 20px)',
+                    right: '20px',
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    backgroundColor: '#10b981',
+                    color: '#fff',
+                    border: 'none',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '28px',
+                    fontWeight: '700',
+                    transition: 'all 0.2s',
+                    zIndex: 100
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)';
+                }}
+            >
+                +
+            </button>
         </div>
     );
 }
