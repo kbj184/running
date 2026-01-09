@@ -299,17 +299,10 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading, embedded = fal
                             position={markerPos}
                         >
                             <div style={{
-                                width: '30px',
-                                height: '30px',
-                                backgroundColor: '#00f2fe',
-                                borderRadius: '50%',
-                                border: '3px solid white',
-                                boxShadow: '0 0 15px rgba(0,242,254,0.6)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '16px'
-                            }}>📍</div>
+                                fontSize: '32px',
+                                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                                transform: 'translateY(-16px)'
+                            }}>🚩</div>
                         </AdvancedMarker>
                     )}
 
