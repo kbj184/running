@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LocationFilter from './LocationFilter';
 import { api } from '../../../utils/api';
 
 // CSS for hiding scrollbar
@@ -370,78 +371,11 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
                 {/* 지역별크루 탭일 때만 지역 필터 표시 */}
                 {activeTab === 'regional' && (
                     <div style={{ marginBottom: '16px' }}>
-                        <div style={{
-                            display: 'flex',
-                            gap: '8px',
-                            overflowX: 'auto',
-                            scrollbarWidth: 'none',
-                            msOverflowStyle: 'none'
-                        }}>
-                            <button
-                                onClick={() => handleFilterChange({ level1: null, level2: null })}
-                                style={{
-                                    padding: '8px 16px',
-                                    borderRadius: '16px',
-                                    border: 'none',
-                                    backgroundColor: !activeFilter.level1 ? '#1a1a1a' : '#fff',
-                                    color: !activeFilter.level1 ? '#fff' : '#666',
-                                    fontWeight: '600',
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                전국
-                            </button>
-                            <button
-                                onClick={() => handleFilterChange({ level1: '서울특별시', level2: null })}
-                                style={{
-                                    padding: '8px 16px',
-                                    borderRadius: '16px',
-                                    border: 'none',
-                                    backgroundColor: activeFilter.level1 === '서울특별시' ? '#1a1a1a' : '#fff',
-                                    color: activeFilter.level1 === '서울특별시' ? '#fff' : '#666',
-                                    fontWeight: '600',
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                서울특별시
-                            </button>
-                            <button
-                                onClick={() => handleFilterChange({ level1: '경기도', level2: null })}
-                                style={{
-                                    padding: '8px 16px',
-                                    borderRadius: '16px',
-                                    border: 'none',
-                                    backgroundColor: activeFilter.level1 === '경기도' ? '#1a1a1a' : '#fff',
-                                    color: activeFilter.level1 === '경기도' ? '#fff' : '#666',
-                                    fontWeight: '600',
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                경기도
-                            </button>
-                            <button
-                                onClick={() => handleFilterChange({ level1: '부산광역시', level2: null })}
-                                style={{
-                                    padding: '8px 16px',
-                                    borderRadius: '16px',
-                                    border: 'none',
-                                    backgroundColor: activeFilter.level1 === '부산광역시' ? '#1a1a1a' : '#fff',
-                                    color: activeFilter.level1 === '부산광역시' ? '#fff' : '#666',
-                                    fontWeight: '600',
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                부산광역시
-                            </button>
-                        </div>
+                        <LocationFilter
+                            onFilterChange={handleFilterChange}
+                            activeFilter={activeFilter}
+                            user={user}
+                        />
                     </div>
                 )}
 
