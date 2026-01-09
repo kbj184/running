@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LocationFilter from './LocationFilter';
 import { api } from '../../../utils/api';
 
 // CSS for hiding scrollbar
@@ -10,11 +9,60 @@ const scrollContainerStyle = `
     }
 `;
 
+// 거리 계산 함수 (Haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // 지구 반지름 (km)
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
+}
+
+// 거리 포맷 함수
+function formatDistance(distanceKm) {
+    if (distanceKm < 1) {
+        return `${Math.round(distanceKm * 1000)}m`;
+    }
+    return `${distanceKm.toFixed(1)}km`;
+}
+
 function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
     const navigate = useNavigate();
-    const [activeFilter, setActiveFilter] = useState({ level1: null, level2: null });
+    const [activeTab, setActiveTab] = useState('neighborhood'); // 'neighborhood', 'popular', 'regional'
     const [myCrews, setMyCrews] = useState({ primaryCrew: null, secondaryCrews: [] });
     const [isLoadingMyCrews, setIsLoadingMyCrews] = useState(true);
+    const [userActivityArea, setUserActivityArea] = useState(null);
+    const [activeFilter, setActiveFilter] = useState({ level1: null, level2: null });
+
+    // 사용자 활동 지역 가져오기
+    useEffect(() => {
+        const fetchUserActivityArea = async () => {
+            if (!user || !user.accessToken) return;
+
+            try {
+                const response = await api.request(`${import.meta.env.VITE_API_URL}/user/activity-area`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserActivityArea(data);
+                }
+            } catch (error) {
+                console.error('활동 지역 조회 실패:', error);
+            }
+        };
+
+        fetchUserActivityArea();
+    }, [user]);
 
     // 컴포넌트 마운트 시 크루 목록 로드
     useEffect(() => {
@@ -80,9 +128,70 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
     // 내 크루가 있는지 확인
     const hasMyCrews = allMyCrews.length > 0;
 
+    // 탭별 크루 필터링
+    const getFilteredCrews = () => {
+        if (!allCrews || allCrews.length === 0) return [];
+
+        switch (activeTab) {
+            case 'neighborhood':
+                // 동네크루: 내 활동지역 admin_level_2와 크루 활동지역 admin_level_2가 같은 것
+                if (!userActivityArea || !userActivityArea.adminLevel2) return [];
+                return allCrews
+                    .filter(crew => {
+                        // 크루의 활동 지역 중 하나라도 내 활동지역의 admin_level_2와 일치하면
+                        return crew.activityAreas && crew.activityAreas.some(area =>
+                            area.adminLevel2 === userActivityArea.adminLevel2
+                        );
+                    })
+                    .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0));
+
+            case 'popular':
+                // 인기크루: 회원수 top 20
+                return [...allCrews]
+                    .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0))
+                    .slice(0, 20);
+
+            case 'regional':
+                // 지역별 크루: 현재 필터링된 크루 목록
+                return allCrews;
+
+            default:
+                return allCrews;
+        }
+    };
+
+    const filteredCrews = getFilteredCrews();
+
+    // 크루와 사용자 간 거리 계산
+    const getCrewDistance = (crew) => {
+        if (!userActivityArea || !userActivityArea.latitude || !userActivityArea.longitude) {
+            return null;
+        }
+
+        if (!crew.activityAreas || crew.activityAreas.length === 0) {
+            return null;
+        }
+
+        // 크루의 첫 번째 활동 지역과의 거리 계산
+        const crewArea = crew.activityAreas[0];
+        if (!crewArea.latitude || !crewArea.longitude) {
+            return null;
+        }
+
+        const distance = calculateDistance(
+            userActivityArea.latitude,
+            userActivityArea.longitude,
+            crewArea.latitude,
+            crewArea.longitude
+        );
+
+        return distance;
+    };
+
     return (
         <div style={{ backgroundColor: '#f8f9fa', minHeight: 'calc(100vh - var(--header-height) - 60px)', position: 'relative' }}>
             <style>{scrollContainerStyle}</style>
+
             {/* 내 크루 섹션 - 크루가 있을 때만 표시 */}
             {!isLoadingMyCrews && hasMyCrews && (
                 <div style={{
@@ -198,46 +307,169 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
                 </div>
             )}
 
-            {/* 지역별 크루 섹션 */}
-            <div style={{ padding: '16px 20px 20px 20px' }}>
-                <h2 style={{
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    color: '#1a1a1a',
-                    marginBottom: '16px',
-                    marginTop: '8px'
+            {/* 크루 탭 메뉴 */}
+            <div style={{ padding: '16px 20px 0 20px' }}>
+                <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    marginBottom: '16px'
                 }}>
-                    지역별 크루
-                </h2>
+                    <button
+                        onClick={() => setActiveTab('neighborhood')}
+                        style={{
+                            padding: '10px 20px',
+                            borderRadius: '20px',
+                            border: 'none',
+                            backgroundColor: activeTab === 'neighborhood' ? '#1a1a1a' : '#fff',
+                            color: activeTab === 'neighborhood' ? '#fff' : '#666',
+                            fontWeight: '600',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            boxShadow: activeTab === 'neighborhood' ? '0 2px 8px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.08)'
+                        }}
+                    >
+                        동네크루
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('popular')}
+                        style={{
+                            padding: '10px 20px',
+                            borderRadius: '20px',
+                            border: 'none',
+                            backgroundColor: activeTab === 'popular' ? '#1a1a1a' : '#fff',
+                            color: activeTab === 'popular' ? '#fff' : '#666',
+                            fontWeight: '600',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            boxShadow: activeTab === 'popular' ? '0 2px 8px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.08)'
+                        }}
+                    >
+                        인기크루
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('regional')}
+                        style={{
+                            padding: '10px 20px',
+                            borderRadius: '20px',
+                            border: 'none',
+                            backgroundColor: activeTab === 'regional' ? '#1a1a1a' : '#fff',
+                            color: activeTab === 'regional' ? '#fff' : '#666',
+                            fontWeight: '600',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            boxShadow: activeTab === 'regional' ? '0 2px 8px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.08)'
+                        }}
+                    >
+                        지역별크루
+                    </button>
+                </div>
 
-                {/* 지역 필터 */}
-                <LocationFilter
-                    onFilterChange={handleFilterChange}
-                    activeFilter={activeFilter}
-                    user={user}
-                />
+                {/* 지역별크루 탭일 때만 지역 필터 표시 */}
+                {activeTab === 'regional' && (
+                    <div style={{ marginBottom: '16px' }}>
+                        <div style={{
+                            display: 'flex',
+                            gap: '8px',
+                            overflowX: 'auto',
+                            scrollbarWidth: 'none',
+                            msOverflowStyle: 'none'
+                        }}>
+                            <button
+                                onClick={() => handleFilterChange({ level1: null, level2: null })}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '16px',
+                                    border: 'none',
+                                    backgroundColor: !activeFilter.level1 ? '#1a1a1a' : '#fff',
+                                    color: !activeFilter.level1 ? '#fff' : '#666',
+                                    fontWeight: '600',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                전국
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange({ level1: '서울특별시', level2: null })}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '16px',
+                                    border: 'none',
+                                    backgroundColor: activeFilter.level1 === '서울특별시' ? '#1a1a1a' : '#fff',
+                                    color: activeFilter.level1 === '서울특별시' ? '#fff' : '#666',
+                                    fontWeight: '600',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                서울특별시
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange({ level1: '경기도', level2: null })}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '16px',
+                                    border: 'none',
+                                    backgroundColor: activeFilter.level1 === '경기도' ? '#1a1a1a' : '#fff',
+                                    color: activeFilter.level1 === '경기도' ? '#fff' : '#666',
+                                    fontWeight: '600',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                경기도
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange({ level1: '부산광역시', level2: null })}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '16px',
+                                    border: 'none',
+                                    backgroundColor: activeFilter.level1 === '부산광역시' ? '#1a1a1a' : '#fff',
+                                    color: activeFilter.level1 === '부산광역시' ? '#fff' : '#666',
+                                    fontWeight: '600',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                부산광역시
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* 크루 목록 */}
-                {allCrews.length === 0 ? (
+                {filteredCrews.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '40px', color: '#666', marginTop: '16px' }}>
                         <div style={{ fontSize: '48px', marginBottom: '16px' }}>👥</div>
                         <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
-                            {activeFilter.level1 ? '해당 지역에 크루가 없습니다' : '아직 생성된 크루가 없습니다'}
+                            {activeTab === 'neighborhood' ? '동네에 크루가 없습니다' : '크루가 없습니다'}
                         </p>
                         <p style={{ fontSize: '14px' }}>
-                            {activeFilter.level1 ? '다른 지역을 선택하거나\n' : ''}
-                            크루 만들기 탭에서 새로운 크루를 만들어보세요!
+                            크루 만들기 버튼을 눌러 새로운 크루를 만들어보세요!
                         </p>
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-                        {allCrews.map((crew) => {
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {filteredCrews.map((crew) => {
                             let crewImage;
                             try {
                                 crewImage = JSON.parse(crew.imageUrl);
                             } catch {
                                 crewImage = { url: crew.imageUrl };
                             }
+
+                            const distance = getCrewDistance(crew);
+                            const crewLocation = crew.activityAreas && crew.activityAreas[0]
+                                ? crew.activityAreas[0].adminLevel2 || crew.activityAreas[0].adminLevel1
+                                : '';
 
                             return (
                                 <div
@@ -311,7 +543,8 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
                                                 <span>{crew.memberCount || 0}명</span>
                                             </span>
 
-                                            {crew.totalDistance !== undefined && crew.totalDistance > 0 && (
+                                            {/* 크루 지역 표시 */}
+                                            {crewLocation && (
                                                 <>
                                                     <span style={{ color: '#ddd' }}>•</span>
                                                     <span style={{
@@ -321,8 +554,25 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
                                                         alignItems: 'center',
                                                         gap: '4px'
                                                     }}>
-                                                        <span>🏃</span>
-                                                        <span>{crew.totalDistance.toFixed(1)}km</span>
+                                                        <span>📍</span>
+                                                        <span>{crewLocation}</span>
+                                                    </span>
+                                                </>
+                                            )}
+
+                                            {/* 거리 표시 */}
+                                            {distance !== null && (
+                                                <>
+                                                    <span style={{ color: '#ddd' }}>•</span>
+                                                    <span style={{
+                                                        fontSize: '13px',
+                                                        color: '#666',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px'
+                                                    }}>
+                                                        <span>🚶</span>
+                                                        <span>{formatDistance(distance)}</span>
                                                     </span>
                                                 </>
                                             )}
