@@ -25,14 +25,6 @@ function LocationFilter({ onFilterChange, activeFilter, user }) {
                     setCountries(data.countries || []);
                     setCountryRegions(data.countryRegions || {});
                     setRegionSubRegions(data.regionSubRegions || {});
-
-                    // 사용자의 국가 설정 (활동 지역 기반)
-                    if (user && user.activityAreas && user.activityAreas.length > 0) {
-                        const userCountry = user.activityAreas[0].countryName;
-                        if (userCountry && data.countries.includes(userCountry)) {
-                            setSelectedCountry(userCountry);
-                        }
-                    }
                 }
             } catch (error) {
                 console.error('Failed to fetch locations:', error);
@@ -40,7 +32,17 @@ function LocationFilter({ onFilterChange, activeFilter, user }) {
         };
 
         fetchLocations();
-    }, [user]);
+    }, []); // 컴포넌트 마운트 시 1회만 실행
+
+    // 사용자의 국가 설정
+    useEffect(() => {
+        if (user && user.activityAreas && user.activityAreas.length > 0 && countries.length > 0) {
+            const userCountry = user.activityAreas[0].countryName;
+            if (userCountry && countries.includes(userCountry)) {
+                setSelectedCountry(userCountry);
+            }
+        }
+    }, [user, countries]); // user와 countries가 변경될 때만 실행
 
     // 유저 정보로 초기 필터 설정 (최초 1회만)
     useEffect(() => {
