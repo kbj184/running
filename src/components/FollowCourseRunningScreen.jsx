@@ -1118,60 +1118,11 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                                 position={markerPosition}
                             >
                                 <div style={{
-                                    width: '0px',
-                                    height: '0px',
-                                    position: 'relative',
-                                    pointerEvents: 'none'
+                                    fontSize: '32px',
+                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                                    transform: 'translateY(-16px)'
                                 }}>
-                                    <div style={{
-                                        position: 'absolute',
-                                        left: '-50px',
-                                        top: '-100px',
-                                        width: '100px',
-                                        height: '100px',
-                                        transformOrigin: '50% 100%',
-                                        transform: `rotate(${heading}deg)`,
-                                        willChange: 'transform'
-                                    }}>
-                                        <div style={{
-                                            width: '100px',
-                                            height: '100px',
-                                            background: 'linear-gradient(to top, rgba(66, 133, 244, 0.4) 0%, rgba(66, 133, 244, 0.05) 100%)',
-                                            clipPath: 'polygon(50% 100%, 15% 0%, 85% 0%)',
-                                            opacity: 0.8
-                                        }} />
-                                    </div>
-
-                                    <div style={{
-                                        position: 'absolute',
-                                        left: '-28px',
-                                        top: '-28px',
-                                        width: '56px',
-                                        height: '56px',
-                                        pointerEvents: 'none'
-                                    }}>
-                                        <div style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            backgroundColor: 'rgba(66, 133, 244, 0.4)',
-                                            borderRadius: '50%',
-                                            transformOrigin: 'center center',
-                                            animation: 'marker-pulse 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite'
-                                        }} />
-                                    </div>
-
-                                    <div style={{
-                                        position: 'absolute',
-                                        left: '-9px',
-                                        top: '-9px',
-                                        width: '18px',
-                                        height: '18px',
-                                        backgroundColor: '#4285F4',
-                                        borderRadius: '50%',
-                                        border: '3px solid white',
-                                        boxShadow: '0 1px 6px rgba(0, 0, 0, 0.3)',
-                                        zIndex: 10
-                                    }} />
+                                    🚩
                                 </div>
                             </AdvancedMarker>
                         )}
