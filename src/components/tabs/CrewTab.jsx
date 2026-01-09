@@ -141,7 +141,6 @@ function CrewTab({ user, allCrews, onRefreshCrews, crewTab = 'home', onCrewTabCh
                         onCrewClick={handleCrewClick}
                         onRefreshCrews={onRefreshCrews}
                         user={user}
-                        onCrewTabChange={onCrewTabChange}
                     />
                 )}
 

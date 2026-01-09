@@ -10,7 +10,7 @@ const scrollContainerStyle = `
     }
 `;
 
-function CrewHomeTab({ allCrews, onRefreshCrews, user, onCrewTabChange }) {
+function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
     const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState({ level1: null, level2: null });
     const [myCrews, setMyCrews] = useState({ primaryCrew: null, secondaryCrews: [] });
@@ -68,9 +68,7 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user, onCrewTabChange }) {
     };
 
     const handleCreateCrew = () => {
-        if (onCrewTabChange) {
-            onCrewTabChange('create');
-        }
+        navigate('/crew/create');
     };
 
     // 내 크루 전체 목록 (대표 + 보조)
