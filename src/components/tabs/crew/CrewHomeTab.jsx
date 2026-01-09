@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import LocationFilter from './LocationFilter';
 import { api } from '../../../utils/api';
 
@@ -34,11 +34,32 @@ function formatDistance(distanceKm) {
 
 function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('neighborhood'); // 'neighborhood', 'popular', 'regional'
+    const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // URL에서 탭과 필터 정보 읽기
+    const tabFromUrl = searchParams.get('tab') || 'neighborhood';
+    const level1FromUrl = searchParams.get('level1') || null;
+    const level2FromUrl = searchParams.get('level2') || null;
+
+    const [activeTab, setActiveTab] = useState(tabFromUrl);
     const [myCrews, setMyCrews] = useState({ primaryCrew: null, secondaryCrews: [] });
     const [isLoadingMyCrews, setIsLoadingMyCrews] = useState(true);
     const [userActivityArea, setUserActivityArea] = useState(null);
-    const [activeFilter, setActiveFilter] = useState({ level1: null, level2: null });
+    const [activeFilter, setActiveFilter] = useState({
+        level1: level1FromUrl,
+        level2: level2FromUrl
+    });
+
+    // URL 파라미터 변경 시 상태 동기화
+    useEffect(() => {
+        const newTab = searchParams.get('tab') || 'neighborhood';
+        const newLevel1 = searchParams.get('level1') || null;
+        const newLevel2 = searchParams.get('level2') || null;
+
+        setActiveTab(newTab);
+        setActiveFilter({ level1: newLevel1, level2: newLevel2 });
+    }, [searchParams]);
 
     // 사용자 활동 지역 가져오기
     useEffect(() => {
@@ -104,7 +125,24 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
     }, [user]);
 
     const handleFilterChange = (filter) => {
-        setActiveFilter(filter);
+        // URL 파라미터 업데이트
+        const params = new URLSearchParams(searchParams);
+        params.set('tab', activeTab);
+
+        if (filter.level1) {
+            params.set('level1', filter.level1);
+        } else {
+            params.delete('level1');
+        }
+
+        if (filter.level2) {
+            params.set('level2', filter.level2);
+        } else {
+            params.delete('level2');
+        }
+
+        setSearchParams(params);
+
         if (onRefreshCrews) {
             // 필터 변경 시 크루 목록 새로고침 (API 호출)
             onRefreshCrews(filter);
@@ -118,6 +156,25 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
 
     const handleCreateCrew = () => {
         navigate('/crew/create');
+    };
+
+    const handleTabChange = (tab) => {
+        // URL 파라미터 업데이트
+        const params = new URLSearchParams();
+        params.set('tab', tab);
+
+        // 지역별크루가 아니면 필터 초기화
+        if (tab !== 'regional') {
+            params.delete('level1');
+            params.delete('level2');
+        } else if (activeFilter.level1) {
+            params.set('level1', activeFilter.level1);
+            if (activeFilter.level2) {
+                params.set('level2', activeFilter.level2);
+            }
+        }
+
+        setSearchParams(params);
     };
 
     // 내 크루 전체 목록 (대표 + 보조)
@@ -316,7 +373,7 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
                     marginBottom: '16px'
                 }}>
                     <button
-                        onClick={() => setActiveTab('neighborhood')}
+                        onClick={() => handleTabChange('neighborhood')}
                         style={{
                             padding: '10px 20px',
                             borderRadius: '20px',
@@ -333,7 +390,7 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
                         동네크루
                     </button>
                     <button
-                        onClick={() => setActiveTab('popular')}
+                        onClick={() => handleTabChange('popular')}
                         style={{
                             padding: '10px 20px',
                             borderRadius: '20px',
@@ -350,7 +407,7 @@ function CrewHomeTab({ allCrews, onRefreshCrews, user }) {
                         인기크루
                     </button>
                     <button
-                        onClick={() => setActiveTab('regional')}
+                        onClick={() => handleTabChange('regional')}
                         style={{
                             padding: '10px 20px',
                             borderRadius: '20px',
