@@ -711,30 +711,58 @@ function RunningScreen({ onStop, sessionId, user }) {
                                 position={markerPosition}
                                 zIndex={1000}
                             >
-                                <div style={{ position: 'relative' }}>
-                                    {/* 펄스 링 효과 */}
+                                <div style={{
+                                    position: 'relative',
+                                    width: '0',
+                                    height: '0',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    {/* 방향 지시 빔 (Radial Beam) */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        width: '40px',
-                                        height: '40px',
-                                        backgroundColor: 'rgba(66, 133, 244, 0.3)',
+                                        width: '120px',
+                                        height: '120px',
+                                        background: 'conic-gradient(from -30deg at 50% 50%, rgba(66, 133, 244, 0) 0deg, rgba(66, 133, 244, 0.4) 30deg, rgba(66, 133, 244, 0) 60deg)',
+                                        transform: `translate(-50%, -50%) rotate(${heading}deg)`,
                                         borderRadius: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        animation: 'pulse-ring 2s infinite'
+                                        pointerEvents: 'none',
+                                        zIndex: 1,
+                                        top: '0',
+                                        left: '0'
                                     }} />
-                                    {/* 중앙 블루 도트 */}
+
+                                    {/* 펄스 링 효과 (좌표 정중앙 정렬을 위해 래퍼 추가) */}
                                     <div style={{
-                                        width: '18px',
-                                        height: '18px',
-                                        backgroundColor: '#4285F4',
-                                        borderRadius: '50%',
-                                        border: '3px solid white',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                        position: 'relative',
+                                        position: 'absolute',
+                                        width: '0',
+                                        height: '0',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
                                         zIndex: 2
-                                    }} />
+                                    }}>
+                                        <div style={{
+                                            position: 'absolute',
+                                            width: '40px',
+                                            height: '40px',
+                                            backgroundColor: 'rgba(66, 133, 244, 0.2)',
+                                            borderRadius: '50%',
+                                            animation: 'pulse-ring 2s infinite'
+                                        }} />
+
+                                        {/* 중앙 블루 도트 */}
+                                        <div style={{
+                                            width: '18px',
+                                            height: '18px',
+                                            backgroundColor: '#4285F4',
+                                            borderRadius: '50%',
+                                            border: '3px solid white',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                            zIndex: 3
+                                        }} />
+                                    </div>
                                 </div>
                             </AdvancedMarker>
                         )}
