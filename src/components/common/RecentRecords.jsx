@@ -212,37 +212,6 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
 
     return (
         <div style={{ width: '100%' }}>
-            {/* 통계 섹션 */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '12px',
-                padding: '20px 16px',
-                margin: '12px 0',
-                backgroundColor: '#fff',
-                borderRadius: '16px',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                border: '1px solid #f0f0f0'
-            }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>{t('profile.totalDistance')}</div>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
-                        {formatDistanceUtil(stats.totalDistance, unit)}
-                    </div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>{t('running.time')}</div>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
-                        {formatTime(stats.totalDuration)}
-                    </div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>{t('running.avgPace')}</div>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>
-                        {formatPace(stats.avgPace * 60, unit)}
-                    </div>
-                </div>
-            </div>
 
             {/* 최근 활동 섹션 */}
             <div style={{ padding: '0' }}>
