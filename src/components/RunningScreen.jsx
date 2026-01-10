@@ -64,6 +64,7 @@ function RunningScreen({ onStop, sessionId, user }) {
     const [isWatering, setIsWatering] = useState(false);
     const [wateringSegments, setWateringSegments] = useState([]);
     const [wateringStartIndex, setWateringStartIndex] = useState(null);
+    const [isNavMode, setIsNavMode] = useState(false); // 내비게이션 모드 상태
 
     const watchIdRef = useRef(null);
     const startTimeRef = useRef(Date.now());
@@ -206,9 +207,29 @@ function RunningScreen({ onStop, sessionId, user }) {
 
     useEffect(() => {
         if (map && currentPosition) {
-            map.panTo(currentPosition);
+            if (isNavMode) {
+                // 내비게이션 모드: 부드러운 이동 (center와 heading/tilt 연동)
+                map.panTo(currentPosition);
+            } else {
+                map.panTo(currentPosition);
+            }
         }
-    }, [map, currentPosition]);
+    }, [map, currentPosition, isNavMode]);
+
+    // 내비게이션 모드 (Tilt & Heading) 제어
+    useEffect(() => {
+        if (!map) return;
+
+        if (isNavMode) {
+            map.setTilt(45);
+            map.setHeading(heading);
+            map.setZoom(18); // 내비 모드 시 좀 더 근접 줌
+        } else {
+            map.setTilt(0);
+            map.setHeading(0);
+            map.setZoom(16);
+        }
+    }, [map, isNavMode, heading]);
 
     useEffect(() => {
         if (testMode && !currentPosition) {
@@ -636,16 +657,29 @@ function RunningScreen({ onStop, sessionId, user }) {
             </div>
 
             <div className="running-map">
+                {/* 내비게이션 모드 토스트 안내 */}
+                {isNavMode && (
+                    <div style={{
+                        position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)',
+                        backgroundColor: 'rgba(67, 24, 255, 0.9)', color: '#fff', padding: '6px 14px',
+                        borderRadius: '20px', zIndex: 10, fontSize: '11px', fontWeight: '700',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: '5px'
+                    }}>
+                        <span>🧭 내비게이션 모드 ON</span>
+                    </div>
+                )}
+
                 {currentPosition ? (
                     <GoogleMap
                         mapContainerStyle={containerStyle}
                         center={markerPosition || currentPosition}
-                        zoom={16}
+                        zoom={isNavMode ? 18 : 16}
                         onLoad={onLoad}
                         onUnmount={onUnmount}
                         options={{
                             ...runningMapOptions,
-                            mapId: MAP_ID
+                            mapId: MAP_ID,
+                            gestureHandling: isNavMode ? 'none' : 'greedy' // 내비 모드일 땐 자동 추적 방해 금지
                         }}
                         onClick={onMapClick}
                     >
@@ -771,13 +805,27 @@ function RunningScreen({ onStop, sessionId, user }) {
                 )}
             </div>
 
-            <button
-                className="mode-toggle-button"
-                onClick={() => setTestMode(!testMode)}
-                style={{ backgroundColor: testMode ? '#667eea' : '#22c55e' }}
-            >
-                {testMode ? '🖱️ 테스트' : '📍 GPS'}
-            </button>
+            <div className="running-map-actions">
+                <button
+                    className="mode-toggle-button"
+                    onClick={() => setTestMode(!testMode)}
+                    style={{ backgroundColor: testMode ? '#667eea' : '#22c55e' }}
+                >
+                    {testMode ? '🖱️ 테스트' : '📍 GPS'}
+                </button>
+
+                <button
+                    className="nav-toggle-button"
+                    onClick={() => setIsNavMode(!isNavMode)}
+                    style={{
+                        backgroundColor: isNavMode ? '#4318FF' : '#fff',
+                        color: isNavMode ? '#fff' : '#4318FF',
+                        border: isNavMode ? 'none' : '1px solid #4318FF'
+                    }}
+                >
+                    {isNavMode ? '🛑 일반모드' : '🧭 내비모드'}
+                </button>
+            </div>
 
             <div className="running-footer-controls">
                 {!isWatering ? (
