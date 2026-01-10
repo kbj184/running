@@ -11,7 +11,7 @@ function MyRecordsTab({ user, onRecordClick }) {
     const { unit } = useUnit();
     const [records, setRecords] = useState([]);
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(null); // 선택된 날짜
     const [loading, setLoading] = useState(true);
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -38,6 +38,7 @@ function MyRecordsTab({ user, onRecordClick }) {
                     sessions = [];
                 }
 
+                // JSON 파싱
                 sessions = sessions.map(session => {
                     try {
                         return {
@@ -65,7 +66,7 @@ function MyRecordsTab({ user, onRecordClick }) {
         }
     };
 
-    // 월별 통계
+    // 월별 통계 계산
     const monthStats = useMemo(() => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
@@ -92,7 +93,7 @@ function MyRecordsTab({ user, onRecordClick }) {
         };
     }, [records, currentDate]);
 
-    // 일별 통계
+    // 일별 통계 계산
     const dayStats = useMemo(() => {
         if (!selectedDate) return null;
 
@@ -117,7 +118,7 @@ function MyRecordsTab({ user, onRecordClick }) {
         };
     }, [records, selectedDate]);
 
-    // 달력 데이터
+    // 달력 데이터 생성
     const calendarDays = useMemo(() => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
@@ -128,10 +129,12 @@ function MyRecordsTab({ user, onRecordClick }) {
 
         const days = [];
 
+        // 빈 칸 추가
         for (let i = 0; i < startDayOfWeek; i++) {
             days.push(null);
         }
 
+        // 날짜 추가
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(year, month, day);
             const hasRecord = records.some(r => {
@@ -144,25 +147,17 @@ function MyRecordsTab({ user, onRecordClick }) {
         return days;
     }, [currentDate, records]);
 
+    // 이전 달
     const handlePrevMonth = () => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
-        setSelectedDate(null);
     };
 
+    // 다음 달
     const handleNextMonth = () => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
-        setSelectedDate(null);
     };
 
-    const handleDateClick = (dayData) => {
-        if (dayData && dayData.hasRecord) {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const clickedDate = new Date(year, month, dayData.day);
-            setSelectedDate(clickedDate);
-        }
-    };
-
+    // 페이스 포맷 (11'10'' 형식)
     const formatPaceCustom = (paceInSeconds) => {
         if (!paceInSeconds || paceInSeconds === 0) return "--'--''";
         const minutes = Math.floor(paceInSeconds);
@@ -181,9 +176,121 @@ function MyRecordsTab({ user, onRecordClick }) {
 
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth() + 1;
+    const isJanuary = currentMonth === 1;
+    const showYearTransition = currentMonth === 12 || isJanuary;
 
     return (
         <div style={{ width: '100%', paddingBottom: '80px' }}>
+            {/* 전체 통계 */}
+            {totalStats && (
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(5, 1fr)',
+                    gap: '8px',
+                    padding: '16px',
+                    margin: '12px 0',
+                    backgroundColor: '#fff',
+                    borderRadius: '16px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                    border: '1px solid #f0f0f0'
+                }}>
+                    <StatItem label="총 거리" value={formatDistanceUtil(totalStats.totalDistance, unit)} />
+                    <StatItem label="총 시간" value={formatTime(totalStats.totalDuration)} />
+                    <StatItem label="평균 페이스" value={formatPaceCustom(totalStats.avgPace * 60)} />
+                    <StatItem label="런닝 일수" value={`${totalStats.runningDays}일`} />
+                    <StatItem label="칼로리" value={`${totalStats.totalCalories.toLocaleString()}`} />
+                </div>
+            )}
+
+            {/* 년도 표시 (12월-1월 전환 시) */}
+            {showYearTransition && (
+                <div style={{
+                    textAlign: 'center',
+                    padding: '24px 16px',
+                    margin: '12px 0',
+                    backgroundColor: '#4318FF',
+                    borderRadius: '16px',
+                    color: '#fff'
+                }}>
+                    <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '8px' }}>
+                        {currentYear}년
+                    </div>
+                    {isJanuary && (
+                        <div style={{ fontSize: '14px', opacity: 0.9 }}>
+                            🎉 새해 첫 달입니다!
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* 달력 */}
+            <div style={{
+                backgroundColor: '#fff',
+                borderRadius: '16px',
+                padding: '16px',
+                margin: '12px 0',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                border: '1px solid #f0f0f0'
+            }}>
+                {/* 달력 헤더 */}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px'
+                }}>
+                    <button onClick={handlePrevMonth} style={monthNavButton}>←</button>
+                    <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
+                        {currentYear}년 {currentMonth}월
+                    </div>
+                    <button onClick={handleNextMonth} style={monthNavButton}>→</button>
+                </div>
+
+                {/* 요일 */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(7, 1fr)',
+                    gap: '4px',
+                    marginBottom: '8px'
+                }}>
+                    {['일', '월', '화', '수', '목', '금', '토'].map(day => (
+                        <div key={day} style={{
+                            textAlign: 'center',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            color: '#999',
+                            padding: '8px 0'
+                        }}>
+                            {day}
+                        </div>
+                    ))}
+                </div>
+
+                {/* 날짜 */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(7, 1fr)',
+                    gap: '4px'
+                }}>
+                    {calendarDays.map((dayData, idx) => (
+                        <div key={idx} style={{
+                            aspectRatio: '1',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px',
+                            fontWeight: dayData?.hasRecord ? '700' : '400',
+                            color: dayData?.hasRecord ? '#fff' : '#666',
+                            backgroundColor: dayData?.hasRecord ? '#4318FF' : 'transparent',
+                            borderRadius: '8px',
+                            position: 'relative'
+                        }}>
+                            {dayData?.day}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {/* 월별 통계 */}
             {monthStats && (
                 <div style={{
@@ -216,118 +323,6 @@ function MyRecordsTab({ user, onRecordClick }) {
                 </div>
             )}
 
-            {/* 달력 */}
-            <div style={{
-                backgroundColor: '#fff',
-                borderRadius: '16px',
-                padding: '16px',
-                margin: '12px 0',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                border: '1px solid #f0f0f0'
-            }}>
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '16px'
-                }}>
-                    <button onClick={handlePrevMonth} style={monthNavButton}>←</button>
-                    <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
-                        {currentYear}년 {currentMonth}월
-                    </div>
-                    <button onClick={handleNextMonth} style={monthNavButton}>→</button>
-                </div>
-
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(7, 1fr)',
-                    gap: '4px',
-                    marginBottom: '8px'
-                }}>
-                    {['일', '월', '화', '수', '목', '금', '토'].map(day => (
-                        <div key={day} style={{
-                            textAlign: 'center',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            color: '#999',
-                            padding: '8px 0'
-                        }}>
-                            {day}
-                        </div>
-                    ))}
-                </div>
-
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(7, 1fr)',
-                    gap: '4px'
-                }}>
-                    {calendarDays.map((dayData, idx) => (
-                        <div
-                            key={idx}
-                            onClick={() => handleDateClick(dayData)}
-                            style={{
-                                aspectRatio: '1',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '14px',
-                                fontWeight: dayData?.hasRecord ? '700' : '400',
-                                color: dayData?.hasRecord ? '#fff' : '#666',
-                                backgroundColor: dayData?.hasRecord ? '#4318FF' : 'transparent',
-                                borderRadius: '8px',
-                                cursor: dayData?.hasRecord ? 'pointer' : 'default',
-                                transition: 'all 0.2s'
-                            }}
-                            onMouseEnter={(e) => {
-                                if (dayData?.hasRecord) {
-                                    e.currentTarget.style.transform = 'scale(1.1)';
-                                }
-                            }}
-                            onMouseLeave={(e) => {
-                                if (dayData?.hasRecord) {
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                }
-                            }}
-                        >
-                            {dayData?.day}
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* 일별 통계 */}
-            {dayStats && selectedDate && (
-                <div style={{
-                    backgroundColor: '#fff',
-                    borderRadius: '16px',
-                    padding: '16px',
-                    margin: '12px 0',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                    border: '1px solid #f0f0f0'
-                }}>
-                    <h3 style={{
-                        margin: '0 0 16px 0',
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        color: '#1a1a1a'
-                    }}>
-                        {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일 통계
-                    </h3>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(5, 1fr)',
-                        gap: '8px'
-                    }}>
-                        <StatItem label="거리" value={formatDistanceUtil(dayStats.totalDistance, unit)} />
-                        <StatItem label="시간" value={formatTime(dayStats.totalDuration)} />
-                        <StatItem label="페이스" value={formatPaceCustom(dayStats.avgPace * 60)} />
-                        <StatItem label="횟수" value={`${dayStats.runCount}회`} />
-                        <StatItem label="칼로리" value={`${dayStats.totalCalories.toLocaleString()}`} />
-                    </div>
-                </div>
-            )}
-
             {/* 최근 기록 */}
             <RecentRecords
                 user={user}
@@ -338,6 +333,7 @@ function MyRecordsTab({ user, onRecordClick }) {
     );
 }
 
+// 통계 아이템 컴포넌트
 function StatItem({ label, value }) {
     return (
         <div style={{ textAlign: 'center' }}>
