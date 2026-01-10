@@ -709,13 +709,32 @@ function RunningScreen({ onStop, sessionId, user }) {
                             <AdvancedMarker
                                 map={map}
                                 position={markerPosition}
+                                zIndex={1000}
                             >
-                                <div style={{
-                                    fontSize: '32px',
-                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                                    transform: 'translateY(-16px)' // 깃발 끝이 정확한 위치를 가리키도록
-                                }}>
-                                    🚩
+                                <div style={{ position: 'relative' }}>
+                                    {/* 펄스 링 효과 */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
+                                        width: '40px',
+                                        height: '40px',
+                                        backgroundColor: 'rgba(66, 133, 244, 0.3)',
+                                        borderRadius: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        animation: 'pulse-ring 2s infinite'
+                                    }} />
+                                    {/* 중앙 블루 도트 */}
+                                    <div style={{
+                                        width: '18px',
+                                        height: '18px',
+                                        backgroundColor: '#4285F4',
+                                        borderRadius: '50%',
+                                        border: '3px solid white',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                        position: 'relative',
+                                        zIndex: 2
+                                    }} />
                                 </div>
                             </AdvancedMarker>
                         )}
