@@ -674,8 +674,13 @@ function RunningScreen({ onStop, sessionId, user }) {
                                     key={`water-start-${idx}`}
                                     map={map}
                                     position={route[segment.start]}
+                                    zIndex={300}
                                 >
-                                    <div style={{ fontSize: '24px' }}>💧</div>
+                                    <div style={{
+                                        fontSize: '24px',
+                                        transform: 'translate(-50%, -50%)', // 중심점 정렬
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+                                    }}>💧</div>
                                 </AdvancedMarker>
                             )
                         ))}
@@ -684,8 +689,13 @@ function RunningScreen({ onStop, sessionId, user }) {
                             <AdvancedMarker
                                 map={map}
                                 position={route[wateringStartIndex]}
+                                zIndex={310}
                             >
-                                <div className="pulsing-water-drop" style={{ fontSize: '28px' }}>💧</div>
+                                <div className="pulsing-water-drop" style={{
+                                    fontSize: '28px',
+                                    transform: 'translate(-50%, -50%)', // 중심점 정렬
+                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                                }}>💧</div>
                             </AdvancedMarker>
                         )}
 
@@ -693,14 +703,16 @@ function RunningScreen({ onStop, sessionId, user }) {
                             <AdvancedMarker
                                 map={map}
                                 position={route[0]}
+                                zIndex={500}
                             >
                                 <div style={{
-                                    width: '10px',
-                                    height: '10px',
+                                    width: '12px',
+                                    height: '12px',
                                     backgroundColor: '#22c55e',
                                     borderRadius: '50%',
                                     border: '2px solid white',
-                                    boxShadow: '0 0 4px rgba(0,0,0,0.3)'
+                                    boxShadow: '0 0 4px rgba(0,0,0,0.3)',
+                                    transform: 'translate(-50%, -50%)' // 중심점 정렬
                                 }} />
                             </AdvancedMarker>
                         )}
