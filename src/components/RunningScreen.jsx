@@ -711,58 +711,45 @@ function RunningScreen({ onStop, sessionId, user }) {
                                 position={markerPosition}
                                 zIndex={1000}
                             >
-                                <div style={{
-                                    position: 'relative',
-                                    width: '0',
-                                    height: '0',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    {/* 방향 지시 빔 (Radial Beam) */}
+                                <div style={{ position: 'relative' }}>
+                                    {/* 방향 빔 (가장 하단) */}
                                     <div style={{
                                         position: 'absolute',
                                         width: '120px',
                                         height: '120px',
-                                        background: 'conic-gradient(from -30deg at 50% 50%, rgba(66, 133, 244, 0) 0deg, rgba(66, 133, 244, 0.4) 30deg, rgba(66, 133, 244, 0) 60deg)',
+                                        background: 'conic-gradient(from -30deg at 50% 50%, rgba(66, 133, 244, 0) 0deg, rgba(66, 133, 244, 0.45) 30deg, rgba(66, 133, 244, 0) 60deg)',
                                         transform: `translate(-50%, -50%) rotate(${heading}deg)`,
                                         borderRadius: '50%',
-                                        pointerEvents: 'none',
                                         zIndex: 1,
-                                        top: '0',
-                                        left: '0'
+                                        pointerEvents: 'none'
                                     }} />
 
-                                    {/* 펄스 링 효과 (좌표 정중앙 정렬을 위해 래퍼 추가) */}
+                                    {/* 펄스 파동 (중간) */}
                                     <div style={{
                                         position: 'absolute',
-                                        width: '0',
-                                        height: '0',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        zIndex: 2
-                                    }}>
-                                        <div style={{
-                                            position: 'absolute',
-                                            width: '40px',
-                                            height: '40px',
-                                            backgroundColor: 'rgba(66, 133, 244, 0.2)',
-                                            borderRadius: '50%',
-                                            animation: 'pulse-ring 2s infinite'
-                                        }} />
+                                        width: '40px',
+                                        height: '40px',
+                                        backgroundColor: 'rgba(66, 133, 244, 0.2)',
+                                        borderRadius: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        animation: 'pulse-ring 2s infinite',
+                                        zIndex: 2,
+                                        pointerEvents: 'none'
+                                    }} />
 
-                                        {/* 중앙 블루 도트 */}
-                                        <div style={{
-                                            width: '18px',
-                                            height: '18px',
-                                            backgroundColor: '#4285F4',
-                                            borderRadius: '50%',
-                                            border: '3px solid white',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                            zIndex: 3
-                                        }} />
-                                    </div>
+                                    {/* 중앙 블루 도트 (상단) - translate(-50%, -50%) 추가하여 중심 일치 */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        width: '18px',
+                                        height: '18px',
+                                        backgroundColor: '#4285F4',
+                                        borderRadius: '50%',
+                                        border: '3px solid white',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                                        transform: 'translate(-50%, -50%)',
+                                        zIndex: 3,
+                                        pointerEvents: 'none'
+                                    }} />
                                 </div>
                             </AdvancedMarker>
                         )}
