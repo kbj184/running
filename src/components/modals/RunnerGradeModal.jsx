@@ -13,7 +13,7 @@ function RunnerGradeModal({ user, onClose }) {
         const fetchStats = async () => {
             if (!userStats && user.id) {
                 try {
-                    const response = await api.request(`${import.meta.env.VITE_API_URL}/api/user/${user.id}/profile`, {
+                    const response = await api.request(`${import.meta.env.VITE_API_URL}/user/${user.id}/profile`, {
                         headers: {
                             'Authorization': user.accessToken?.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
                         }
