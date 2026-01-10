@@ -15,6 +15,110 @@ const getSpeedColor = (speedKmh) => {
     return "#7c3aed"; // 초고속 (보라)
 };
 
+// 고도 및 속도 분석 차트 컴포넌트
+const SpeedElevationChart = ({ splits }) => {
+    if (!splits || splits.length === 0) return null;
+
+    const data = splits.map(s => ({
+        km: s.km,
+        elevation: s.elevation || 0,
+        speed: s.pace > 0 ? 60 / s.pace : 0
+    }));
+
+    // 차트 데이터 범위 계산
+    const elevations = data.map(d => d.elevation);
+    const speeds = data.map(d => d.speed);
+
+    const maxEle = Math.max(...elevations, 1);
+    const minEle = Math.min(...elevations, 0);
+    const eleRange = maxEle - minEle || 1;
+
+    const maxSpd = Math.max(...speeds, 1);
+    const spdRange = maxSpd || 1;
+
+    const chartHeight = 150;
+    const chartWidth = 300; // 가변적이지만 비율용
+    const padding = 20;
+
+    // 포인트 계산 함수
+    const getX = (idx) => (idx / (data.length - 1 || 1)) * (chartWidth - padding * 2) + padding;
+    const getEleY = (val) => chartHeight - ((val - minEle) / eleRange) * (chartHeight - padding * 2) - padding;
+    const getSpdY = (val) => chartHeight - (val / spdRange) * (chartHeight - padding * 2) - padding;
+
+    // 고도 영역(Area) 경로 생성
+    const elePath = data.map((d, i) => `${getX(i)},${getEleY(d.elevation)}`).join(' L ');
+    const eleArea = `M ${getX(0)},${chartHeight - padding} L ${elePath} L ${getX(data.length - 1)},${chartHeight - padding} Z`;
+
+    // 속도 선(Line) 경로 생성
+    const spdPath = data.map((d, i) => `${getX(i)},${getSpdY(d.speed)}`).join(' L ');
+
+    return (
+        <div className="speed-elevation-chart-wrapper">
+            <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
+                <defs>
+                    <linearGradient id="eleGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#667eea" stopOpacity="0.3" />
+                        <stop offset="100%" stopColor="#667eea" stopOpacity="0.05" />
+                    </linearGradient>
+                </defs>
+
+                {/* 그리드 라인 (가로) */}
+                {[0, 0.25, 0.5, 0.75, 1].map(v => (
+                    <line
+                        key={v}
+                        x1={padding}
+                        y1={padding + v * (chartHeight - padding * 2)}
+                        x2={chartWidth - padding}
+                        y2={padding + v * (chartHeight - padding * 2)}
+                        stroke="#f1f5f9"
+                        strokeWidth="1"
+                    />
+                ))}
+
+                {/* 고도 영역 */}
+                <path d={eleArea} fill="url(#eleGradient)" />
+                <path d={`M ${elePath}`} fill="none" stroke="#667eea" strokeWidth="1" strokeDasharray="4 2" opacity="0.5" />
+
+                {/* 속도 선 */}
+                <path
+                    d={`M ${spdPath}`}
+                    fill="none"
+                    stroke="#4318FF"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{
+                        strokeDasharray: 1000,
+                        strokeDashoffset: 1000,
+                        animation: 'chartline 1.5s ease-out forwards'
+                    }}
+                />
+
+                {/* 포인트 마커 */}
+                {data.map((d, i) => (
+                    <g key={i}>
+                        <circle cx={getX(i)} cy={getSpdY(d.speed)} r="4" fill="#4318FF" stroke="#fff" strokeWidth="2" />
+                        <text
+                            x={getX(i)}
+                            y={chartHeight - 5}
+                            fontSize="8"
+                            textAnchor="middle"
+                            fill="#94a3b8"
+                        >
+                            {d.km}k
+                        </text>
+                    </g>
+                ))}
+            </svg>
+
+            <div className="chart-legend">
+                <div className="legend-item"><span className="dot ele"></span> 고도(m)</div>
+                <div className="legend-item"><span className="dot spd"></span> 속도(km/h)</div>
+            </div>
+        </div>
+    );
+};
+
 function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
     const {
         distance,
@@ -623,6 +727,16 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                     )}
                 </div>
             </section>
+
+            {/* 고도 및 속도 분석 그래프 추가 */}
+            {splits && splits.length > 0 && (
+                <section className="result-card-section">
+                    <div className="result-section-title-simple">
+                        <span>📈</span> 고도 및 속도 분석 (1km)
+                    </div>
+                    <SpeedElevationChart splits={splits} />
+                </section>
+            )}
 
             {splits && splits.length > 0 && (
                 <section className="result-card-section">
