@@ -18,9 +18,6 @@ export const hideMapFeatures = [
 // 지도 ID (환경변수에서 가져옴)
 export const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
-// 맵 ID가 있을 경우 로컬 styles를 제거하여 충돌 경고 방지
-const commonStyles = MAP_ID ? {} : { styles: hideMapFeatures };
-
 // 기본 지도 옵션 (UI 컨트롤 포함)
 export const defaultMapOptions = {
     disableDefaultUI: true,
@@ -29,7 +26,7 @@ export const defaultMapOptions = {
     mapTypeControl: false,
     fullscreenControl: false,
     clickableIcons: false,
-    ...commonStyles
+    ...(import.meta.env.VITE_GOOGLE_MAPS_MAP_ID ? {} : { styles: hideMapFeatures })
 };
 
 // 러닝 화면용 지도 옵션 (모든 UI 숨김)
@@ -40,7 +37,7 @@ export const runningMapOptions = {
     mapTypeControl: false,
     fullscreenControl: false,
     clickableIcons: false,
-    ...commonStyles
+    ...(import.meta.env.VITE_GOOGLE_MAPS_MAP_ID ? {} : { styles: hideMapFeatures })
 };
 
 // 인터랙티브 지도 옵션 (풀스크린 포함)
@@ -51,7 +48,7 @@ export const interactiveMapOptions = {
     mapTypeControl: false,
     fullscreenControl: true,
     gestureHandling: 'greedy',
-    ...commonStyles
+    ...(import.meta.env.VITE_GOOGLE_MAPS_MAP_ID ? {} : { styles: hideMapFeatures })
 };
 
 // 지도 라이브러리 목록
