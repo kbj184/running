@@ -94,14 +94,45 @@ const SpeedElevationChart = ({ splits }) => {
                     }}
                 />
 
-                {/* 포인트 마커 */}
+                {/* Y축 기준 수치 (우측: 고도, 좌측: 속도) */}
+                <text x={padding - 5} y={padding} fontSize="8" fill="#94a3b8" textAnchor="end">{maxSpd.toFixed(1)}</text>
+                <text x={chartWidth - padding + 5} y={padding} fontSize="8" fill="#94a3b8" textAnchor="start">{Math.round(maxEle)}m</text>
+                <text x={chartWidth - padding + 5} y={chartHeight - padding} fontSize="8" fill="#94a3b8" textAnchor="start">{Math.round(minEle)}m</text>
+
+                {/* 포인트 마커 및 수치 라벨 */}
                 {data.map((d, i) => (
                     <g key={i}>
-                        <circle cx={getX(i)} cy={getSpdY(d.speed)} r="4" fill="#4318FF" stroke="#fff" strokeWidth="2" />
+                        {/* 고도 수치 (영역 상단 주변) */}
                         <text
                             x={getX(i)}
-                            y={chartHeight - 5}
+                            y={getEleY(d.elevation) - 6}
+                            fontSize="7"
+                            textAnchor="middle"
+                            fill="#667eea"
+                            opacity="0.7"
+                        >
+                            {Math.round(d.elevation)}m
+                        </text>
+
+                        {/* 속도 포인트 및 수치 */}
+                        <circle cx={getX(i)} cy={getSpdY(d.speed)} r="3.5" fill="#4318FF" stroke="#fff" strokeWidth="1.5" />
+                        <text
+                            x={getX(i)}
+                            y={getSpdY(d.speed) - 8}
+                            fontSize="9"
+                            fontWeight="800"
+                            textAnchor="middle"
+                            fill="#1e293b"
+                        >
+                            {d.speed.toFixed(1)}
+                        </text>
+
+                        {/* KM 표시 (하단) */}
+                        <text
+                            x={getX(i)}
+                            y={chartHeight - 4}
                             fontSize="8"
+                            fontWeight="600"
                             textAnchor="middle"
                             fill="#94a3b8"
                         >
