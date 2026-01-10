@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatTime } from '../../utils/gps';
-import { formatDistance as formatDistanceUtil, formatPace } from '../../utils/unitConverter';
-import { useUnit } from '../../contexts/UnitContext';
-import { api } from '../../utils/api';
-import RecentRecords from '../common/RecentRecords';
+import { formatTime } from '../../../utils/gps';
+import { formatDistance as formatDistanceUtil, formatPace } from '../../../utils/unitConverter';
+import { useUnit } from '../../../contexts/UnitContext';
+import { api } from '../../../utils/api';
+import RecentRecords from '../../common/RecentRecords';
 
 function MyRecordsTab({ user, onRecordClick }) {
     const { t } = useTranslation();
