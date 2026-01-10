@@ -80,6 +80,7 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
     const [records, setRecords] = useState([]);
     const [displayedRecords, setDisplayedRecords] = useState([]);
     const [displayCount, setDisplayCount] = useState(10); // 초기 10개 표시
+    const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(false); // 무한 스크롤 활성화 여부
     const [stats, setStats] = useState({
         totalDistance: 0,
         totalDuration: 0,
