@@ -280,7 +280,7 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading, embedded = fal
 
             <div style={styles.mapWrapper}>
                 <GoogleMap
-                    mapContainerStyle={{ width: '100%', height: '100%' }}
+                    mapContainerStyle={styles.mapContainer}
                     center={markerPos || SEOUL_CENTER}
                     zoom={15}
                     onLoad={onLoad}
