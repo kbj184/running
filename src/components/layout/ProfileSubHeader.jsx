@@ -53,7 +53,7 @@ function ProfileSubHeader({ profileTab, onTabChange, unreadCount }) {
                         transition: 'all 0.2s'
                     }}
                 >
-                    나의 코스
+                    {t('profile.tabs.courses')}
                 </button>
                 <button
                     onClick={() => onTabChange('info')}

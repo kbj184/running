@@ -77,6 +77,7 @@
     "profile": {
         "tabs": {
             "records": "내 기록",
+            "courses": "나의 코스",
             "info": "내 정보",
             "settings": "설정"
         },
@@ -86,7 +87,9 @@
         "totalRuns": "총 러닝 횟수",
         "bestPace": "최고 페이스",
         "recentRecords": "최근 기록",
-        "noRecords": "아직 기록이 없습니다"
+        "noRecords": "아직 기록이 없습니다",
+        "noCourses": "즐겨찾는 코스가 없습니다.",
+        "addCourseInfo": "상세 기록에서 하트 아이콘을 눌러 코스를 추가해보세요!"
     },
     "settings": {
         "language": "언어",

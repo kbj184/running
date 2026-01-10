@@ -48,7 +48,7 @@ function MyCourseTab({ user, onRecordClick }) {
     return (
         <div style={{ width: '100%', paddingBottom: '80px' }}>
             <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '20px', color: '#1a1a1a' }}>
-                나의 코스
+                {t('profile.tabs.courses')}
             </h2>
 
             {bookmarkedRecords.length === 0 ? (
@@ -61,10 +61,10 @@ function MyCourseTab({ user, onRecordClick }) {
                 }}>
                     <div style={{ fontSize: '48px', marginBottom: '16px' }}>⭐</div>
                     <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a', marginBottom: '8px' }}>
-                        즐겨찾는 코스가 없습니다.
+                        {t('profile.noCourses')}
                     </div>
                     <div style={{ fontSize: '14px', color: '#666' }}>
-                        기록 상세에서 하트 아이콘을 눌러 코스를 추가해보세요!
+                        {t('profile.addCourseInfo')}
                     </div>
                 </div>
             ) : (
