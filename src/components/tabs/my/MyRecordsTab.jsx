@@ -231,6 +231,38 @@ function MyRecordsTab({ user, onRecordClick }) {
                 </div>
             )}
 
+            {/* 월별 통계 */}
+            {monthStats && (
+                <div style={{
+                    backgroundColor: '#fff',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    margin: '12px 0',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                    border: '1px solid #f0f0f0'
+                }}>
+                    <h3 style={{
+                        margin: '0 0 16px 0',
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        color: '#1a1a1a'
+                    }}>
+                        {currentMonth}월 통계
+                    </h3>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, 1fr)',
+                        gap: '8px'
+                    }}>
+                        <StatItem label="거리" value={formatDistanceUtil(monthStats.totalDistance, unit)} />
+                        <StatItem label="시간" value={formatTime(monthStats.totalDuration)} />
+                        <StatItem label="페이스" value={formatPaceCustom(monthStats.avgPace * 60)} />
+                        <StatItem label="일수" value={`${monthStats.runningDays}일`} />
+                        <StatItem label="칼로리" value={`${monthStats.totalCalories.toLocaleString()}`} />
+                    </div>
+                </div>
+            )}
+
 
 
             {/* 달력 */}
