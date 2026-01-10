@@ -1,10 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, Autocomplete } from '@react-google-maps/api';
 import AdvancedMarker from '../../common/AdvancedMarker';
-import { defaultMapOptions } from '../../../utils/mapConfig';
+import { getDefaultMapOptions, getMapId } from '../../../utils/mapConfig';
 
 const SEOUL_CENTER = { lat: 37.5665, lng: 126.9780 };
-const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
 
 function CrewActivityAreaSelection({ onSelect, onBack, isLoading, embedded = false }) {
     const [isLoaded, setIsLoaded] = useState(false);
@@ -281,17 +280,17 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading, embedded = fal
 
             <div style={styles.mapWrapper}>
                 <GoogleMap
-                    mapContainerStyle={styles.mapContainer}
+                    mapContainerStyle={{ width: '100%', height: '100%' }}
                     center={markerPos || SEOUL_CENTER}
                     zoom={15}
-                    onClick={handleMapClick}
                     onLoad={onLoad}
                     onUnmount={onUnmount}
                     options={{
-                        ...defaultMapOptions,
-                        mapId: MAP_ID,
+                        ...(getDefaultMapOptions() || {}),
+                        mapId: getMapId(),
                         gestureHandling: 'greedy'
                     }}
+                    onClick={handleMapClick}
                 >
                     {markerPos && (
                         <AdvancedMarker

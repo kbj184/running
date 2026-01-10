@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
  * Custom wrapper for Google Maps AdvancedMarkerElement
  * Note: Requires 'marker' library in useJsApiLoader and mapId in GoogleMap options.
  */
-const AdvancedMarker = ({ map, position, onClick, children, title, zIndex, anchor }) => {
+function AdvancedMarker({ map, position, onClick, children, title, zIndex, anchor }) {
     const [contentDiv] = useState(() => {
         const div = document.createElement('div');
         div.style.width = '0px';
@@ -54,6 +54,6 @@ const AdvancedMarker = ({ map, position, onClick, children, title, zIndex, ancho
 
     // Render children into the contentDiv using a Portal
     return children ? createPortal(children, contentDiv) : null;
-};
+}
 
 export default AdvancedMarker;

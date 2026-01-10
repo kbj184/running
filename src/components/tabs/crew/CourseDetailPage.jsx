@@ -3,7 +3,7 @@ import { api } from '../../../utils/api';
 import { generateRouteMapImage } from '../../../utils/mapThumbnail';
 import { GoogleMap, useJsApiLoader, Polyline } from '@react-google-maps/api';
 import AdvancedMarker from '../../common/AdvancedMarker';
-import { interactiveMapOptions, LIBRARIES, MAP_ID } from '../../../utils/mapConfig';
+import { getInteractiveMapOptions, LIBRARIES, getMapId } from '../../../utils/mapConfig';
 
 // 속도에 따른 색상 반환
 const getSpeedColor = (speedKmh) => {
@@ -289,7 +289,6 @@ function CourseDetailPage({ user, crewId, selectedRecord, onClose, onSuccess }) 
                                     onLoad={onLoad}
                                     onUnmount={() => setMap(null)}
                                     options={{
-                                        ...interactiveMapOptions,
                                         mapId: MAP_ID
                                     }}
                                 >

@@ -4,52 +4,65 @@
  */
 
 // POI 및 대중교통 숨김 스타일
-export const hideMapFeatures = [
-    {
-        featureType: 'poi',
-        stylers: [{ visibility: 'off' }]
-    },
-    {
-        featureType: 'transit',
-        stylers: [{ visibility: 'off' }]
-    }
-];
+export function getHideMapFeatures() {
+    return [
+        {
+            featureType: 'poi',
+            stylers: [{ visibility: 'off' }]
+        },
+        {
+            featureType: 'transit',
+            stylers: [{ visibility: 'off' }]
+        }
+    ];
+}
 
 // 지도 ID (환경변수에서 가져옴)
-export const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
+export function getMapId() {
+    return import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || "";
+}
 
 // 기본 지도 옵션 (UI 컨트롤 포함)
-export const defaultMapOptions = {
-    disableDefaultUI: true,
-    zoomControl: true,
-    streetViewControl: false,
-    mapTypeControl: false,
-    fullscreenControl: false,
-    clickableIcons: false,
-    ...(import.meta.env.VITE_GOOGLE_MAPS_MAP_ID ? {} : { styles: hideMapFeatures })
-};
+export function getDefaultMapOptions() {
+    const mapId = getMapId();
+    return {
+        disableDefaultUI: true,
+        zoomControl: true,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        clickableIcons: false,
+        ...(mapId ? {} : { styles: getHideMapFeatures() })
+    };
+}
 
 // 러닝 화면용 지도 옵션 (모든 UI 숨김)
-export const runningMapOptions = {
-    disableDefaultUI: true,
-    zoomControl: false,
-    streetViewControl: false,
-    mapTypeControl: false,
-    fullscreenControl: false,
-    clickableIcons: false,
-    ...(import.meta.env.VITE_GOOGLE_MAPS_MAP_ID ? {} : { styles: hideMapFeatures })
-};
+export function getRunningMapOptions() {
+    const mapId = getMapId();
+    return {
+        disableDefaultUI: true,
+        zoomControl: false,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        clickableIcons: false,
+        ...(mapId ? {} : { styles: getHideMapFeatures() })
+    };
+}
 
 // 인터랙티브 지도 옵션 (풀스크린 포함)
-export const interactiveMapOptions = {
-    disableDefaultUI: true,
-    zoomControl: true,
-    streetViewControl: false,
-    mapTypeControl: false,
-    fullscreenControl: true,
-    gestureHandling: 'greedy',
-    ...(import.meta.env.VITE_GOOGLE_MAPS_MAP_ID ? {} : { styles: hideMapFeatures })
-};
+export function getInteractiveMapOptions() {
+    const mapId = getMapId();
+    return {
+        disableDefaultUI: true,
+        zoomControl: true,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: true,
+        gestureHandling: 'greedy',
+        ...(mapId ? {} : { styles: getHideMapFeatures() })
+    };
+}
 
 // 지도 라이브러리 목록
 export const LIBRARIES = ['places', 'marker'];

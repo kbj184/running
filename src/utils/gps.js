@@ -1,7 +1,7 @@
 // GPS 및 거리 계산 유틸리티
 
 // 두 좌표 간의 거리 계산 (Haversine formula)
-export const calculateDistance = (lat1, lon1, lat2, lon2) => {
+export function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // 지구 반지름 (km)
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
@@ -15,42 +15,42 @@ export const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const distance = R * c;
 
     return distance; // km 단위
-};
+}
 
-const toRad = (degrees) => {
+function toRad(degrees) {
     return degrees * (Math.PI / 180);
-};
+}
 
 // 속도 계산 (km/h)
-export const calculateSpeed = (distance, timeInSeconds) => {
+export function calculateSpeed(distance, timeInSeconds) {
     if (timeInSeconds === 0) return 0;
     const hours = timeInSeconds / 3600;
     return distance / hours; // km/h
-};
+}
 
 // 페이스 계산 (분/km)
-export const calculatePace = (distance, timeInSeconds) => {
+export function calculatePace(distance, timeInSeconds) {
     if (distance === 0) return 0;
     const minutes = timeInSeconds / 60;
     return minutes / distance; // 분/km
-};
+}
 
 // 시간 포맷팅 (HH:MM:SS)
-export const formatTime = (seconds) => {
+export function formatTime(seconds) {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
 
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-};
+}
 
 // 거리 포맷팅
-export const formatDistance = (km) => {
+export function formatDistance(km) {
     return `${km.toFixed(2)}km`;
-};
+}
 
 // GPS 위치 가져오기
-export const getCurrentPosition = () => {
+export function getCurrentPosition() {
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
             reject(new Error('Geolocation is not supported by your browser'));
@@ -78,10 +78,10 @@ export const getCurrentPosition = () => {
             }
         );
     });
-};
+}
 
 // GPS 위치 추적 시작
-export const watchPosition = (callback, errorCallback) => {
+export function watchPosition(callback, errorCallback) {
     if (!navigator.geolocation) {
         errorCallback(new Error('Geolocation is not supported by your browser'));
         return null;
@@ -107,11 +107,11 @@ export const watchPosition = (callback, errorCallback) => {
     );
 
     return watchId;
-};
+}
 
 // GPS 위치 추적 중지
-export const clearWatch = (watchId) => {
+export function clearWatch(watchId) {
     if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
     }
-};
+}

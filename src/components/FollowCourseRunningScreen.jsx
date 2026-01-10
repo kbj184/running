@@ -13,7 +13,7 @@ import {
 import { saveRunningData } from '../utils/db';
 import { api } from '../utils/api';
 import { generateRouteThumbImage } from '../utils/mapThumbnail';
-import { runningMapOptions, MAP_ID } from '../utils/mapConfig';
+import { getRunningMapOptions, getMapId } from '../utils/mapConfig';
 import './running-compact.css';
 
 const containerStyle = {
@@ -31,13 +31,13 @@ const VALIDATION_RADIUS = {
 };
 
 // 속도에 따른 색상 반환
-const getSpeedColor = (speedKmh) => {
+function getSpeedColor(speedKmh) {
     if (speedKmh <= 0) return "#667eea";
     if (speedKmh < 6) return "#10b981";
     if (speedKmh < 9) return "#f59e0b";
     if (speedKmh < 12) return "#ef4444";
     return "#7c3aed";
-};
+}
 
 function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
     const sessionId = `follow-${course.id}-${Date.now()}`;
@@ -86,15 +86,15 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
 
 
     const googleMapOptions = useMemo(() => ({
-        ...runningMapOptions,
-        mapId: MAP_ID,
+        ...(getRunningMapOptions() || {}),
+        mapId: getMapId(),
         isFractionalZoomEnabled: true
     }), []);
 
     useEffect(() => {
         if (!map) return;
         console.log('[FollowCourseRunningScreen] Debug Markers:', {
-            mapId: MAP_ID,
+            mapId: getMapId(),
             startPoint,
             endPoint,
             hasMap: !!map,
@@ -1012,7 +1012,7 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                 {currentPosition ? (
                     <GoogleMap
                         mapContainerStyle={containerStyle}
-                        center={markerPosition || currentPosition}
+                        center={markerPosition || currentPosition || courseRoute[0]}
                         zoom={16}
                         onLoad={onLoad}
                         onUnmount={onUnmount}

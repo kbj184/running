@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, Marker } from '@react-google-maps/api';
-import { defaultMapOptions } from '../../utils/mapConfig';
+import { getDefaultMapOptions, getMapId } from '../../utils/mapConfig';
 
 
 const mapContainerStyle = {
@@ -145,9 +145,12 @@ function EditActivityAreaModal({ isOpen, onClose, onSave, user, currentArea }) {
                 <GoogleMap
                     mapContainerStyle={mapContainerStyle}
                     center={markerPos || { lat: 37.5665, lng: 126.9780 }}
-                    zoom={13}
+                    zoom={15}
                     onClick={handleMapClick}
-                    options={defaultMapOptions}
+                    options={{
+                        ...(getDefaultMapOptions() || {}),
+                        mapId: getMapId()
+                    }}
                 >
                     {markerPos && (
                         <Marker

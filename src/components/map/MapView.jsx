@@ -4,7 +4,7 @@ import { SEOUL_CENTER } from '../../constants/runnerGrades';
 import MapController from './MapController';
 import RunnerMarkers from './RunnerMarkers';
 import ControlPanel from './ControlPanel';
-import { interactiveMapOptions, LIBRARIES, MAP_ID } from '../../utils/mapConfig';
+import { getInteractiveMapOptions, LIBRARIES, getMapId } from '../../utils/mapConfig';
 
 const containerStyle = {
     width: '100%',
@@ -45,17 +45,25 @@ function MapView({
         setMap(null);
     }, []);
 
+    // Define mapCenter, assuming it should be SEOUL_CENTER based on original code
+    // If mapCenter is meant to be dynamic, it would need to be passed as a prop or derived.
+    // For now, keeping it consistent with the original center value.
+    const mapCenter = SEOUL_CENTER;
+
     if (!isLoaded) return <div>Loading Map...</div>;
 
     return (
         <div className={`map-container ${selectedRunner ? 'with-panel' : ''}`}>
             <GoogleMap
-                mapContainerStyle={containerStyle}
-                center={SEOUL_CENTER}
-                zoom={13}
+                mapContainerStyle={{ width: '100%', height: '100%' }}
+                center={mapCenter}
+                zoom={14}
                 onLoad={onLoad}
                 onUnmount={onUnmount}
-                options={mapOptions}
+                options={{
+                    ...(getInteractiveMapOptions() || {}),
+                    mapId: getMapId()
+                }}
             >
                 <MapController map={map} selectedRunner={selectedRunner} />
 

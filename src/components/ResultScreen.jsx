@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { generateRouteMapImage } from '../utils/mapThumbnail';
 import { GoogleMap, useJsApiLoader, Polyline } from '@react-google-maps/api';
 import AdvancedMarker from './common/AdvancedMarker';
-import { interactiveMapOptions, LIBRARIES, MAP_ID } from '../utils/mapConfig';
+import { getInteractiveMapOptions, LIBRARIES, getMapId } from '../utils/mapConfig';
 import './result-screen.css';
 
 // 속도에 따른 색상 반환 (RunningScreen과 동일)
@@ -552,8 +552,8 @@ function ResultScreen({ result, onSave, onDelete, mode = 'finish' }) {
                                     onLoad={onLoad}
                                     onUnmount={onUnmount}
                                     options={{
-                                        ...interactiveMapOptions,
-                                        mapId: MAP_ID
+                                        ...(getInteractiveMapOptions() || {}),
+                                        mapId: getMapId()
                                     }}
                                 >
                                     {/* 속도별 경로 세그먼트 (속도에 따라 색상 변경) */}

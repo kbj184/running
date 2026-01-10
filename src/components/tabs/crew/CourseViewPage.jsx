@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Polyline, Marker } from '@react-google-maps/api';
 import { generateRouteMapImage } from '../../../utils/mapThumbnail';
 import { api } from '../../../utils/api';
-import { interactiveMapOptions, LIBRARIES, MAP_ID } from '../../../utils/mapConfig';
+import { getInteractiveMapOptions, LIBRARIES, getMapId } from '../../../utils/mapConfig';
 
 // 속도에 따른 색상 반환
 const getSpeedColor = (speedKmh) => {
@@ -373,8 +373,8 @@ function CourseViewPage({ course, user, onClose, onFollowRunning, refreshKey }) 
                                     onLoad={onLoad}
                                     onUnmount={() => setMap(null)}
                                     options={{
-                                        ...interactiveMapOptions,
-                                        mapId: MAP_ID
+                                        ...(getInteractiveMapOptions() || {}),
+                                        mapId: getMapId()
                                     }}
                                 >
                                     {/* 속도별 경로 세그먼트 */}

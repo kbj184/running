@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GoogleMap, Autocomplete } from '@react-google-maps/api';
 import AdvancedMarker from '../../common/AdvancedMarker';
 import { api } from '../../../utils/api';
-import { defaultMapOptions, MAP_ID } from '../../../utils/mapConfig';
+import { getDefaultMapOptions, getMapId } from '../../../utils/mapConfig';
 
 const CREW_IMAGES = [
     { id: 1, emoji: '🦁', bg: 'linear-gradient(135deg, #FF6B6B 0%, #C44569 100%)' },
@@ -308,8 +308,8 @@ function CrewEditPage({ crew, user, onCancel, onComplete }) {
                             onClick={handleMapClick}
                             onLoad={(mapInstance) => setMap(mapInstance)}
                             options={{
-                                ...defaultMapOptions,
-                                mapId: MAP_ID
+                                ...(getDefaultMapOptions() || {}),
+                                mapId: getMapId()
                             }}
                         >
                             {markerPos && (

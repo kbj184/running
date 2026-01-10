@@ -13,7 +13,7 @@ import {
 import { saveRunningData } from '../utils/db';
 import { api } from '../utils/api';
 import { generateRouteThumbImage } from '../utils/mapThumbnail';
-import { runningMapOptions, MAP_ID } from '../utils/mapConfig';
+import { getRunningMapOptions, getMapId } from '../utils/mapConfig';
 import './running-compact.css';
 
 const containerStyle = {
@@ -24,13 +24,13 @@ const containerStyle = {
 
 
 // 속도에 따른 색상 반환 (히트맵 스타일: Low-Green -> High-Red)
-const getSpeedColor = (speedKmh) => {
+function getSpeedColor(speedKmh) {
     if (speedKmh <= 0) return "#667eea"; // 멈춤
     if (speedKmh < 6) return "#10b981"; // 걷기/느린 조깅 (초록)
     if (speedKmh < 9) return "#f59e0b"; // 중강도 (주황)
     if (speedKmh < 12) return "#ef4444"; // 고강도 (빨강)
     return "#7c3aed"; // 초고속 (보라)
-};
+}
 
 function RunningScreen({ onStop, sessionId, user }) {
     // 서울 중심 좌표
@@ -205,6 +205,70 @@ function RunningScreen({ onStop, sessionId, user }) {
         setMap(null);
     }, []);
 
+    // 방향(heading) 계산 - useMemo로 메모이제이션하여 깜박임 방지
+    const headingValue = useMemo(() => {
+        if (route.length >= 2) {
+            const lastPoint = route[route.length - 1];
+            const prevPoint = route[route.length - 2];
+
+            // 두 점 사이의 각도 계산 (북쪽 기준 시계방향)
+            const deltaLng = lastPoint.lng - prevPoint.lng;
+            const deltaLat = lastPoint.lat - prevPoint.lat;
+            return Math.atan2(deltaLng, deltaLat) * (180 / Math.PI);
+        }
+        return 0;
+    }, [route]);
+
+    // 마커 위치 - route의 마지막 점 사용 (폴리라인과 동기화)
+    const markerPos = useMemo(() => {
+        return route.length > 0 ? route[route.length - 1] : currentPosition;
+    }, [route, currentPosition]);
+
+    // 경로 세그먼트 계산 (useMemo로 최적화)
+    const mapSegs = useMemo(() => {
+        if (route.length < 2) return [];
+
+        const segments = [];
+        let currentPath = [];
+        let currentColor = getSpeedColor(route[0]?.speed || 0);
+
+        // 급수 구간 판별 헬퍼
+        const isIndexInWatering = (idx) => {
+            for (const seg of wateringSegments) {
+                if (idx >= seg.start && idx < seg.end) return true;
+            }
+            if (isWatering && wateringStartIndex !== null) {
+                if (idx >= wateringStartIndex) return true;
+            }
+            return false;
+        };
+
+        for (let i = 0; i < route.length - 1; i++) {
+            const p1 = route[i];
+            const p2 = route[i + 1];
+            const watering = isIndexInWatering(i);
+            let color = watering ? "#06b6d4" : getSpeedColor(p1.speed);
+
+            if (currentPath.length === 0) {
+                currentPath.push(p1);
+                currentColor = color;
+            }
+
+            if (color !== currentColor) {
+                currentPath.push(p1);
+                segments.push({ path: [...currentPath], color: currentColor });
+                currentPath = [p1];
+                currentColor = color;
+            }
+            currentPath.push(p2);
+        }
+
+        if (currentPath.length > 0) {
+            segments.push({ path: currentPath, color: currentColor });
+        }
+        return segments;
+    }, [route, wateringSegments, isWatering, wateringStartIndex]);
+
     useEffect(() => {
         if (map && currentPosition) {
             if (isNavMode) {
@@ -222,14 +286,14 @@ function RunningScreen({ onStop, sessionId, user }) {
 
         if (isNavMode) {
             map.setTilt(45);
-            map.setHeading(heading);
+            map.setHeading(headingValue);
             map.setZoom(18); // 내비 모드 시 좀 더 근접 줌
         } else {
             map.setTilt(0);
             map.setHeading(0);
             map.setZoom(16);
         }
-    }, [map, isNavMode, heading]);
+    }, [map, isNavMode, headingValue]);
 
     useEffect(() => {
         if (testMode && !currentPosition) {
@@ -518,99 +582,7 @@ function RunningScreen({ onStop, sessionId, user }) {
         });
     };
 
-    // 경로 세그먼트 계산 (useMemo로 최적화)
-    const mapSegments = useMemo(() => {
-        if (route.length < 2) return [];
 
-        const segments = [];
-        let currentPath = [];
-        let currentColor = getSpeedColor(route[0]?.speed || 0);
-        let isInWatering = false;
-
-        // 급수 구간 판별 헬퍼
-        const isIndexInWatering = (idx) => {
-            // 완료된 급수 구간
-            for (const seg of wateringSegments) {
-                if (idx >= seg.start && idx < seg.end) return true;
-            }
-            // 현재 진행중인 급수 구간
-            if (isWatering && wateringStartIndex !== null) {
-                if (idx >= wateringStartIndex) return true;
-            }
-            return false;
-        };
-
-        // 1km 단위로 색상을 쪼개려면 route 데이터에 km 정보가 있거나, distance누적이 있어야 하는데
-        // 현재는 '속도' 기반으로 색을 칠한다고 했으므로, 점마다 속도를 체크해서 색이 바뀌면 Polyline을 분리합니다.
-        // 너무 잘게 쪼개지면 성능이 저하되므로, 일정 구간(예: 10개 점)마다 대표 속도로 퉁치거나,
-        // 급수 구간 우선으로 처리합니다.
-
-        // 여기서는 "1km별 평균속도별 색상"을 구현하기 위해
-        // 1km 단위로 세그먼트를 크게 나눕니다.
-
-        let splitIndices = []; // 1km, 2km... 되는 route 인덱스 찾기 (정확하진 않지만 근사치)
-        // distance 계산이 handleLocationUpdate에서 state로 관리되어 여기서 route만으로는 정확한 누적 거리 알기 어려움.
-        // 하지만 편의상 route의 길이를 등분하거나, route 객체에 distance 필드를 추가하는 게 좋았을 것.
-        // 현재 route에 distance가 없으므로, 그냥 "속도 기반"으로 구간을 나누겠습니다. (요청사항 뒷부분 "평균속도별 색상을 가속력 있게 표현")
-
-        for (let i = 0; i < route.length - 1; i++) {
-            const p1 = route[i];
-            const p2 = route[i + 1];
-
-            const watering = isIndexInWatering(i);
-
-            // 색상 결정: 급수중이면 하늘색, 아니면 속도기반 색상
-            let color = watering ? "#06b6d4" : getSpeedColor(p1.speed);
-
-            // 현재 세그먼트가 비어있으면 시작
-            if (currentPath.length === 0) {
-                currentPath.push(p1);
-                currentColor = color;
-                isInWatering = watering;
-            }
-
-            // 상태(급수여부, 색상)가 바뀌면 이전 세그먼트 끝내고 새로 시작
-            // 단, 같은 급수 구간 내에서는 색상 변경 없음
-            // 급수 구간이 아닐 때는 속도에 따라 색이 변함
-            // 너무 빈번한 변경 방지를 위해 약간의 스무딩이 필요할 수 있지만 일단 리얼타임 반영.
-
-            if (color !== currentColor) {
-                currentPath.push(p1); // 연결점 추가
-                segments.push({ path: [...currentPath], color: currentColor, isWatering: isInWatering });
-                currentPath = [p1]; // 새로운 시작점은 연결점부터
-                currentColor = color;
-                isInWatering = watering;
-            }
-
-            currentPath.push(p2);
-        }
-
-        // 마지막 세그먼트 추가
-        if (currentPath.length > 0) {
-            segments.push({ path: currentPath, color: currentColor, isWatering: isInWatering });
-        }
-
-        return segments;
-    }, [route, wateringSegments, isWatering, wateringStartIndex]);
-
-    // 마커 위치 - route의 마지막 점 사용 (폴리라인과 동기화)
-    const markerPosition = useMemo(() => {
-        return route.length > 0 ? route[route.length - 1] : currentPosition;
-    }, [route, currentPosition]);
-
-    // 방향(heading) 계산 - useMemo로 메모이제이션하여 깜박임 방지
-    const heading = useMemo(() => {
-        if (route.length >= 2) {
-            const lastPoint = route[route.length - 1];
-            const prevPoint = route[route.length - 2];
-
-            // 두 점 사이의 각도 계산 (북쪽 기준 시계방향)
-            const deltaLng = lastPoint.lng - prevPoint.lng;
-            const deltaLat = lastPoint.lat - prevPoint.lat;
-            return Math.atan2(deltaLng, deltaLat) * (180 / Math.PI);
-        }
-        return 0;
-    }, [route]);
 
     return (
         <div className="running-screen">
@@ -672,19 +644,19 @@ function RunningScreen({ onStop, sessionId, user }) {
                 {currentPosition ? (
                     <GoogleMap
                         mapContainerStyle={containerStyle}
-                        center={markerPosition || currentPosition}
+                        center={markerPos || currentPosition}
                         zoom={isNavMode ? 18 : 16}
                         onLoad={onLoad}
                         onUnmount={onUnmount}
                         options={{
-                            ...runningMapOptions,
-                            mapId: MAP_ID,
+                            ...(getRunningMapOptions() || {}),
+                            mapId: getMapId(),
                             gestureHandling: isNavMode ? 'none' : 'greedy' // 내비 모드일 땐 자동 추적 방해 금지
                         }}
                         onClick={onMapClick}
                     >
                         {/* 계산된 세그먼트 렌더링 */}
-                        {mapSegments.map((segment, idx) => {
+                        {mapSegs.map((segment, idx) => {
                             // 급수 구간이면 하늘색으로 렌더링 (이전 요청사항 복구)
                             // if (segment.isWatering) return null; -> 제거됨
 
@@ -751,10 +723,10 @@ function RunningScreen({ onStop, sessionId, user }) {
                             </AdvancedMarker>
                         )}
 
-                        {window.google && markerPosition && (
+                        {window.google && markerPos && (
                             <AdvancedMarker
                                 map={map}
-                                position={markerPosition}
+                                position={markerPos}
                                 zIndex={1000}
                             >
                                 <div style={{ position: 'relative' }}>
@@ -764,7 +736,7 @@ function RunningScreen({ onStop, sessionId, user }) {
                                         width: '120px',
                                         height: '120px',
                                         background: 'conic-gradient(from -30deg at 50% 50%, rgba(66, 133, 244, 0) 0deg, rgba(66, 133, 244, 0.45) 30deg, rgba(66, 133, 244, 0) 60deg)',
-                                        transform: `translate(-50%, -50%) rotate(${heading}deg)`,
+                                        transform: `translate(-50%, -50%) rotate(${headingValue}deg)`,
                                         borderRadius: '50%',
                                         zIndex: 1,
                                         pointerEvents: 'none'
