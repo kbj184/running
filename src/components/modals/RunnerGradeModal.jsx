@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatDistance } from '../../utils/gps';
 import { getGradeInfo, getBadgeStyle, RUNNER_GRADE_INFO } from '../../constants/runnerGradeInfo';
 import { api } from '../../utils/api';
 import './RunnerGradeModal.css';
@@ -114,13 +115,13 @@ function RunnerGradeModal({ user, onClose }) {
                                     padding: '0 4px'
                                 }}>
                                     <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600' }}>
-                                        {currentGrade.minDistance}km
+                                        {formatDistance(currentGrade.minDistance)}
                                     </span>
                                     <span style={{ fontSize: '14px', color: currentGrade.color, fontWeight: '800' }}>
-                                        {displayBestDistance}km
+                                        {formatDistance(displayBestDistance)}
                                     </span>
                                     <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600' }}>
-                                        {currentGrade.maxDistance}km
+                                        {formatDistance(currentGrade.maxDistance)}
                                     </span>
                                 </div>
                                 <div style={{
@@ -163,7 +164,7 @@ function RunnerGradeModal({ user, onClose }) {
                                         const best = displayBestDistance;
                                         const max = currentGrade.maxDistance;
                                         const remain = max - best;
-                                        return remain > 0 ? `${remain.toFixed(1)}km` : '목표 달성!';
+                                        return remain > 0 ? `${formatDistance(remain)}` : '목표 달성!';
                                     })()} 남음
                                 </div>
                             </div>

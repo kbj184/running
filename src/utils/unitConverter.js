@@ -34,7 +34,7 @@ export const formatDistance = (distanceKm, unit = 'km') => {
         const miles = kmToMiles(distanceKm);
         return `${miles.toFixed(2)} mi`;
     }
-    return `${distanceKm.toFixed(2)} km`;
+    return `${distanceKm.toFixed(1)} km`;
 };
 
 /**

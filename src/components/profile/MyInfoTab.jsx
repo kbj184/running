@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getGradeInfo, getBadgeStyle } from '../../constants/runnerGradeInfo';
+import { getGradeInfo, getBadgeStyle, RUNNER_GRADE_INFO } from '../../constants/runnerGradeInfo';
+import { formatDistance } from '../../utils/gps';
 import { api } from '../../utils/api';
 
 function MyInfoTab({ user }) {
@@ -9,6 +10,32 @@ function MyInfoTab({ user }) {
     const [isLoadingArea, setIsLoadingArea] = useState(true);
     const [myCrews, setMyCrews] = useState({ primaryCrew: null, secondaryCrews: [] });
     const [isLoadingCrews, setIsLoadingCrews] = useState(true);
+    const [userStats, setUserStats] = useState(user.stats || null);
+
+    useEffect(() => {
+        const fetchUserStats = async () => {
+            if (!userStats && user.id) {
+                try {
+                    const response = await api.request(`${import.meta.env.VITE_API_URL}/user/${user.id}/profile`, {
+                        headers: {
+                            'Authorization': user.accessToken?.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                        }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.stats) {
+                            setUserStats(data.stats);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch user stats for MyInfoTab:', error);
+                }
+            }
+        };
+        fetchUserStats();
+    }, [user.id, userStats]);
+
+    const displayBestDistance = userStats?.bestDistance || 0;
 
     useEffect(() => {
         const fetchActivityArea = async () => {
@@ -145,23 +172,112 @@ function MyInfoTab({ user }) {
                     const gradeInfo = getGradeInfo(user.runnerGrade);
                     return (
                         <div style={{
-                            padding: '20px',
-                            backgroundColor: '#f9f9f9',
-                            borderRadius: '12px'
+                            padding: '24px',
+                            backgroundColor: '#fff',
+                            borderRadius: '16px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                            border: '1px solid #f0f0f0'
                         }}>
-                            <div style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>{t('profile.grade')}</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '32px' }}>{gradeInfo.emoji}</span>
-                                <span style={{ fontSize: '20px', fontWeight: '700', color: gradeInfo.color }}>
-                                    {gradeInfo.nameKo}
-                                </span>
-                                {gradeInfo.badge && (
-                                    <span style={getBadgeStyle(gradeInfo.badge, gradeInfo.color)}>
-                                        {gradeInfo.badge}
-                                    </span>
-                                )}
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginBottom: '20px'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <span style={{ fontSize: '32px' }}>{gradeInfo.emoji}</span>
+                                    <div>
+                                        <div style={{ fontSize: '14px', color: '#94a3b8', fontWeight: '500' }}>{t('profile.grade')}</div>
+                                        <div style={{ fontSize: '20px', fontWeight: '800', color: gradeInfo.color, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            {gradeInfo.name}
+                                            {gradeInfo.badge && (
+                                                <span style={getBadgeStyle(gradeInfo.badge, gradeInfo.color)}>
+                                                    {gradeInfo.badge}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div style={{ fontSize: '13px', color: '#888', marginTop: '4px' }}>{gradeInfo.description}</div>
+
+                            {/* 게이지 바 영역 */}
+                            <div style={{ marginTop: '16px' }}>
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    marginBottom: '8px'
+                                }}>
+                                    <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600' }}>
+                                        {formatDistance(gradeInfo.minDistance)}
+                                    </span>
+                                    <span style={{ fontSize: '15px', color: gradeInfo.color, fontWeight: '800' }}>
+                                        {formatDistance(displayBestDistance)}
+                                    </span>
+                                    <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600' }}>
+                                        {formatDistance(gradeInfo.maxDistance)}
+                                    </span>
+                                </div>
+                                <div style={{
+                                    height: '14px',
+                                    backgroundColor: '#f1f5f9',
+                                    borderRadius: '7px',
+                                    overflow: 'hidden',
+                                    position: 'relative',
+                                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
+                                }}>
+                                    <div style={{
+                                        position: 'absolute',
+                                        left: 0,
+                                        top: 0,
+                                        height: '100%',
+                                        width: (() => {
+                                            const best = displayBestDistance;
+                                            const min = gradeInfo.minDistance;
+                                            const max = gradeInfo.maxDistance;
+                                            if (max === min) return '100%';
+                                            const progress = ((best - min) / (max - min)) * 100;
+                                            return `${Math.min(100, Math.max(0, progress))}%`;
+                                        })(),
+                                        background: `linear-gradient(90deg, ${gradeInfo.color} 0%, ${gradeInfo.color}dd 100%)`,
+                                        borderRadius: '7px',
+                                        transition: 'width 1s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                        boxShadow: `0 0 10px ${gradeInfo.color}40`,
+                                        overflow: 'hidden'
+                                    }}>
+                                        {/* Shine 효과 */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                                            animation: 'gauge-shine 2s infinite linear'
+                                        }} />
+                                    </div>
+                                </div>
+                                <style>{`
+                                    @keyframes gauge-shine {
+                                        0% { transform: translateX(-100%); }
+                                        100% { transform: translateX(100%); }
+                                    }
+                                `}</style>
+                                <div style={{
+                                    marginTop: '10px',
+                                    fontSize: '13px',
+                                    color: '#64748b',
+                                    fontWeight: '500',
+                                    textAlign: 'center'
+                                }}>
+                                    다음 등급까지 {(() => {
+                                        const best = displayBestDistance;
+                                        const max = gradeInfo.maxDistance;
+                                        const remain = max - best;
+                                        return remain > 0 ? `${formatDistance(remain)}` : '목표 달성!';
+                                    })()} 남음
+                                </div>
+                            </div>
                         </div>
                     );
                 })()}

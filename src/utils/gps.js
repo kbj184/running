@@ -46,7 +46,10 @@ export function formatTime(seconds) {
 
 // 거리 포맷팅
 export function formatDistance(km) {
-    return `${km.toFixed(2)}km`;
+    if (km < 1) {
+        return `${Math.round(km * 1000)}m`;
+    }
+    return `${km.toFixed(1)}km`;
 }
 
 // GPS 위치 가져오기
