@@ -316,7 +316,9 @@ function CrewActivityAreaSelection({ onSelect, onBack, isLoading, embedded = fal
                         disabled={isLocating}
                         title="내 위치로 이동"
                     >
-                        {isLocating ? '...' : '🎯'}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" fill="currentColor" />
+                        </svg>
                     </button>
                 </GoogleMap>
             </div>
@@ -459,21 +461,21 @@ const styles = {
     },
     myLocationBtn: {
         position: 'absolute',
-        right: '12px',
-        bottom: '12px',
-        width: '44px',
-        height: '44px',
-        borderRadius: '12px',
-        backgroundColor: '#1e293b',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        right: '10px',
+        bottom: '120px',
+        width: '40px',
+        height: '40px',
+        borderRadius: '2px',
+        backgroundColor: '#fff',
+        border: 'none',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '20px',
         cursor: 'pointer',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)',
+        boxShadow: 'rgba(0, 0, 0, 0.3) 0px 1px 4px -1px',
         zIndex: 10,
-        color: '#38bdf8'
+        color: '#666',
+        transition: 'background-color 0.2s',
     }
 };
 
