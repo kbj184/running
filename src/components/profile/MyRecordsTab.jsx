@@ -1,13 +1,12 @@
 import React from 'react';
-import RecentRecords from '../common/RecentRecords';
+import MyRecordsTabNew from '../tabs/my/MyRecordsTab';
 
 function MyRecordsTab({ refreshRecords, onRecordClick, user }) {
     return (
         <div>
-            <RecentRecords
-                onRefresh={refreshRecords}
-                onRecordClick={onRecordClick}
+            <MyRecordsTabNew
                 user={user}
+                onRecordClick={onRecordClick}
             />
         </div>
     );
