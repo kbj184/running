@@ -58,6 +58,14 @@ function MyRecordsTab({ user, onRecordClick }) {
                 });
 
                 setRecords(sessions);
+
+                // 마지막 런닝 날짜 자동 선택
+                if (sessions.length > 0 && !selectedDate) {
+                    const latestRecord = sessions[0]; // 이미 최신순으로 정렬되어 있음
+                    const latestDate = new Date(latestRecord.timestamp);
+                    setSelectedDate(latestDate);
+                    setCurrentDate(latestDate); // 달력도 해당 월로 이동
+                }
             }
         } catch (err) {
             console.error('기록 로딩 실패:', err);
@@ -477,16 +485,6 @@ function MyRecordsTab({ user, onRecordClick }) {
                         hideTitle={true}
                     />
                 </div>
-            )}
-
-            {/* 날짜 선택 안 했을 때 전체 최근 기록 */}
-            {!selectedDate && (
-                <RecentRecords
-                    user={user}
-                    onRecordClick={onRecordClick}
-                    onRefresh={refreshKey}
-                    hideTitle={true}
-                />
             )}
         </div>
     );

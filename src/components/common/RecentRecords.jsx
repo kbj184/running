@@ -79,13 +79,6 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
     const { unit } = useUnit();
     const [records, setRecords] = useState([]);
     const [displayedRecords, setDisplayedRecords] = useState([]);
-    const [displayCount, setDisplayCount] = useState(10); // 초기 10개 표시
-    const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(false); // 무한 스크롤 활성화 여부
-    const [stats, setStats] = useState({
-        totalDistance: 0,
-        totalDuration: 0,
-        avgPace: 0
-    });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -94,36 +87,7 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
         }
     }, [onRefresh, user]);
 
-    // 표시할 기록 업데이트
-    useEffect(() => {
-        setDisplayedRecords(records.slice(0, displayCount));
-    }, [records, displayCount]);
 
-    // 무한 스크롤 감지
-    useEffect(() => {
-        const handleScroll = () => {
-            // 스크롤이 하단에 가까워지면 (100px 이내)
-            const scrollHeight = document.documentElement.scrollHeight;
-            const scrollTop = document.documentElement.scrollTop;
-            const clientHeight = document.documentElement.clientHeight;
-
-            if (scrollHeight - scrollTop - clientHeight < 100) {
-                // 아직 표시할 기록이 더 있으면
-                if (displayCount < records.length) {
-                    setDisplayCount(prev => Math.min(prev + 10, records.length));
-                }
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [infiniteScrollEnabled, displayCount, records.length]);
-
-    // 더보기 버튼 클릭
-    const handleLoadMore = () => {
-        setDisplayCount(prev => Math.min(prev + 10, records.length));
-        setInfiniteScrollEnabled(true); // 더보기 클릭 후 무한 스크롤 활성화
-    };
 
     const loadRecords = async () => {
         console.log('📋 서버에서 기록 로딩 시작... User ID:', user?.id);
@@ -168,22 +132,8 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
 
                 console.log('📋 서버에서 가져온 기록 수:', sessions.length);
 
-                // 통계 계산
-                if (sessions.length > 0) {
-                    const totalDistance = sessions.reduce((sum, r) => sum + (r.distance || 0), 0);
-                    const totalDuration = sessions.reduce((sum, r) => sum + (r.duration || 0), 0);
-                    const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
-
-                    setStats({
-                        totalDistance,
-                        totalDuration,
-                        avgPace
-                    });
-                }
 
                 setRecords(sessions);
-                setDisplayCount(10); // 초기화
-                setInfiniteScrollEnabled(false); // 무한 스크롤 비활성화
             } else {
                 console.error('❌ 기록 로딩 실패:', response.status);
                 setRecords([]);
@@ -205,9 +155,9 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
             });
             setDisplayedRecords(filteredRecords);
         } else {
-            setDisplayedRecords(records.slice(0, displayCount));
+            setDisplayedRecords([]); // 날짜 미선택 시 표시하지 않음
         }
-    }, [records, selectedDate, displayCount]);
+    }, [records, selectedDate]);
 
     if (records.length === 0) {
         return (
@@ -339,37 +289,6 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
                         </div>
                     ))}
                 </div>
-
-                {/* 더보기 버튼 (무한 스크롤 활성화 전에만 표시) */}
-                {!infiniteScrollEnabled && displayCount < records.length && (
-                    <button
-                        onClick={handleLoadMore}
-                        style={{
-                            width: '100%',
-                            padding: '16px',
-                            marginTop: '16px',
-                            backgroundColor: '#fff',
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '12px',
-                            fontSize: '15px',
-                            fontWeight: '600',
-                            color: '#4318FF',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
-                        }}
-                        onMouseEnter={e => {
-                            e.currentTarget.style.backgroundColor = '#f8f9fa';
-                            e.currentTarget.style.borderColor = '#4318FF';
-                        }}
-                        onMouseLeave={e => {
-                            e.currentTarget.style.backgroundColor = '#fff';
-                            e.currentTarget.style.borderColor = '#e0e0e0';
-                        }}
-                    >
-                        더보기 ({records.length - displayCount}개 남음)
-                    </button>
-                )}
 
                 <div style={{ height: '20px' }}></div>
             </div>
