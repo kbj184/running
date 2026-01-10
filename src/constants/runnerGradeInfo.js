@@ -6,6 +6,8 @@ export const RUNNER_GRADE_INFO = {
         emoji: '🥉',
         color: '#94a3b8',
         description: '5km 미만',
+        minDistance: 0,
+        maxDistance: 5,
         badge: null
     },
     RUNNER_5K: {
@@ -14,6 +16,8 @@ export const RUNNER_GRADE_INFO = {
         emoji: '🏃',
         color: '#10b981',
         description: '10km 미만 & 1시간 이내',
+        minDistance: 5,
+        maxDistance: 10,
         badge: 'R'
     },
     RUNNER_10K: {
@@ -22,6 +26,8 @@ export const RUNNER_GRADE_INFO = {
         emoji: '🏃‍♂️',
         color: '#3b82f6',
         description: '21km 미만 & 1시간 30분 이내',
+        minDistance: 10,
+        maxDistance: 21,
         badge: 'R'
     },
     HALF_MARATHONER: {
@@ -30,6 +36,8 @@ export const RUNNER_GRADE_INFO = {
         emoji: '🎽',
         color: '#8b5cf6',
         description: '42km 미만 & 2시간 30분 이내',
+        minDistance: 21,
+        maxDistance: 42,
         badge: 'M'
     },
     FULL_MARATHONER: {
@@ -38,6 +46,8 @@ export const RUNNER_GRADE_INFO = {
         emoji: '🏅',
         color: '#f59e0b',
         description: '42km 이상 & 5시간 30분 이내',
+        minDistance: 42,
+        maxDistance: 42.195, // 마라톤 완주 기준
         badge: 'M'
     },
     SUB3_MARATHONER: {
@@ -46,6 +56,8 @@ export const RUNNER_GRADE_INFO = {
         emoji: '⚡',
         color: '#ef4444',
         description: '42km 이상 & 3시간 이내',
+        minDistance: 42.195,
+        maxDistance: 42.195,
         badge: 'M'
     },
     ELITE_MARATHONER: {
@@ -54,6 +66,8 @@ export const RUNNER_GRADE_INFO = {
         emoji: '👑',
         color: '#dc2626',
         description: '42km 이상 & 2시간 30분 이내',
+        minDistance: 42.195,
+        maxDistance: 42.195,
         badge: 'M'
     },
     LEGEND_MARATHONER: {
@@ -61,7 +75,9 @@ export const RUNNER_GRADE_INFO = {
         nameKo: 'Legend',
         emoji: '🌟',
         color: '#fbbf24',
-        description: '관리자 승급',
+        description: '전국구 전설',
+        minDistance: 42.195,
+        maxDistance: 42.195,
         badge: 'M'
     }
 };

@@ -1,11 +1,39 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { getGradeInfo, getBadgeStyle, RUNNER_GRADE_INFO } from '../../constants/runnerGradeInfo';
+import { api } from '../../utils/api';
 import './RunnerGradeModal.css';
 
 function RunnerGradeModal({ user, onClose }) {
     const { t } = useTranslation();
+    const [userStats, setUserStats] = React.useState(user.stats || null);
     const currentGrade = user.runnerGrade ? getGradeInfo(user.runnerGrade) : null;
+
+    React.useEffect(() => {
+        const fetchStats = async () => {
+            if (!userStats && user.id) {
+                try {
+                    const response = await api.request(`${import.meta.env.VITE_API_URL}/api/user/${user.id}/profile`, {
+                        headers: {
+                            'Authorization': user.accessToken?.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                        }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.stats) {
+                            setUserStats(data.stats);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch user stats for grade modal:', error);
+                }
+            }
+        };
+        fetchStats();
+    }, [user.id, userStats]);
+
+    // use userStats if available
+    const displayBestDistance = userStats?.bestDistance || 0;
 
     return (
         <div className="result-screen-overlay">
@@ -76,12 +104,68 @@ function RunnerGradeModal({ user, onClose }) {
                                     </span>
                                 )}
                             </div>
-                            <div style={{
-                                fontSize: '15px',
-                                color: '#666',
-                                lineHeight: '1.6'
-                            }}>
-                                {currentGrade.description}
+                            {/* 업적 진행도 게이지 */}
+                            <div style={{ marginTop: '24px' }}>
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    marginBottom: '8px',
+                                    padding: '0 4px'
+                                }}>
+                                    <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600' }}>
+                                        {currentGrade.minDistance}km
+                                    </span>
+                                    <span style={{ fontSize: '14px', color: currentGrade.color, fontWeight: '800' }}>
+                                        {displayBestDistance}km
+                                    </span>
+                                    <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600' }}>
+                                        {currentGrade.maxDistance}km
+                                    </span>
+                                </div>
+                                <div style={{
+                                    height: '12px',
+                                    backgroundColor: 'rgba(0,0,0,0.05)',
+                                    borderRadius: '6px',
+                                    overflow: 'hidden',
+                                    position: 'relative',
+                                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)'
+                                }}>
+                                    <div style={{
+                                        position: 'absolute',
+                                        left: 0,
+                                        top: 0,
+                                        height: '100%',
+                                        width: (() => {
+                                            const best = displayBestDistance;
+                                            const min = currentGrade.minDistance;
+                                            const max = currentGrade.maxDistance;
+                                            if (max === min) return '100%';
+                                            const progress = ((best - min) / (max - min)) * 100;
+                                            return `${Math.min(100, Math.max(0, progress))}%`;
+                                        })(),
+                                        background: `linear-gradient(90deg, ${currentGrade.color} 0%, ${currentGrade.color}dd 100%)`,
+                                        borderRadius: '6px',
+                                        transition: 'width 1s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                        boxShadow: `0 0 10px ${currentGrade.color}40`,
+                                        overflow: 'hidden'
+                                    }}>
+                                        <div className="gauge-shine-effect"></div>
+                                    </div>
+                                </div>
+                                <div style={{
+                                    marginTop: '8px',
+                                    fontSize: '12px',
+                                    color: '#94a3b8',
+                                    fontWeight: '500'
+                                }}>
+                                    다음 등급까지 {(() => {
+                                        const best = displayBestDistance;
+                                        const max = currentGrade.maxDistance;
+                                        const remain = max - best;
+                                        return remain > 0 ? `${remain.toFixed(1)}km` : '목표 달성!';
+                                    })()} 남음
+                                </div>
                             </div>
                         </div>
                     )}
