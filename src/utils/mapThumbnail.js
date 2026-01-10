@@ -85,9 +85,9 @@ export const generateRouteThumbnail = (route, options = {}) => {
     const centerLat = (minLat + maxLat) / 2;
     const centerLng = (minLng + maxLng) / 2;
 
-    // 여유 공간 추가 (30% 패딩으로 증가 및 최소 패딩 보장)
-    const latPadding = Math.max((maxLat - minLat) * 0.3, 0.002);
-    const lngPadding = Math.max((maxLng - minLng) * 0.3, 0.002);
+    // 여유 공간 추가 (45% 패딩으로 대폭 상향하여 경로와 마커가 절대 잘리지 않도록 함)
+    const latPadding = Math.max((maxLat - minLat) * 0.45, 0.003);
+    const lngPadding = Math.max((maxLng - minLng) * 0.45, 0.003);
 
     // visible 파라미터로 경로 전체가 보이도록 설정
     const visiblePoints = [
