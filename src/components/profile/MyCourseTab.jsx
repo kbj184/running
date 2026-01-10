@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import RecentRecords from '../common/RecentRecords';
@@ -14,6 +14,10 @@ function MyCourseTab({ user, onRecordClick }) {
             fetchBookmarkedRecords();
         }
     }, [user, refreshKey]);
+
+    const handleRefresh = useCallback(() => {
+        setRefreshKey(prev => prev + 1);
+    }, []);
 
     const fetchBookmarkedRecords = async () => {
         setLoading(true);
@@ -72,7 +76,7 @@ function MyCourseTab({ user, onRecordClick }) {
                     <RecentRecords
                         user={user}
                         onRecordClick={onRecordClick}
-                        onRefresh={() => setRefreshKey(prev => prev + 1)}
+                        onRefresh={handleRefresh}
                         hideTitle={true}
                         showAll={true}
                         fetchUrl={`${import.meta.env.VITE_API_URL}/api/running/sessions/bookmarked?userId=${user.id}`}

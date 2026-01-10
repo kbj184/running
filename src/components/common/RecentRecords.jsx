@@ -85,7 +85,7 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
         if (user && user.id) {
             loadRecords();
         }
-    }, [onRefresh, user]);
+    }, [user, fetchUrl]); // onRefresh를 제거하여 부모 리렌더링 시 자동 호출 방지
 
 
 

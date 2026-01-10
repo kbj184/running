@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatTime } from '../../../utils/gps';
 import { formatDistance as formatDistanceUtil, formatPace } from '../../../utils/unitConverter';
@@ -21,6 +21,10 @@ function MyRecordsTab({ user, onRecordClick }) {
             loadRecords();
         }
     }, [user]);
+
+    const handleRefresh = useCallback(() => {
+        setRefreshKey(prev => prev + 1);
+    }, []);
 
     const loadRecords = async () => {
         setLoading(true);
@@ -180,14 +184,14 @@ function MyRecordsTab({ user, onRecordClick }) {
                 options.push({ type: 'month', year: currentYear - 1, month: 12, label: '12월' });
                 // 1월 1일 이후면 년도 표시
                 if (currentMonth >= 1) {
-                    options.push({ type: 'year', year: currentYear - 1, label: `${currentYear - 1}년` });
+                    options.push({ type: 'year', year: currentYear - 1, label: `${currentYear - 1} 년` });
                 }
             }
         }
 
         // 올해 월들
         for (let month = 1; month <= currentMonth; month++) {
-            options.push({ type: 'month', year: currentYear, month, label: `${month}월` });
+            options.push({ type: 'month', year: currentYear, month, label: `${month} 월` });
         }
 
         return options.reverse();
@@ -243,7 +247,7 @@ function MyRecordsTab({ user, onRecordClick }) {
         if (!paceInSeconds || paceInSeconds === 0) return "--'--''";
         const minutes = Math.floor(paceInSeconds);
         const seconds = Math.floor((paceInSeconds - minutes) * 60);
-        return `${minutes}'${String(seconds).padStart(2, '0')}''`;
+        return `${minutes} '${String(seconds).padStart(2, '0')}''`;
     };
 
     if (loading) {
@@ -480,7 +484,7 @@ function MyRecordsTab({ user, onRecordClick }) {
                     <RecentRecords
                         user={user}
                         onRecordClick={onRecordClick}
-                        onRefresh={refreshKey}
+                        onRefresh={handleRefresh}
                         selectedDate={selectedDate}
                         hideTitle={true}
                     />
