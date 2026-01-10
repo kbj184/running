@@ -28,6 +28,7 @@ import MyRunTab from './components/tabs/MyRunTab';
 // Profile Components
 import ProfileMenu from './components/profile/ProfileMenu';
 import MyRecordsTab from './components/profile/MyRecordsTab';
+import MyCourseTab from './components/profile/MyCourseTab';
 import MyInfoTab from './components/profile/MyInfoTab';
 import MyNotificationsTab from './components/profile/MyNotificationsTab';
 import MyFollowTab from './components/profile/MyFollowTab';
@@ -610,6 +611,14 @@ function App() {
                                                 refreshRecords={refreshRecords}
                                                 onRecordClick={handleRecordClick}
                                                 user={user}
+                                            />
+                                        </ProfileMenu>
+                                    } />
+                                    <Route path="courses" element={
+                                        <ProfileMenu profileTab="courses" unreadCount={unreadCount}>
+                                            <MyCourseTab
+                                                user={user}
+                                                onRecordClick={handleRecordClick}
                                             />
                                         </ProfileMenu>
                                     } />

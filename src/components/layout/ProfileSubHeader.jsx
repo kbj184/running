@@ -39,6 +39,23 @@ function ProfileSubHeader({ profileTab, onTabChange, unreadCount }) {
                     {t('profile.tabs.records')}
                 </button>
                 <button
+                    onClick={() => onTabChange('courses')}
+                    style={{
+                        flex: 1,
+                        padding: '16px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        borderBottom: profileTab === 'courses' ? '3px solid #1a1a1a' : '3px solid transparent',
+                        color: profileTab === 'courses' ? '#1a1a1a' : '#888',
+                        fontWeight: profileTab === 'courses' ? '700' : '500',
+                        fontSize: '15px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    나의 코스
+                </button>
+                <button
                     onClick={() => onTabChange('info')}
                     style={{
                         flex: 1,

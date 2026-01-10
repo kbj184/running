@@ -74,7 +74,7 @@ function RouteThumbnail({ route, thumbnail }) {
     );
 }
 
-function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle = false }) {
+function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle = false, showAll = false, fetchUrl }) {
     const { t } = useTranslation();
     const { unit } = useUnit();
     const [records, setRecords] = useState([]);
@@ -93,7 +93,8 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
         console.log('📋 서버에서 기록 로딩 시작... User ID:', user?.id);
         setLoading(true);
         try {
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/sessions/completed?userId=${user.id}`, {
+            const url = fetchUrl || `${import.meta.env.VITE_API_URL}/api/running/sessions/completed?userId=${user.id}`;
+            const response = await api.request(url, {
                 method: 'GET',
                 headers: {
                     'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
@@ -146,6 +147,35 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
         }
     };
 
+    // 즐겨찾기 토글 함수
+    const handleToggleBookmark = async (e, record) => {
+        e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/session/${record.sessionId}/bookmark`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                const updatedSession = await response.json();
+                console.log('✅ 즐겨찾기 업데이트 성공:', updatedSession.isBookmarked);
+
+                // 로컬 상태 업데이트
+                const updatedRecords = records.map(r =>
+                    r.sessionId === record.sessionId ? { ...r, isBookmarked: updatedSession.isBookmarked } : r
+                );
+                setRecords(updatedRecords);
+
+                // 부모 컴포넌트 리프레시 요청 (필요한 경우)
+                if (onRefresh) onRefresh();
+            }
+        } catch (err) {
+            console.error('❌ 즐겨찾기 토글 실패:', err);
+        }
+    };
+
     // selectedDate에 따라 기록 필터링
     useEffect(() => {
         if (selectedDate) {
@@ -154,10 +184,12 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
                 return recordDate.toDateString() === selectedDate.toDateString();
             });
             setDisplayedRecords(filteredRecords);
+        } else if (showAll) {
+            setDisplayedRecords(records); // showAll이 true면 모든 기록 표시
         } else {
             setDisplayedRecords([]); // 날짜 미선택 시 표시하지 않음
         }
-    }, [records, selectedDate]);
+    }, [records, selectedDate, showAll]);
 
     if (records.length === 0) {
         return (
@@ -285,6 +317,27 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
                                     <span>{formatPace(record.pace * 60, unit)}</span>
                                     <span>{Math.floor(record.distance * 60)} kcal</span>
                                 </div>
+                            </div>
+
+                            {/* 즐겨찾기 아이콘 (우측 하단) */}
+                            <div
+                                onClick={(e) => handleToggleBookmark(e, record)}
+                                style={{
+                                    alignSelf: 'flex-end',
+                                    fontSize: '24px',
+                                    padding: '4px',
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
+                                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                            >
+                                <span style={{ color: record.isBookmarked ? '#ff4d4f' : '#ccc' }}>
+                                    {record.isBookmarked ? '❤️' : '🤍'}
+                                </span>
                             </div>
                         </div>
                     ))}
