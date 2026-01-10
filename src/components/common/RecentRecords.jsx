@@ -74,7 +74,7 @@ function RouteThumbnail({ route, thumbnail }) {
     );
 }
 
-function RecentRecords({ onRefresh, onRecordClick, user }) {
+function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle = false }) {
     const { t } = useTranslation();
     const { unit } = useUnit();
     const [records, setRecords] = useState([]);
@@ -196,6 +196,19 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
         }
     };
 
+    // selectedDate에 따라 기록 필터링
+    useEffect(() => {
+        if (selectedDate) {
+            const filteredRecords = records.filter(r => {
+                const recordDate = new Date(r.timestamp);
+                return recordDate.toDateString() === selectedDate.toDateString();
+            });
+            setDisplayedRecords(filteredRecords);
+        } else {
+            setDisplayedRecords(records.slice(0, displayCount));
+        }
+    }, [records, selectedDate, displayCount]);
+
     if (records.length === 0) {
         return (
             <div style={{
@@ -215,14 +228,16 @@ function RecentRecords({ onRefresh, onRecordClick, user }) {
 
             {/* 최근 활동 섹션 */}
             <div style={{ padding: '0' }}>
-                <h3 style={{
-                    margin: '24px 0 12px 10px',
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    color: '#ffffff'
-                }}>
-                    {t('profile.recentRecords')}
-                </h3>
+                {!hideTitle && (
+                    <h3 style={{
+                        margin: '24px 0 12px 10px',
+                        fontSize: '18px',
+                        fontWeight: '700',
+                        color: '#ffffff'
+                    }}>
+                        {t('profile.recentRecords')}
+                    </h3>
+                )}
 
                 <div style={{
                     display: 'flex',

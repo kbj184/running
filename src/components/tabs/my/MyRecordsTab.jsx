@@ -458,7 +458,8 @@ function MyRecordsTab({ user, onRecordClick }) {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(5, 1fr)',
-                        gap: '8px'
+                        gap: '8px',
+                        marginBottom: '16px'
                     }}>
                         <StatItem label="거리" value={formatDistanceUtil(dayStats.totalDistance, unit)} />
                         <StatItem label="시간" value={formatTime(dayStats.totalDuration)} />
@@ -466,15 +467,27 @@ function MyRecordsTab({ user, onRecordClick }) {
                         <StatItem label="횟수" value={`${dayStats.runCount}회`} />
                         <StatItem label="칼로리" value={`${dayStats.totalCalories.toLocaleString()}`} />
                     </div>
+
+                    {/* 해당 날짜의 기록 */}
+                    <RecentRecords
+                        user={user}
+                        onRecordClick={onRecordClick}
+                        onRefresh={refreshKey}
+                        selectedDate={selectedDate}
+                        hideTitle={true}
+                    />
                 </div>
             )}
 
-            {/* 최근 기록 */}
-            <RecentRecords
-                user={user}
-                onRecordClick={onRecordClick}
-                onRefresh={refreshKey}
-            />
+            {/* 날짜 선택 안 했을 때 전체 최근 기록 */}
+            {!selectedDate && (
+                <RecentRecords
+                    user={user}
+                    onRecordClick={onRecordClick}
+                    onRefresh={refreshKey}
+                    hideTitle={true}
+                />
+            )}
         </div>
     );
 }
