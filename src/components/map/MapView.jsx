@@ -32,11 +32,6 @@ function MapView({
 
     const [map, setMap] = useState(null);
 
-    const mapOptions = {
-        ...interactiveMapOptions,
-        mapId: MAP_ID
-    };
-
     const onLoad = useCallback(function callback(map) {
         setMap(map);
     }, []);
