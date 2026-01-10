@@ -85,9 +85,9 @@ export const generateRouteThumbnail = (route, options = {}) => {
     const centerLat = (minLat + maxLat) / 2;
     const centerLng = (minLng + maxLng) / 2;
 
-    // 여유 공간 추가 (25% 패딩으로 증가하여 경로가 잘리지 않도록)
-    const latPadding = (maxLat - minLat) * 0.25;
-    const lngPadding = (maxLng - minLng) * 0.25;
+    // 여유 공간 추가 (30% 패딩으로 증가 및 최소 패딩 보장)
+    const latPadding = Math.max((maxLat - minLat) * 0.3, 0.002);
+    const lngPadding = Math.max((maxLng - minLng) * 0.3, 0.002);
 
     // visible 파라미터로 경로 전체가 보이도록 설정
     const visiblePoints = [
@@ -100,7 +100,7 @@ export const generateRouteThumbnail = (route, options = {}) => {
     const params = new URLSearchParams({
         size: `${width}x${height}`,
         maptype: maptype,
-        center: `${centerLat},${centerLng}`,
+        // center를 명시하지 않고 visible과 markers에 의존하여 구글이 최적의 뷰를 잡게 함
         key: apiKey
     });
 
