@@ -66,6 +66,25 @@ function MyRecordsTab({ user, onRecordClick }) {
         }
     };
 
+    // 총 데이터 통계
+    const totalStats = useMemo(() => {
+        if (records.length === 0) return null;
+
+        const totalDistance = records.reduce((sum, r) => sum + (r.distance || 0), 0);
+        const totalDuration = records.reduce((sum, r) => sum + (r.duration || 0), 0);
+        const totalCalories = records.reduce((sum, r) => sum + Math.floor((r.distance || 0) * 60), 0);
+        const runningDays = new Set(records.map(r => new Date(r.timestamp).toDateString())).size;
+        const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
+
+        return {
+            totalDistance,
+            totalDuration,
+            totalCalories,
+            runningDays,
+            avgPace
+        };
+    }, [records]);
+
     // 월별 통계 계산
     const monthStats = useMemo(() => {
         const year = currentDate.getFullYear();
