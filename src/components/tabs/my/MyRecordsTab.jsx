@@ -11,7 +11,8 @@ function MyRecordsTab({ user, onRecordClick }) {
     const { unit } = useUnit();
     const [records, setRecords] = useState([]);
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedDate, setSelectedDate] = useState(null); // 선택된 날짜
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedPeriod, setSelectedPeriod] = useState({ type: 'month', year: new Date().getFullYear(), month: new Date().getMonth() + 1 }); // 월 선택기용
     const [loading, setLoading] = useState(true);
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -38,7 +39,6 @@ function MyRecordsTab({ user, onRecordClick }) {
                     sessions = [];
                 }
 
-                // JSON 파싱
                 sessions = sessions.map(session => {
                     try {
                         return {
@@ -85,34 +85,56 @@ function MyRecordsTab({ user, onRecordClick }) {
         };
     }, [records]);
 
-    // 월별 통계 계산
-    const monthStats = useMemo(() => {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
+    // 선택된 기간 통계 (월 또는 년)
+    const periodStats = useMemo(() => {
+        if (selectedPeriod.type === 'year') {
+            // 전년도 통계
+            const yearRecords = records.filter(r => {
+                const date = new Date(r.timestamp);
+                return date.getFullYear() === selectedPeriod.year;
+            });
 
-        const monthRecords = records.filter(r => {
-            const date = new Date(r.timestamp);
-            return date.getFullYear() === year && date.getMonth() === month;
-        });
+            if (yearRecords.length === 0) return null;
 
-        if (monthRecords.length === 0) return null;
+            const totalDistance = yearRecords.reduce((sum, r) => sum + (r.distance || 0), 0);
+            const totalDuration = yearRecords.reduce((sum, r) => sum + (r.duration || 0), 0);
+            const totalCalories = yearRecords.reduce((sum, r) => sum + Math.floor((r.distance || 0) * 60), 0);
+            const runningDays = new Set(yearRecords.map(r => new Date(r.timestamp).toDateString())).size;
+            const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
 
-        const totalDistance = monthRecords.reduce((sum, r) => sum + (r.distance || 0), 0);
-        const totalDuration = monthRecords.reduce((sum, r) => sum + (r.duration || 0), 0);
-        const totalCalories = monthRecords.reduce((sum, r) => sum + Math.floor((r.distance || 0) * 60), 0);
-        const runningDays = new Set(monthRecords.map(r => new Date(r.timestamp).toDateString())).size;
-        const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
+            return {
+                totalDistance,
+                totalDuration,
+                totalCalories,
+                runningDays,
+                avgPace
+            };
+        } else {
+            // 월별 통계
+            const monthRecords = records.filter(r => {
+                const date = new Date(r.timestamp);
+                return date.getFullYear() === selectedPeriod.year && date.getMonth() + 1 === selectedPeriod.month;
+            });
 
-        return {
-            totalDistance,
-            totalDuration,
-            totalCalories,
-            runningDays,
-            avgPace
-        };
-    }, [records, currentDate]);
+            if (monthRecords.length === 0) return null;
 
-    // 일별 통계 계산
+            const totalDistance = monthRecords.reduce((sum, r) => sum + (r.distance || 0), 0);
+            const totalDuration = monthRecords.reduce((sum, r) => sum + (r.duration || 0), 0);
+            const totalCalories = monthRecords.reduce((sum, r) => sum + Math.floor((r.distance || 0) * 60), 0);
+            const runningDays = new Set(monthRecords.map(r => new Date(r.timestamp).toDateString())).size;
+            const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
+
+            return {
+                totalDistance,
+                totalDuration,
+                totalCalories,
+                runningDays,
+                avgPace
+            };
+        }
+    }, [records, selectedPeriod]);
+
+    // 일별 통계
     const dayStats = useMemo(() => {
         if (!selectedDate) return null;
 
@@ -137,7 +159,33 @@ function MyRecordsTab({ user, onRecordClick }) {
         };
     }, [records, selectedDate]);
 
-    // 달력 데이터 생성
+    // 월 선택기 옵션 생성
+    const monthOptions = useMemo(() => {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+        const options = [];
+
+        // 작년 12월부터 올해 현재 월까지
+        for (let month = 12; month >= 1; month--) {
+            if (month === 12) {
+                options.push({ type: 'month', year: currentYear - 1, month: 12, label: '12월' });
+                // 1월 1일 이후면 년도 표시
+                if (currentMonth >= 1) {
+                    options.push({ type: 'year', year: currentYear - 1, label: `${currentYear - 1}년` });
+                }
+            }
+        }
+
+        // 올해 월들
+        for (let month = 1; month <= currentMonth; month++) {
+            options.push({ type: 'month', year: currentYear, month, label: `${month}월` });
+        }
+
+        return options.reverse();
+    }, []);
+
+    // 달력 데이터
     const calendarDays = useMemo(() => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
@@ -148,12 +196,10 @@ function MyRecordsTab({ user, onRecordClick }) {
 
         const days = [];
 
-        // 빈 칸 추가
         for (let i = 0; i < startDayOfWeek; i++) {
             days.push(null);
         }
 
-        // 날짜 추가
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(year, month, day);
             const hasRecord = records.some(r => {
@@ -166,19 +212,16 @@ function MyRecordsTab({ user, onRecordClick }) {
         return days;
     }, [currentDate, records]);
 
-    // 이전 달
     const handlePrevMonth = () => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
         setSelectedDate(null);
     };
 
-    // 다음 달
     const handleNextMonth = () => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
         setSelectedDate(null);
     };
 
-    // 날짜 클릭
     const handleDateClick = (dayData) => {
         if (dayData && dayData.hasRecord) {
             const year = currentDate.getFullYear();
@@ -188,7 +231,6 @@ function MyRecordsTab({ user, onRecordClick }) {
         }
     };
 
-    // 페이스 포맷 (11'10'' 형식)
     const formatPaceCustom = (paceInSeconds) => {
         if (!paceInSeconds || paceInSeconds === 0) return "--'--''";
         const minutes = Math.floor(paceInSeconds);
@@ -210,29 +252,8 @@ function MyRecordsTab({ user, onRecordClick }) {
 
     return (
         <div style={{ width: '100%', paddingBottom: '80px' }}>
-            {/* 전체 통계 */}
+            {/* 총 통계 */}
             {totalStats && (
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(5, 1fr)',
-                    gap: '8px',
-                    padding: '16px',
-                    margin: '12px 0',
-                    backgroundColor: '#fff',
-                    borderRadius: '16px',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                    border: '1px solid #f0f0f0'
-                }}>
-                    <StatItem label="총 거리" value={formatDistanceUtil(totalStats.totalDistance, unit)} />
-                    <StatItem label="총 시간" value={formatTime(totalStats.totalDuration)} />
-                    <StatItem label="평균 페이스" value={formatPaceCustom(totalStats.avgPace * 60)} />
-                    <StatItem label="런닝 일수" value={`${totalStats.runningDays}일`} />
-                    <StatItem label="칼로리" value={`${totalStats.totalCalories.toLocaleString()}`} />
-                </div>
-            )}
-
-            {/* 월별 통계 */}
-            {monthStats && (
                 <div style={{
                     backgroundColor: '#fff',
                     borderRadius: '16px',
@@ -247,23 +268,94 @@ function MyRecordsTab({ user, onRecordClick }) {
                         fontWeight: '700',
                         color: '#1a1a1a'
                     }}>
-                        {currentMonth}월 통계
+                        총 통계
                     </h3>
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(5, 1fr)',
                         gap: '8px'
                     }}>
-                        <StatItem label="거리" value={formatDistanceUtil(monthStats.totalDistance, unit)} />
-                        <StatItem label="시간" value={formatTime(monthStats.totalDuration)} />
-                        <StatItem label="페이스" value={formatPaceCustom(monthStats.avgPace * 60)} />
-                        <StatItem label="일수" value={`${monthStats.runningDays}일`} />
-                        <StatItem label="칼로리" value={`${monthStats.totalCalories.toLocaleString()}`} />
+                        <StatItem label="총 거리" value={formatDistanceUtil(totalStats.totalDistance, unit)} />
+                        <StatItem label="총 시간" value={formatTime(totalStats.totalDuration)} />
+                        <StatItem label="평균 페이스" value={formatPaceCustom(totalStats.avgPace * 60)} />
+                        <StatItem label="런닝 일수" value={`${totalStats.runningDays}일`} />
+                        <StatItem label="칼로리" value={`${totalStats.totalCalories.toLocaleString()}`} />
                     </div>
                 </div>
             )}
 
+            {/* 월 선택기 */}
+            <div style={{
+                overflowX: 'auto',
+                whiteSpace: 'nowrap',
+                padding: '12px 0',
+                margin: '12px 0',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+            }}>
+                <div style={{ display: 'inline-flex', gap: '8px', padding: '0 16px' }}>
+                    {monthOptions.map((option, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => setSelectedPeriod(option)}
+                            style={{
+                                padding: '8px 16px',
+                                borderRadius: '20px',
+                                border: 'none',
+                                backgroundColor: selectedPeriod.type === option.type &&
+                                    selectedPeriod.year === option.year &&
+                                    (option.type === 'year' || selectedPeriod.month === option.month)
+                                    ? '#4318FF' : '#f0f0f0',
+                                color: selectedPeriod.type === option.type &&
+                                    selectedPeriod.year === option.year &&
+                                    (option.type === 'year' || selectedPeriod.month === option.month)
+                                    ? '#fff' : '#666',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            {option.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
 
+            {/* 월별/년별 통계 */}
+            {periodStats && (
+                <div style={{
+                    backgroundColor: '#fff',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    margin: '12px 0',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                    border: '1px solid #f0f0f0'
+                }}>
+                    <h3 style={{
+                        margin: '0 0 16px 0',
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        color: '#1a1a1a'
+                    }}>
+                        {selectedPeriod.type === 'year'
+                            ? `${selectedPeriod.year}년 통계`
+                            : `${selectedPeriod.month}월 통계`}
+                    </h3>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, 1fr)',
+                        gap: '8px'
+                    }}>
+                        <StatItem label="거리" value={formatDistanceUtil(periodStats.totalDistance, unit)} />
+                        <StatItem label="시간" value={formatTime(periodStats.totalDuration)} />
+                        <StatItem label="페이스" value={formatPaceCustom(periodStats.avgPace * 60)} />
+                        <StatItem label="일수" value={`${periodStats.runningDays}일`} />
+                        <StatItem label="칼로리" value={`${periodStats.totalCalories.toLocaleString()}`} />
+                    </div>
+                </div>
+            )}
 
             {/* 달력 */}
             <div style={{
@@ -274,7 +366,6 @@ function MyRecordsTab({ user, onRecordClick }) {
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
                 border: '1px solid #f0f0f0'
             }}>
-                {/* 달력 헤더 */}
                 <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -288,7 +379,6 @@ function MyRecordsTab({ user, onRecordClick }) {
                     <button onClick={handleNextMonth} style={monthNavButton}>→</button>
                 </div>
 
-                {/* 요일 */}
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(7, 1fr)',
@@ -308,7 +398,6 @@ function MyRecordsTab({ user, onRecordClick }) {
                     ))}
                 </div>
 
-                {/* 날짜 */}
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(7, 1fr)',
@@ -364,7 +453,7 @@ function MyRecordsTab({ user, onRecordClick }) {
                         fontWeight: '700',
                         color: '#1a1a1a'
                     }}>
-                        {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일 통계
+                        일별 통계 - {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일
                     </h3>
                     <div style={{
                         display: 'grid',
@@ -390,7 +479,6 @@ function MyRecordsTab({ user, onRecordClick }) {
     );
 }
 
-// 통계 아이템 컴포넌트
 function StatItem({ label, value }) {
     return (
         <div style={{ textAlign: 'center' }}>
