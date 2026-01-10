@@ -15,6 +15,9 @@ export const hideMapFeatures = [
     }
 ];
 
+// 지도 ID (환경변수에서 가져옴)
+export const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
+
 // 맵 ID가 있을 경우 로컬 styles를 제거하여 충돌 경고 방지
 const commonStyles = MAP_ID ? {} : { styles: hideMapFeatures };
 
@@ -53,6 +56,3 @@ export const interactiveMapOptions = {
 
 // 지도 라이브러리 목록
 export const LIBRARIES = ['places', 'marker'];
-
-// 지도 ID (환경변수에서 가져옴)
-export const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID;
