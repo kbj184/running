@@ -222,7 +222,8 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                 splits: JSON.stringify(data.splits),
                 isComplete: isFinal,
                 courseId: course.id,
-                courseCompleted: completedOverride !== null ? completedOverride : courseCompleted
+                courseCompleted: completedOverride !== null ? completedOverride : courseCompleted,
+                courseType: course.courseType || 'CREW'  // 코스 타입 (기본값: CREW)
             };
 
             const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/session/sync`, {

@@ -46,12 +46,14 @@ import RunnerGradeModal from './components/modals/RunnerGradeModal';
 // Screen Components
 import CountdownScreen from './components/CountdownScreen';
 import RunningScreen from './components/RunningScreen';
+import FollowCourseRunningScreen from './components/FollowCourseRunningScreen';
 import ResultScreen from './components/ResultScreen';
 import LoginScreen from './components/auth/LoginScreen';
 import NicknameRegistration from './components/auth/NicknameRegistration';
 import UserProfileScreen from './components/UserProfileScreen';
 import ChatListScreen from './components/ChatListScreen';
 import ChatRoomScreen from './components/ChatRoomScreen';
+import RecordDetailModal from './components/RecordDetailModal';
 
 // Existing Modals
 
@@ -90,6 +92,9 @@ function App() {
 
     // Modal State
     const [showRunnerGradeModal, setShowRunnerGradeModal] = useState(false);
+    const [showRecordDetailModal, setShowRecordDetailModal] = useState(false);
+    const [selectedRecordForDetail, setSelectedRecordForDetail] = useState(null);
+    const [courseToFollow, setCourseToFollow] = useState(null);
 
     // Initialize FCM
     const { notification: incomingNotification } = useFcm(user);
@@ -378,9 +383,42 @@ function App() {
         setSavedScrollPosition(scrollPosition);
         console.log('📍 스크롤 위치 저장:', scrollPosition);
 
-        setRunningResult(record);
-        setSessionId(record.sessionId);
-        setScreenMode('view_record');
+        // 새로운 RecordDetailModal 사용
+        setSelectedRecordForDetail(record);
+        setShowRecordDetailModal(true);
+    };
+
+    const handleStartCourseChallenge = (record) => {
+        console.log('🏃 코스 재도전 시작:', record);
+        // 기록에서 코스 데이터 추출
+        const courseData = {
+            id: record.courseId,
+            name: `코스 재도전 - ${new Date(record.timestamp || record.createdAt).toLocaleDateString()}`,
+            route: record.route,
+            distance: record.distance,
+            courseType: 'RETRY'  // 재도전 타입
+        };
+        setCourseToFollow(courseData);
+        setShowRecordDetailModal(false);
+        setScreenMode('follow_course');
+    };
+
+    const handleFollowCourseStop = async (result) => {
+        setIsRunning(false);
+        setRunningResult(result);
+        setCourseToFollow(null);
+
+        if (result.gradeUpgraded) {
+            console.log('🎉 Grade Upgraded! Refreshing user info...');
+            await checkAuth();
+        }
+
+        setScreenMode('result');
+    };
+
+    const handleCloseFollowCourse = () => {
+        setCourseToFollow(null);
+        setScreenMode('map');
     };
 
     const handleSave = () => {
@@ -531,6 +569,14 @@ function App() {
                     /* Running Screen */
                     screenMode === 'running' ? (
                         <RunningScreen onStop={handleRunningStop} sessionId={sessionId} user={user} />
+                    ) : screenMode === 'follow_course' && courseToFollow ? (
+                        /* Follow Course Running Screen */
+                        <FollowCourseRunningScreen
+                            course={courseToFollow}
+                            onStop={handleFollowCourseStop}
+                            onClose={handleCloseFollowCourse}
+                            user={user}
+                        />
                     ) : (screenMode === 'result' || screenMode === 'view_record') && runningResult ? (
                         /* Result Screen - shown when viewing records */
                         <ResultScreen
@@ -669,6 +715,19 @@ function App() {
                     <RunnerGradeModal
                         user={user}
                         onClose={() => setShowRunnerGradeModal(false)}
+                    />
+                )}
+
+                {/* Record Detail Modal - 전역 모달 */}
+                {showRecordDetailModal && selectedRecordForDetail && (
+                    <RecordDetailModal
+                        record={selectedRecordForDetail}
+                        user={user}
+                        onClose={() => {
+                            setShowRecordDetailModal(false);
+                            setSelectedRecordForDetail(null);
+                        }}
+                        onStartCourseChallenge={handleStartCourseChallenge}
                     />
                 )}
             </LoadScript>

@@ -274,16 +274,65 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
                                         })()}
                                     </span>
                                     {record.courseId && (
-                                        <span style={{
-                                            fontSize: '10px',
-                                            fontWeight: '700',
-                                            color: '#fff',
-                                            backgroundColor: '#7c3aed',
-                                            padding: '2px 6px',
-                                            borderRadius: '4px'
+                                        <div style={{
+                                            display: 'flex',
+                                            gap: '4px',
+                                            alignItems: 'center'
                                         }}>
-                                            COURSE
-                                        </span>
+                                            {(() => {
+                                                switch (record.courseType) {
+                                                    case 'RETRY':
+                                                        return (
+                                                            <>
+                                                                <span style={{ fontSize: '14px' }}>🔄</span>
+                                                                <span style={{
+                                                                    fontSize: '10px',
+                                                                    fontWeight: '700',
+                                                                    color: '#fff',
+                                                                    backgroundColor: '#3b82f6',
+                                                                    padding: '2px 6px',
+                                                                    borderRadius: '4px'
+                                                                }}>
+                                                                    RETRY
+                                                                </span>
+                                                            </>
+                                                        );
+                                                    case 'FRIEND':
+                                                        return (
+                                                            <>
+                                                                <span style={{ fontSize: '14px' }}>👥</span>
+                                                                <span style={{
+                                                                    fontSize: '10px',
+                                                                    fontWeight: '700',
+                                                                    color: '#fff',
+                                                                    backgroundColor: '#10b981',
+                                                                    padding: '2px 6px',
+                                                                    borderRadius: '4px'
+                                                                }}>
+                                                                    FRIEND
+                                                                </span>
+                                                            </>
+                                                        );
+                                                    case 'CREW':
+                                                    default:
+                                                        return (
+                                                            <>
+                                                                <span style={{ fontSize: '14px' }}>🏆</span>
+                                                                <span style={{
+                                                                    fontSize: '10px',
+                                                                    fontWeight: '700',
+                                                                    color: '#fff',
+                                                                    backgroundColor: '#7c3aed',
+                                                                    padding: '2px 6px',
+                                                                    borderRadius: '4px'
+                                                                }}>
+                                                                    CREW
+                                                                </span>
+                                                            </>
+                                                        );
+                                                }
+                                            })()}
+                                        </div>
                                     )}
                                 </div>
 
