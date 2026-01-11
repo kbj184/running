@@ -74,7 +74,7 @@ function RouteThumbnail({ route, thumbnail }) {
     );
 }
 
-function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle = false, showAll = false, fetchUrl }) {
+function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle = false, showAll = false, fetchUrl, filter }) {
     const { t } = useTranslation();
     const { unit } = useUnit();
     const [records, setRecords] = useState([]);
@@ -176,20 +176,27 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
         }
     };
 
-    // selectedDate에 따라 기록 필터링
+    // selectedDate 및 filter에 따라 기록 필터링
     useEffect(() => {
+        let filtered = [...records];
+
         if (selectedDate) {
-            const filteredRecords = records.filter(r => {
+            filtered = filtered.filter(r => {
                 const recordDate = new Date(r.timestamp);
                 return recordDate.toDateString() === selectedDate.toDateString();
             });
-            setDisplayedRecords(filteredRecords);
-        } else if (showAll) {
-            setDisplayedRecords(records); // showAll이 true면 모든 기록 표시
+        }
+
+        if (typeof filter === 'function') {
+            filtered = filtered.filter(filter);
+        }
+
+        if (showAll || selectedDate) {
+            setDisplayedRecords(filtered);
         } else {
             setDisplayedRecords([]); // 날짜 미선택 시 표시하지 않음
         }
-    }, [records, selectedDate, showAll]);
+    }, [records, selectedDate, showAll, filter]);
 
     if (records.length === 0) {
         return (

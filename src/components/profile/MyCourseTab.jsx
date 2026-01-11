@@ -3,76 +3,68 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import RecentRecords from '../common/RecentRecords';
 
-function MyCourseTab({ user, onRecordClick }) {
+function MyCourseTab({ user, onRecordClick, onChallengeRecordClick }) {
     const { t } = useTranslation();
     const [refreshKey, setRefreshKey] = useState(0);
-    const [bookmarkedRecords, setBookmarkedRecords] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        if (user && user.id) {
-            fetchBookmarkedRecords();
-        }
-    }, [user, refreshKey]);
+    const [activeSubTab, setActiveSubTab] = useState('BOOKMARK'); // BOOKMARK, CREW, CHALLENGE
 
     const handleRefresh = useCallback(() => {
         setRefreshKey(prev => prev + 1);
     }, []);
 
-    const fetchBookmarkedRecords = async () => {
-        setLoading(true);
-        try {
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/sessions/bookmarked?userId=${user.id}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setBookmarkedRecords(data);
-            }
-        } catch (err) {
-            console.error('즐겨찾기 기록 로딩 실패:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
-                <div>로딩 중...</div>
-            </div>
-        );
-    }
+    const subTabs = [
+        { id: 'BOOKMARK', label: '즐겨찾기', icon: '⭐' },
+        { id: 'CREW', label: '크루', icon: '🏆' },
+        { id: 'CHALLENGE', label: '챌린지', icon: '🔄' }
+    ];
 
     return (
         <div style={{ width: '100%', paddingBottom: '80px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '20px', color: '#1a1a1a' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px', color: '#1a1a1a' }}>
                 {t('profile.tabs.courses')}
             </h2>
+            <p style={{ fontSize: '14px', color: '#666', marginBottom: '24px' }}>
+                내 코스 기록과 도전 기록을 확인하세요.
+            </p>
 
-            {bookmarkedRecords.length === 0 ? (
-                <div style={{
-                    padding: '60px 20px',
-                    textAlign: 'center',
-                    backgroundColor: '#fff',
-                    borderRadius: '24px',
-                    border: '1px solid #f0f0f0'
-                }}>
-                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>⭐</div>
-                    <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a', marginBottom: '8px' }}>
-                        {t('profile.noCourses')}
-                    </div>
-                    <div style={{ fontSize: '14px', color: '#666' }}>
-                        {t('profile.addCourseInfo')}
-                    </div>
-                </div>
-            ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Sub Tab Menu */}
+            <div style={{
+                display: 'flex',
+                gap: '8px',
+                marginBottom: '24px',
+                padding: '4px',
+                backgroundColor: '#f1f5f9',
+                borderRadius: '12px',
+                width: 'fit-content'
+            }}>
+                {subTabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveSubTab(tab.id)}
+                        style={{
+                            padding: '10px 16px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            backgroundColor: activeSubTab === tab.id ? '#fff' : 'transparent',
+                            color: activeSubTab === tab.id ? '#4318FF' : '#64748b',
+                            fontSize: '14px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: activeSubTab === tab.id ? '0 2px 4px rgba(0,0,0,0.05)' : 'none',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <span>{tab.icon}</span>
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {activeSubTab === 'BOOKMARK' && (
                     <RecentRecords
                         user={user}
                         onRecordClick={onRecordClick}
@@ -81,8 +73,37 @@ function MyCourseTab({ user, onRecordClick }) {
                         showAll={true}
                         fetchUrl={`${import.meta.env.VITE_API_URL}/api/running/sessions/bookmarked?userId=${user.id}`}
                     />
-                </div>
-            )}
+                )}
+
+                {activeSubTab === 'CREW' && (
+                    <RecentRecords
+                        user={user}
+                        onRecordClick={onRecordClick}
+                        onRefresh={handleRefresh}
+                        hideTitle={true}
+                        showAll={true}
+                        filter={(r) => r.courseType === 'CREW' || (r.courseId && !r.courseType)}
+                    />
+                )}
+
+                {activeSubTab === 'CHALLENGE' && (
+                    <RecentRecords
+                        user={user}
+                        onRecordClick={(record) => {
+                            // 챌린지 탭 전용 클릭 핸들러 (비교 모달 연결)
+                            if (onChallengeRecordClick) {
+                                onChallengeRecordClick(record);
+                            } else {
+                                onRecordClick(record);
+                            }
+                        }}
+                        onRefresh={handleRefresh}
+                        hideTitle={true}
+                        showAll={true}
+                        filter={(r) => r.courseType === 'RETRY'}
+                    />
+                )}
+            </div>
         </div>
     );
 }

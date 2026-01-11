@@ -54,6 +54,7 @@ import UserProfileScreen from './components/UserProfileScreen';
 import ChatListScreen from './components/ChatListScreen';
 import ChatRoomScreen from './components/ChatRoomScreen';
 import RecordDetailModal from './components/RecordDetailModal';
+import CourseComparisonModal from './components/CourseComparisonModal';
 
 // Existing Modals
 
@@ -93,6 +94,7 @@ function App() {
     // Modal State
     const [showRunnerGradeModal, setShowRunnerGradeModal] = useState(false);
     const [showRecordDetailModal, setShowRecordDetailModal] = useState(false);
+    const [showCourseComparisonModal, setShowCourseComparisonModal] = useState(false);
     const [selectedRecordForDetail, setSelectedRecordForDetail] = useState(null);
     const [courseToFollow, setCourseToFollow] = useState(null);
 
@@ -390,7 +392,7 @@ function App() {
 
     const handleStartCourseChallenge = (record) => {
         console.log('🏃 코스 재도전 시작:', record);
-        // 기록에서 코스 데이터 추출
+        // 도전하기 핸들러
         const courseData = {
             id: record.courseId,
             name: `코스 재도전 - ${new Date(record.timestamp || record.createdAt).toLocaleDateString()}`,
@@ -398,9 +400,16 @@ function App() {
             distance: record.distance,
             courseType: 'RETRY'  // 재도전 타입
         };
+
         setCourseToFollow(courseData);
+        setScreenMode('countdown');
         setShowRecordDetailModal(false);
-        setScreenMode('follow_course');
+        setShowCourseComparisonModal(false);
+    };
+
+    const handleChallengeRecordClick = (record) => {
+        setSelectedRecordForDetail(record);
+        setShowCourseComparisonModal(true);
     };
 
     const handleFollowCourseStop = async (result) => {
@@ -648,7 +657,7 @@ function App() {
 
 
 
-                                /* Profile Tab - URL 기반 서브 라우팅 */
+                                {/* Profile Tab - URL 기반 서브 라우팅 */}
                                 <Route path="profile">
                                     <Route index element={<Navigate to="records" replace />} />
                                     <Route path="records" element={
@@ -665,6 +674,7 @@ function App() {
                                             <MyCourseTab
                                                 user={user}
                                                 onRecordClick={handleRecordClick}
+                                                onChallengeRecordClick={handleChallengeRecordClick}
                                             />
                                         </ProfileMenu>
                                     } />
@@ -727,6 +737,16 @@ function App() {
                             setShowRecordDetailModal(false);
                             setSelectedRecordForDetail(null);
                         }}
+                        onStartCourseChallenge={handleStartCourseChallenge}
+                    />
+                )}
+
+                {/* Course Comparison Modal - 전역 모달 */}
+                {showCourseComparisonModal && selectedRecordForDetail && (
+                    <CourseComparisonModal
+                        record={selectedRecordForDetail}
+                        user={user}
+                        onClose={() => setShowCourseComparisonModal(false)}
                         onStartCourseChallenge={handleStartCourseChallenge}
                     />
                 )}
