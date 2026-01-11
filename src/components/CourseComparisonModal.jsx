@@ -31,26 +31,58 @@ function CourseComparisonModal({ record, user, onClose, onStartCourseChallenge }
     const fetchAttempts = async () => {
         setLoading(true);
         try {
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/course/${record.courseId}/attempts?userId=${user.id}`, {
+            // 1. 모든 시도 기록 가져오기
+            const attemptsResponse = await api.request(`${import.meta.env.VITE_API_URL}/api/running/course/${record.courseId}/attempts?userId=${user.id}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
                 }
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                // Parse strings to JSON
-                const parsed = data.map(item => ({
+            // 2. 원본 코스 정보 가져오기
+            const courseResponse = await api.request(`${import.meta.env.VITE_API_URL}/api/running/course/${record.courseId}`);
+
+            let parsedAttempts = [];
+            let originalCourse = null;
+
+            if (attemptsResponse.ok) {
+                const data = await attemptsResponse.json();
+                parsedAttempts = data.map(item => ({
                     ...item,
                     route: typeof item.route === 'string' ? JSON.parse(item.route) : item.route,
                     splits: typeof item.splits === 'string' ? JSON.parse(item.splits) : item.splits
                 }));
-                setAttempts(parsed);
-                // Default: select current record and the very first (oldest) record or official one
-                const currentId = record.sessionId;
-                const oldestId = parsed[parsed.length - 1].sessionId;
-                setSelectedAttemptIds(currentId === oldestId ? [currentId] : [currentId, oldestId]);
+            }
+
+            if (courseResponse.ok) {
+                const courseData = await courseResponse.json();
+                originalCourse = {
+                    sessionId: 'original',
+                    courseId: courseData.id,
+                    title: '원본 코스',
+                    courseType: 'OFFICIAL',
+                    distance: courseData.distance,
+                    duration: 0, // 원본은 기준 시간 정보가 없을 수 있음
+                    pace: 0,
+                    totalAscent: 0,
+                    route: typeof courseData.routeData === 'string' ? JSON.parse(courseData.routeData) : courseData.routeData,
+                    createdAt: courseData.createdAt,
+                    isOriginal: true
+                };
+            }
+
+            // 원본 코스를 목록 최상단에 추가
+            const finalAttempts = originalCourse ? [originalCourse, ...parsedAttempts] : parsedAttempts;
+            setAttempts(finalAttempts);
+
+            // 기본 선택: 현재 기록 + 원본 코스 (없으면 첫 번째 기록)
+            const currentId = record.sessionId;
+            const targetId = originalCourse ? 'original' : (finalAttempts[1]?.sessionId || finalAttempts[0]?.sessionId);
+
+            if (currentId && targetId) {
+                setSelectedAttemptIds(currentId === targetId ? [currentId] : [targetId, currentId]);
+            } else if (currentId) {
+                setSelectedAttemptIds([currentId]);
             }
         } catch (err) {
             console.error('Failed to fetch attempts:', err);
@@ -178,13 +210,13 @@ function CourseComparisonModal({ record, user, onClose, onStartCourseChallenge }
                                         fontWeight: '800',
                                         marginBottom: '4px'
                                     }}>
-                                        {date.getMonth() + 1}/{date.getDate()}
+                                        {attempt.isOriginal ? 'GOAL' : `${date.getMonth() + 1}/${date.getDate()}`}
                                     </div>
                                     <div style={{ fontSize: '15px', fontWeight: '800', color: '#1e293b' }}>{formatDistance(attempt.distance, unit)}</div>
-                                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#1e293b' }}>{formatTime(attempt.duration)}</div>
-                                    <div style={{ fontSize: '15px', fontWeight: '800', color: color }}>{formatPace(attempt.pace * 60, unit)}</div>
-                                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#1e293b' }}>{(attempt.distance / (attempt.duration / 3600)).toFixed(1)} <small style={{ fontSize: '10px' }}>km/h</small></div>
-                                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#22c55e' }}>{Math.floor(attempt.totalAscent || 0)}m</div>
+                                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#1e293b' }}>{attempt.duration > 0 ? formatTime(attempt.duration) : '--:--'}</div>
+                                    <div style={{ fontSize: '15px', fontWeight: '800', color: color }}>{attempt.pace > 0 ? formatPace(attempt.pace * 60, unit) : '--\'--"'}</div>
+                                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#1e293b' }}>{attempt.duration > 0 ? (attempt.distance / (attempt.duration / 3600)).toFixed(1) : '0.0'} <small style={{ fontSize: '10px' }}>km/h</small></div>
+                                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#22c55e' }}>{attempt.totalAscent > 0 ? `${Math.floor(attempt.totalAscent)}m` : '--'}</div>
                                 </div>
                             );
                         })}
