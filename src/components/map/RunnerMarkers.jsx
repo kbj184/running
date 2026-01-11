@@ -52,22 +52,68 @@ function RunnerMarkers({ map, runners, selectedRunner, onRunnerClick }) {
                             alignItems: 'center',
                             transform: 'translateY(-50%)'
                         }}>
-                            {/* 닉네임 말풍선 */}
+                            {/* 유저 정보 말풍선 */}
                             <div style={{
                                 backgroundColor: 'white',
-                                color: '#1a1a1a',
-                                padding: '4px 8px',
                                 borderRadius: '12px',
-                                fontSize: isSelected ? '13px' : '11px',
-                                fontWeight: isSelected ? '600' : '500',
-                                whiteSpace: 'nowrap',
-                                marginBottom: '4px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                                padding: '8px 12px',
+                                marginBottom: '8px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
                                 border: isSelected ? `2px solid ${gradeInfo.color}` : '1px solid rgba(0,0,0,0.1)',
+                                minWidth: '120px',
+                                position: 'relative',
                                 transition: 'all 0.3s ease',
                                 pointerEvents: 'none'
                             }}>
-                                {runner.nickname}
+                                {/* 말풍선 꼬리 */}
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '-6px',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    width: 0,
+                                    height: 0,
+                                    borderLeft: '6px solid transparent',
+                                    borderRight: '6px solid transparent',
+                                    borderTop: `6px solid ${isSelected ? gradeInfo.color : 'white'}`,
+                                }} />
+
+                                {/* 닉네임과 등급 */}
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    marginBottom: '4px'
+                                }}>
+                                    <span style={{
+                                        fontSize: isSelected ? '13px' : '12px',
+                                        fontWeight: '600',
+                                        color: '#1a1a1a'
+                                    }}>
+                                        {runner.nickname}
+                                    </span>
+                                    <span style={{
+                                        fontSize: '9px',
+                                        padding: '2px 6px',
+                                        borderRadius: '8px',
+                                        backgroundColor: gradeInfo.color,
+                                        color: 'white',
+                                        fontWeight: '600'
+                                    }}>
+                                        {gradeInfo.name}
+                                    </span>
+                                </div>
+
+                                {/* 러닝 정보 */}
+                                <div style={{
+                                    display: 'flex',
+                                    gap: '8px',
+                                    fontSize: '10px',
+                                    color: '#666'
+                                }}>
+                                    <span>📏 {runner.distance}km</span>
+                                    <span>⚡ {runner.speed}km/h</span>
+                                </div>
                             </div>
 
                             {/* 마커 점 */}
