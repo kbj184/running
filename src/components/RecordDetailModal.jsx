@@ -7,16 +7,98 @@ import { formatTime } from '../utils/gps';
 import { formatDistance, formatPace } from '../utils/unitConverter';
 import { useUnit } from '../contexts/UnitContext';
 import { useTranslation } from 'react-i18next';
+import './result-screen.css'; // ResultScreen 스타일 재사용
 
 const MAP_ID = getMapId();
 
-// 속도에 따른 색상
+// 속도별 색상
 const getSpeedColor = (speedKmh) => {
     if (speedKmh <= 0) return "#667eea";
     if (speedKmh < 6) return "#10b981";
     if (speedKmh < 9) return "#f59e0b";
     if (speedKmh < 12) return "#ef4444";
     return "#7c3aed";
+};
+
+// 고도 및 속도 분석 차트 (ResultScreen에서 가져옴)
+const SpeedElevationChart = ({ splits }) => {
+    if (!splits || splits.length === 0) return null;
+
+    const data = splits.map(s => ({
+        km: s.km,
+        elevation: s.elevation || 0,
+        speed: s.pace > 0 ? 60 / s.pace : 0
+    }));
+
+    const elevations = data.map(d => d.elevation);
+    const speeds = data.map(d => d.speed);
+
+    const maxEle = Math.max(...elevations, 1);
+    const minEle = Math.min(...elevations, 0);
+    const eleRange = maxEle - minEle || 1;
+
+    const maxSpd = Math.max(...speeds, 1);
+    const spdRange = maxSpd || 1;
+
+    const chartHeight = 150;
+    const padding = 20;
+
+    return (
+        <div className="speed-elevation-chart-wrapper">
+            <svg width="100%" height={chartHeight} style={{ overflow: 'visible' }}>
+                {/* Elevation Area */}
+                <path
+                    d={data.map((d, i) => {
+                        const x = (i / (data.length - 1)) * 100 + '%';
+                        const y = chartHeight - ((d.elevation - minEle) / eleRange) * (chartHeight - padding) - padding / 2;
+                        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                    }).join(' ') + ` L 100% ${chartHeight} L 0% ${chartHeight} Z`}
+                    fill="#667eea"
+                    fillOpacity="0.1"
+                />
+                <path
+                    d={data.map((d, i) => {
+                        const x = (i / (data.length - 1)) * 100 + '%';
+                        const y = chartHeight - ((d.elevation - minEle) / eleRange) * (chartHeight - padding) - padding / 2;
+                        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                    }).join(' ')}
+                    fill="none"
+                    stroke="#667eea"
+                    strokeWidth="2"
+                    strokeOpacity="0.4"
+                    strokeDasharray="4 2"
+                />
+
+                {/* Speed Line */}
+                <path
+                    d={data.map((d, i) => {
+                        const x = (i / (data.length - 1)) * 100 + '%';
+                        const y = chartHeight - (d.speed / spdRange) * (chartHeight - padding) - padding / 2;
+                        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                    }).join(' ')}
+                    fill="none"
+                    stroke="#4318FF"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ filter: 'drop-shadow(0 2px 4px rgba(67, 24, 255, 0.3))' }}
+                />
+
+                {/* Data Points */}
+                {data.map((d, i) => {
+                    const x = (i / (data.length - 1)) * 100 + '%';
+                    const y = chartHeight - (d.speed / spdRange) * (chartHeight - padding) - padding / 2;
+                    return (
+                        <circle key={i} cx={x} cy={y} r="3" fill="#4318FF" />
+                    );
+                })}
+            </svg>
+            <div className="chart-legend">
+                <div className="legend-item"><span className="dot ele"></span> 고도 (m)</div>
+                <div className="legend-item"><span className="dot spd"></span> 속도 (km/h)</div>
+            </div>
+        </div>
+    );
 };
 
 function RecordDetailModal({ record, onClose, onStartCourseChallenge }) {
@@ -34,23 +116,21 @@ function RecordDetailModal({ record, onClose, onStartCourseChallenge }) {
 
     const isCourseRecord = record.courseId != null;
 
-    // route 파싱
+    // 데이터 파싱
     const parsedRoute = useMemo(() => {
-        if (record?.route) {
-            try {
-                let route = record.route;
-                if (typeof route === 'string') {
-                    route = JSON.parse(route);
-                }
-                return Array.isArray(route) ? route : [];
-            } catch (e) {
-                return [];
-            }
-        }
-        return [];
+        if (!record?.route) return [];
+        try {
+            return typeof record.route === 'string' ? JSON.parse(record.route) : record.route;
+        } catch (e) { return []; }
     }, [record?.route]);
 
-    // 지도 이미지 URL
+    const parsedSplits = useMemo(() => {
+        if (!record?.splits) return [];
+        try {
+            return typeof record.splits === 'string' ? JSON.parse(record.splits) : record.splits;
+        } catch (e) { return []; }
+    }, [record?.splits]);
+
     const mapImageUrl = useMemo(() => {
         if (parsedRoute && parsedRoute.length > 0) {
             return generateRouteMapImage(parsedRoute);
@@ -58,7 +138,6 @@ function RecordDetailModal({ record, onClose, onStartCourseChallenge }) {
         return null;
     }, [parsedRoute]);
 
-    // 지도 중심
     const mapCenter = useMemo(() => {
         if (parsedRoute && parsedRoute.length > 0) {
             const mid = Math.floor(parsedRoute.length / 2);
@@ -67,287 +146,180 @@ function RecordDetailModal({ record, onClose, onStartCourseChallenge }) {
         return { lat: 37.5665, lng: 126.9780 };
     }, [parsedRoute]);
 
-    // 마커
-    const markers = useMemo(() => {
-        if (!parsedRoute || parsedRoute.length === 0) return {};
-        return {
-            start: { lat: parsedRoute[0].lat, lng: parsedRoute[0].lng },
-            goal: { lat: parsedRoute[parsedRoute.length - 1].lat, lng: parsedRoute[parsedRoute.length - 1].lng }
-        };
-    }, [parsedRoute]);
-
-    // 속도별 경로 세그먼트
     const routeSegments = useMemo(() => {
         if (!parsedRoute || parsedRoute.length < 2) return [];
-
         const segments = [];
-        let currentPath = [];
+        let currentPath = [parsedRoute[0]];
         let currentColor = getSpeedColor((parsedRoute[0]?.speed || 0) * 3.6);
 
         for (let i = 0; i < parsedRoute.length - 1; i++) {
             const p1 = parsedRoute[i];
             const p2 = parsedRoute[i + 1];
             const color = getSpeedColor((p1.speed || 0) * 3.6);
-
-            if (currentPath.length === 0) {
-                currentPath.push(p1);
-                currentColor = color;
-            }
-
             if (color !== currentColor) {
-                currentPath.push(p1);
                 segments.push({ path: [...currentPath], color: currentColor });
                 currentPath = [p1];
                 currentColor = color;
             }
-
             currentPath.push(p2);
         }
-
-        if (currentPath.length > 0) {
-            segments.push({ path: currentPath, color: currentColor });
-        }
-
+        segments.push({ path: currentPath, color: currentColor });
         return segments;
     }, [parsedRoute]);
 
     if (!record) return null;
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: '#fff',
-            zIndex: 2000,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden'
-        }}>
+        <div className="result-screen-container" style={{ position: 'fixed', zIndex: 3000 }}>
             {/* Header */}
-            <div style={{
-                padding: '16px 20px',
-                borderBottom: '1px solid #e0e0e0',
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: '#fff'
-            }}>
-                <button
-                    onClick={onClose}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        fontSize: '20px',
-                        cursor: 'pointer',
-                        padding: '4px',
-                        marginRight: '12px'
-                    }}
-                >
-                    ←
-                </button>
-                <div style={{ fontSize: '18px', fontWeight: '700' }}>
+            <div className="result-header-fixed">
+                <button className="result-close-x" onClick={onClose} style={{ left: '16px', top: '50%', transform: 'translateY(-50%)' }}>←</button>
+                <div className="result-datetime" style={{ flex: 1, textAlign: 'center', fontSize: '18px', fontWeight: '800' }}>
                     {t('profile.recordDetail')}
                 </div>
             </div>
 
-            {/* Scrollable Content */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-                {/* Map */}
-                <div style={{ marginBottom: '20px' }}>
+            {/* Map Section */}
+            <section className="result-card-section" style={{ padding: '0 20px 20px' }}>
+                <div className="result-map-card" style={{ height: '280px', marginTop: '10px' }}>
                     {!showInteractiveMap ? (
-                        <div
-                            style={{
-                                width: '100%',
-                                height: '280px',
-                                borderRadius: '12px',
-                                overflow: 'hidden',
-                                backgroundColor: '#f0f0f0',
-                                cursor: 'pointer'
-                            }}
-                            onClick={() => setShowInteractiveMap(true)}
-                        >
-                            {mapImageUrl && (
-                                <img
-                                    src={mapImageUrl}
-                                    alt="러닝 경로"
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                            )}
+                        <div style={{ width: '100%', height: '100%', cursor: 'pointer' }} onClick={() => setShowInteractiveMap(true)}>
+                            {mapImageUrl && <img src={mapImageUrl} alt="Route" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                         </div>
                     ) : (
-                        <div style={{ width: '100%', height: '280px', borderRadius: '12px', overflow: 'hidden' }}>
-                            {isLoaded && parsedRoute.length > 0 && (
-                                <GoogleMap
-                                    mapContainerStyle={{ width: '100%', height: '100%' }}
-                                    center={mapCenter}
-                                    zoom={14}
-                                    onLoad={setMap}
-                                    options={{ mapId: MAP_ID }}
-                                >
-                                    {routeSegments.map((segment, idx) => (
-                                        <Polyline
-                                            key={idx}
-                                            path={segment.path}
-                                            options={{
-                                                strokeColor: segment.color,
-                                                strokeOpacity: 0.9,
-                                                strokeWeight: 6
-                                            }}
-                                        />
-                                    ))}
-                                    {markers.start && (
-                                        <AdvancedMarker map={map} position={markers.start}>
-                                            <div style={{
-                                                width: '32px',
-                                                height: '32px',
-                                                backgroundColor: '#22c55e',
-                                                borderRadius: '50%',
-                                                border: '3px solid white',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                fontSize: '14px',
-                                                fontWeight: '800',
-                                                color: 'white'
-                                            }}>S</div>
-                                        </AdvancedMarker>
-                                    )}
-                                    {markers.goal && (
-                                        <AdvancedMarker map={map} position={markers.goal}>
-                                            <div style={{
-                                                width: '32px',
-                                                height: '32px',
-                                                backgroundColor: '#ef4444',
-                                                borderRadius: '50%',
-                                                border: '3px solid white',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                fontSize: '14px',
-                                                fontWeight: '800',
-                                                color: 'white'
-                                            }}>G</div>
-                                        </AdvancedMarker>
-                                    )}
-                                </GoogleMap>
-                            )}
-                        </div>
+                        isLoaded && (
+                            <GoogleMap
+                                mapContainerStyle={{ width: '100%', height: '100%' }}
+                                center={mapCenter}
+                                zoom={14}
+                                onLoad={setMap}
+                                options={{
+                                    ...(getInteractiveMapOptions() || {}),
+                                    mapId: getMapId()
+                                }}
+                            >
+                                {routeSegments.map((s, idx) => (
+                                    <Polyline key={idx} path={s.path} options={{ strokeColor: s.color, strokeOpacity: 0.9, strokeWeight: 6 }} />
+                                ))}
+                            </GoogleMap>
+                        )
                     )}
                 </div>
+            </section>
 
-                {/* Date */}
-                <div style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
+            {/* Time & Distance */}
+            <section className="result-summary-section">
+                <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: '600' }}>
                     {(() => {
-                        const date = new Date(record.timestamp || record.createdAt);
-                        return `${date.getFullYear()}${t('common.year')}${date.getMonth() + 1}${t('common.month')}${date.getDate()}${t('common.day')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                        const d = new Date(record.timestamp || record.createdAt);
+                        return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
                     })()}
                 </div>
-
-                {/* Stats Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-                    <div>
-                        <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>거리</div>
-                        <div style={{ fontSize: '24px', fontWeight: '800', color: '#4318FF' }}>
-                            {formatDistance(record.distance, unit)}
-                        </div>
+                <div className="result-main-stats-row">
+                    <div className="result-main-stat-item">
+                        <div className="result-stat-label">거리</div>
+                        <div className="result-stat-value-huge">{formatDistance(record.distance, unit)}</div>
                     </div>
-                    <div>
-                        <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>시간</div>
-                        <div style={{ fontSize: '24px', fontWeight: '800', color: '#1a1a1a' }}>
-                            {formatTime(record.duration)}
-                        </div>
+                    <div className="result-main-stat-item center">
+                        <div className="result-stat-label">시간</div>
+                        <div className="result-stat-value-huge" style={{ color: '#1a1a1a' }}>{formatTime(record.duration)}</div>
                     </div>
-                    <div>
-                        <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>페이스</div>
-                        <div style={{ fontSize: '18px', fontWeight: '700', color: '#333' }}>
-                            {formatPace(record.pace * 60, unit)}
-                        </div>
-                    </div>
-                    <div>
-                        <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>칼로리</div>
-                        <div style={{ fontSize: '18px', fontWeight: '700', color: '#333' }}>
-                            {Math.floor(record.distance * 60)} kcal
-                        </div>
-                    </div>
-                    {record.totalAscent != null && (
-                        <div>
-                            <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>상승</div>
-                            <div style={{ fontSize: '18px', fontWeight: '700', color: '#333' }}>
-                                {Math.floor(record.totalAscent)} m
-                            </div>
-                        </div>
-                    )}
-                    {record.totalDescent != null && (
-                        <div>
-                            <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>하강</div>
-                            <div style={{ fontSize: '18px', fontWeight: '700', color: '#333' }}>
-                                {Math.floor(record.totalDescent)} m
-                            </div>
-                        </div>
-                    )}
                 </div>
 
-                {/* Speed Legend */}
-                <div style={{ marginBottom: '20px' }}>
-                    <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>속도 구간</div>
+                <div className="result-secondary-stats-grid">
+                    <div className="result-secondary-item">
+                        <div className="result-secondary-label">페이스</div>
+                        <div className="result-secondary-value">{formatPace(record.pace * 60, unit)}</div>
+                    </div>
+                    <div className="result-secondary-item">
+                        <div className="result-secondary-label">칼로리</div>
+                        <div className="result-secondary-value">{Math.floor(record.distance * 60)} kcal</div>
+                    </div>
+                    <div className="result-secondary-item">
+                        <div className="result-secondary-label">평균 속도</div>
+                        <div className="result-secondary-value">{(record.distance / (record.duration / 3600)).toFixed(1)} km/h</div>
+                    </div>
+                </div>
+
+                <div className="result-secondary-stats-grid" style={{ marginTop: '12px' }}>
+                    <div className="result-secondary-item">
+                        <div className="result-secondary-label">↗ 상승</div>
+                        <div className="result-secondary-value" style={{ color: '#22c55e' }}>{Math.floor(record.totalAscent || 0)} m</div>
+                    </div>
+                    <div className="result-secondary-item">
+                        <div className="result-secondary-label">↘ 하강</div>
+                        <div className="result-secondary-value" style={{ color: '#ef4444' }}>{Math.floor(record.totalDescent || 0)} m</div>
+                    </div>
+                    <div className="result-secondary-item">
+                        <div className="result-secondary-label">기록 타입</div>
+                        <div className="result-secondary-value">{record.courseType || 'NORMAL'}</div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Analysis Chart */}
+            {parsedSplits && parsedSplits.length > 0 && (
+                <section className="result-card-section">
+                    <div className="result-section-title-simple">
+                        <span>📈</span> 고도 및 속도 분석 (1km)
+                    </div>
+                    <SpeedElevationChart splits={parsedSplits} />
+                </section>
+            )}
+
+            {/* Splits List */}
+            {parsedSplits && parsedSplits.length > 0 && (
+                <section className="result-card-section">
+                    <div className="result-section-title-simple">
+                        <span>🚩</span> 구간 기록 (1km)
+                    </div>
+                    <div className="splits-list">
+                        {parsedSplits.map((split, idx) => (
+                            <div className="split-row-item" key={idx}>
+                                <div className="split-km-badge">{split.km} km</div>
+                                <div className="split-time-value">{formatTime(split.duration)}</div>
+                                <div className="split-pace-value">{split.pace.toFixed(2)} 분/km</div>
+                                {split.elevation != null && (
+                                    <div className="split-elevation-value" style={{ color: '#667eea', fontSize: '12px' }}>
+                                        🗻 {Math.floor(split.elevation)}m
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* Speed Legend */}
+            <section className="result-card-section">
+                <div className="result-section-title-simple">속도 구간</div>
+                <div className="result-secondary-stats-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', padding: '12px' }}>
                     {[
                         { color: '#10b981', label: '느림 (< 6 km/h)' },
                         { color: '#f59e0b', label: '보통 (6-9 km/h)' },
                         { color: '#ef4444', label: '빠름 (9-12 km/h)' },
                         { color: '#7c3aed', label: '매우 빠름 (> 12 km/h)' }
                     ].map(({ color, label }) => (
-                        <div key={color} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                            <div style={{ width: '20px', height: '4px', backgroundColor: color }} />
-                            <div style={{ fontSize: '12px', color: '#666' }}>{label}</div>
+                        <div key={color} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '16px', height: '4px', backgroundColor: color, borderRadius: '2px' }} />
+                            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>{label}</div>
                         </div>
                     ))}
                 </div>
+            </section>
 
-                {/* Course Challenge Button */}
+            {/* Actions */}
+            <div className="result-footer-actions">
                 {isCourseRecord && onStartCourseChallenge && (
                     <button
+                        className="result-btn result-btn-save"
+                        style={{ backgroundColor: '#7c3aed' }}
                         onClick={() => onStartCourseChallenge(record)}
-                        style={{
-                            width: '100%',
-                            padding: '16px',
-                            backgroundColor: '#7c3aed',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '12px',
-                            fontSize: '16px',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                            marginBottom: '12px'
-                        }}
                     >
-                        🏃 코스 재도전하기
+                        <span>🏃</span> 코스 재도전하기
                     </button>
                 )}
-            </div>
-
-            {/* Footer */}
-            <div style={{
-                padding: '16px 20px',
-                borderTop: '1px solid #f0f0f0',
-                backgroundColor: '#fff',
-                paddingBottom: 'max(16px, env(safe-area-inset-bottom))'
-            }}>
-                <button
-                    onClick={onClose}
-                    style={{
-                        width: '100%',
-                        padding: '16px',
-                        backgroundColor: '#f0f0f0',
-                        color: '#666',
-                        border: 'none',
-                        borderRadius: '12px',
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        cursor: 'pointer'
-                    }}
-                >
+                <button className="result-btn" style={{ backgroundColor: '#f1f5f9', color: '#64748b', flex: isCourseRecord ? 0 : 1 }} onClick={onClose}>
                     닫기
                 </button>
             </div>
