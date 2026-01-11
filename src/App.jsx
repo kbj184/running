@@ -390,16 +390,37 @@ function App() {
         setShowRecordDetailModal(true);
     };
 
-    const handleStartCourseChallenge = (record) => {
+    // 도전하기 핸들러
+    const handleStartCourseChallenge = async (record) => {
         console.log('🏃 코스 재도전 시작:', record);
-        // 도전하기 핸들러
-        const courseData = {
+
+        // 기본값: 현재 기록의 데이터 사용 (백업용)
+        let courseData = {
             id: record.courseId,
-            name: `코스 재도전 - ${new Date(record.timestamp || record.createdAt).toLocaleDateString()}`,
-            route: record.route,
+            name: record.title || `코스 재도전 - ${new Date(record.timestamp || record.createdAt).toLocaleDateString()}`,
+            routeData: record.route,
             distance: record.distance,
-            courseType: 'RETRY'  // 재도전 타입
+            courseType: 'RETRY'
         };
+
+        // 만약 courseId가 있다면 서버에서 원본 코스 정보를 가져옴 (크루 코스 따라하기와 동일한 로직)
+        if (record.courseId) {
+            try {
+                const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/course/${record.courseId}`);
+                if (response.ok) {
+                    const originalCourse = await response.json();
+                    console.log('📖 원본 코스 정보 로드 성공:', originalCourse);
+                    courseData = {
+                        ...courseData,
+                        name: originalCourse.title || originalCourse.name || courseData.name,
+                        routeData: originalCourse.routeData || courseData.routeData,
+                        distance: originalCourse.distance || courseData.distance
+                    };
+                }
+            } catch (err) {
+                console.warn('⚠️ 원본 코스를 불러올 수 없어 현재 기록 데이터를 유지합니다:', err);
+            }
+        }
 
         setCourseToFollow(courseData);
         setScreenMode('countdown');
