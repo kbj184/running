@@ -39,6 +39,29 @@ function RunningTab({
                 showLabels={showLabels}
             />
 
+            {/* Empty State Message */}
+            {runners.length === 0 && (
+                <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    textAlign: 'center',
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    color: 'white',
+                    padding: '2rem',
+                    borderRadius: '12px',
+                    zIndex: 1000,
+                    maxWidth: '300px'
+                }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏃‍♂️</div>
+                    <h3 style={{ margin: '0 0 0.5rem 0' }}>아직 러닝 기록이 없습니다</h3>
+                    <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.8 }}>
+                        첫 러닝을 시작해보세요!
+                    </p>
+                </div>
+            )}
+
             {/* Runner Detail Panel */}
             <RunnerDetailPanel
                 runner={selectedRunner}
