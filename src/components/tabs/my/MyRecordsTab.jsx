@@ -923,10 +923,10 @@ function MyRecordsTab({ user, onRecordClick }) {
                             {['일', '월', '화', '수', '목', '금', '토'].map(day => (
                                 <div key={day} style={{
                                     textAlign: 'center',
-                                    fontSize: '12px',
+                                    fontSize: '11px',
                                     fontWeight: '600',
                                     color: '#999',
-                                    padding: '8px 0'
+                                    padding: '4px 0'
                                 }}>
                                     {day}
                                 </div>
@@ -943,21 +943,21 @@ function MyRecordsTab({ user, onRecordClick }) {
                                     key={idx}
                                     onClick={() => handleDateClick(dayData)}
                                     style={{
-                                        aspectRatio: '1',
+                                        padding: '8px 0',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        fontSize: '14px',
+                                        fontSize: '13px',
                                         fontWeight: dayData?.hasRecord ? '700' : '400',
                                         color: dayData?.hasRecord ? '#fff' : '#666',
                                         backgroundColor: dayData?.hasRecord ? '#4318FF' : 'transparent',
-                                        borderRadius: '8px',
+                                        borderRadius: '6px',
                                         cursor: dayData?.hasRecord ? 'pointer' : 'default',
                                         transition: 'all 0.2s'
                                     }}
                                     onMouseEnter={(e) => {
                                         if (dayData?.hasRecord) {
-                                            e.currentTarget.style.transform = 'scale(1.1)';
+                                            e.currentTarget.style.transform = 'scale(1.05)';
                                         }
                                     }}
                                     onMouseLeave={(e) => {
