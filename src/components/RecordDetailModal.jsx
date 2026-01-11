@@ -108,24 +108,32 @@ const SpeedElevationChart = ({ splits }) => {
                                 {d.speed.toFixed(1)}
                             </text>
 
-                            {/* Elevation Label (Optional: only if you want numbers for elevation too) */}
+                            {/* Elevation Label */}
                             <text
                                 x={x}
-                                y={yEle + 12}
+                                y={yEle + 14}
                                 textAnchor="middle"
                                 fontSize="9"
-                                fill="#667eea"
+                                fill="#7c3aed"
                                 fontWeight="600"
                             >
                                 {Math.round(d.elevation)}m
                             </text>
+
+                            {/* KM Label (X-axis) */}
+                            <text
+                                x={x}
+                                y={chartHeight - 2}
+                                textAnchor="middle"
+                                fontSize="8"
+                                fill="#cbd5e1"
+                                fontWeight="600"
+                            >
+                                {d.km}k
+                            </text>
                         </g>
                     );
                 })}
-
-                {/* Y-axis labels */}
-                <text x={padding - 5} y={chartHeight - padding} textAnchor="end" fontSize="10" fill="#999">0</text>
-                <text x={padding - 5} y={chartHeight - padding - innerHeight} textAnchor="end" fontSize="10" fill="#999">{Math.round(maxSpd)}</text>
             </svg>
             <div className="chart-legend">
                 <div className="legend-item"><span className="dot ele"></span> 고도 (m)</div>
