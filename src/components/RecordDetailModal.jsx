@@ -40,26 +40,29 @@ const SpeedElevationChart = ({ splits }) => {
     const maxSpd = Math.max(...speeds, 1);
     const spdRange = maxSpd || 1;
 
+    const viewBoxWidth = 400;
     const chartHeight = 150;
     const padding = 20;
+    const innerWidth = viewBoxWidth - (padding * 2);
+    const innerHeight = chartHeight - (padding * 1.5);
 
     return (
         <div className="speed-elevation-chart-wrapper">
-            <svg width="100%" height={chartHeight} style={{ overflow: 'visible' }}>
+            <svg width="100%" height={chartHeight} viewBox={`0 0 ${viewBoxWidth} ${chartHeight}`} style={{ overflow: 'visible' }}>
                 {/* Elevation Area */}
                 <path
                     d={data.map((d, i) => {
-                        const x = (i / (data.length - 1)) * 100 + '%';
-                        const y = chartHeight - ((d.elevation - minEle) / eleRange) * (chartHeight - padding) - padding / 2;
+                        const x = padding + (i / (data.length - 1 || 1)) * innerWidth;
+                        const y = chartHeight - padding - ((d.elevation - minEle) / eleRange) * innerHeight;
                         return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-                    }).join(' ') + ` L 100% ${chartHeight} L 0% ${chartHeight} Z`}
+                    }).join(' ') + ` L ${padding + innerWidth} ${chartHeight - padding} L ${padding} ${chartHeight - padding} Z`}
                     fill="#667eea"
                     fillOpacity="0.1"
                 />
                 <path
                     d={data.map((d, i) => {
-                        const x = (i / (data.length - 1)) * 100 + '%';
-                        const y = chartHeight - ((d.elevation - minEle) / eleRange) * (chartHeight - padding) - padding / 2;
+                        const x = padding + (i / (data.length - 1 || 1)) * innerWidth;
+                        const y = chartHeight - padding - ((d.elevation - minEle) / eleRange) * innerHeight;
                         return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
                     }).join(' ')}
                     fill="none"
@@ -72,8 +75,8 @@ const SpeedElevationChart = ({ splits }) => {
                 {/* Speed Line */}
                 <path
                     d={data.map((d, i) => {
-                        const x = (i / (data.length - 1)) * 100 + '%';
-                        const y = chartHeight - (d.speed / spdRange) * (chartHeight - padding) - padding / 2;
+                        const x = padding + (i / (data.length - 1 || 1)) * innerWidth;
+                        const y = chartHeight - padding - (d.speed / spdRange) * innerHeight;
                         return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
                     }).join(' ')}
                     fill="none"
@@ -86,12 +89,16 @@ const SpeedElevationChart = ({ splits }) => {
 
                 {/* Data Points */}
                 {data.map((d, i) => {
-                    const x = (i / (data.length - 1)) * 100 + '%';
-                    const y = chartHeight - (d.speed / spdRange) * (chartHeight - padding) - padding / 2;
+                    const x = padding + (i / (data.length - 1 || 1)) * innerWidth;
+                    const y = chartHeight - padding - (d.speed / spdRange) * innerHeight;
                     return (
                         <circle key={i} cx={x} cy={y} r="3" fill="#4318FF" />
                     );
                 })}
+
+                {/* Y-axis labels (optional but helpful) */}
+                <text x={padding - 5} y={chartHeight - padding} textAnchor="end" fontSize="10" fill="#999">0</text>
+                <text x={padding - 5} y={chartHeight - padding - innerHeight} textAnchor="end" fontSize="10" fill="#999">{Math.round(maxSpd)}</text>
             </svg>
             <div className="chart-legend">
                 <div className="legend-item"><span className="dot ele"></span> 고도 (m)</div>
@@ -171,17 +178,34 @@ function RecordDetailModal({ record, onClose, onStartCourseChallenge }) {
 
     return (
         <div className="result-screen-container" style={{ position: 'fixed', zIndex: 3000 }}>
-            {/* Header */}
+            {/* Header: 2번 내용(날짜)이 1번 위치로 이동 */}
             <div className="result-header-fixed">
                 <button className="result-close-x" onClick={onClose} style={{ left: '16px', top: '50%', transform: 'translateY(-50%)' }}>←</button>
                 <div className="result-datetime" style={{ flex: 1, textAlign: 'center', fontSize: '18px', fontWeight: '800' }}>
-                    {t('profile.recordDetail')}
+                    {(() => {
+                        const d = new Date(record.timestamp || record.createdAt);
+                        return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                    })()}
                 </div>
             </div>
 
+            {/* 거리 및 시간: 3번 내용이 지도 위로 이동 */}
+            <section className="result-summary-section" style={{ paddingBottom: '0' }}>
+                <div className="result-main-stats-row">
+                    <div className="result-main-stat-item">
+                        <div className="result-stat-label">거리</div>
+                        <div className="result-stat-value-huge">{formatDistance(record.distance, unit)}</div>
+                    </div>
+                    <div className="result-main-stat-item center">
+                        <div className="result-stat-label">시간</div>
+                        <div className="result-stat-value-huge" style={{ color: '#1a1a1a' }}>{formatTime(record.duration)}</div>
+                    </div>
+                </div>
+            </section>
+
             {/* Map Section */}
-            <section className="result-card-section" style={{ padding: '0 20px 20px' }}>
-                <div className="result-map-card" style={{ height: '280px', marginTop: '10px' }}>
+            <section className="result-card-section" style={{ padding: '10px 20px 20px' }}>
+                <div className="result-map-card" style={{ height: '320px', borderRadius: '24px' }}>
                     {!showInteractiveMap ? (
                         <div style={{ width: '100%', height: '100%', cursor: 'pointer' }} onClick={() => setShowInteractiveMap(true)}>
                             {mapImageUrl && <img src={mapImageUrl} alt="Route" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
@@ -207,25 +231,25 @@ function RecordDetailModal({ record, onClose, onStartCourseChallenge }) {
                 </div>
             </section>
 
-            {/* Time & Distance */}
-            <section className="result-summary-section">
-                <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: '600' }}>
-                    {(() => {
-                        const d = new Date(record.timestamp || record.createdAt);
-                        return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-                    })()}
+            {/* 속도 구간 범례: 지도 바로 아래로 이동 */}
+            <section className="result-card-section" style={{ marginTop: '-10px' }}>
+                <div className="result-secondary-stats-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', padding: '12px', background: '#f8fafc' }}>
+                    {[
+                        { color: '#10b981', label: '느림 (< 6 km/h)' },
+                        { color: '#f59e0b', label: '보통 (6-9 km/h)' },
+                        { color: '#ef4444', label: '빠름 (9-12 km/h)' },
+                        { color: '#7c3aed', label: '매우 빠름 (> 12 km/h)' }
+                    ].map(({ color, label }) => (
+                        <div key={color} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '16px', height: '4px', backgroundColor: color, borderRadius: '2px' }} />
+                            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>{label}</div>
+                        </div>
+                    ))}
                 </div>
-                <div className="result-main-stats-row">
-                    <div className="result-main-stat-item">
-                        <div className="result-stat-label">거리</div>
-                        <div className="result-stat-value-huge">{formatDistance(record.distance, unit)}</div>
-                    </div>
-                    <div className="result-main-stat-item center">
-                        <div className="result-stat-label">시간</div>
-                        <div className="result-stat-value-huge" style={{ color: '#1a1a1a' }}>{formatTime(record.duration)}</div>
-                    </div>
-                </div>
+            </section>
 
+            {/* 상세 데이터 박스 (이미지 0번 스타일) */}
+            <section className="result-summary-section" style={{ marginTop: '-10px' }}>
                 <div className="result-secondary-stats-grid">
                     <div className="result-secondary-item">
                         <div className="result-secondary-label">페이스</div>
@@ -237,18 +261,18 @@ function RecordDetailModal({ record, onClose, onStartCourseChallenge }) {
                     </div>
                     <div className="result-secondary-item">
                         <div className="result-secondary-label">평균 속도</div>
-                        <div className="result-secondary-value">{(record.distance / (record.duration / 3600)).toFixed(1)} km/h</div>
+                        <div className="result-secondary-value">{(record.distance / (record.duration / 3600)).toFixed(1)} <small>km/h</small></div>
                     </div>
                 </div>
 
                 <div className="result-secondary-stats-grid" style={{ marginTop: '12px' }}>
                     <div className="result-secondary-item">
                         <div className="result-secondary-label">↗ 상승</div>
-                        <div className="result-secondary-value" style={{ color: '#22c55e' }}>{Math.floor(record.totalAscent || 0)} m</div>
+                        <div className="result-secondary-value" style={{ color: '#22c55e' }}>{Math.floor(record.totalAscent || 0)} <small>m</small></div>
                     </div>
                     <div className="result-secondary-item">
                         <div className="result-secondary-label">↘ 하강</div>
-                        <div className="result-secondary-value" style={{ color: '#ef4444' }}>{Math.floor(record.totalDescent || 0)} m</div>
+                        <div className="result-secondary-value" style={{ color: '#ef4444' }}>{Math.floor(record.totalDescent || 0)} <small>m</small></div>
                     </div>
                     <div className="result-secondary-item">
                         <div className="result-secondary-label">기록 타입</div>
@@ -289,24 +313,6 @@ function RecordDetailModal({ record, onClose, onStartCourseChallenge }) {
                     </div>
                 </section>
             )}
-
-            {/* Speed Legend */}
-            <section className="result-card-section">
-                <div className="result-section-title-simple">속도 구간</div>
-                <div className="result-secondary-stats-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', padding: '12px' }}>
-                    {[
-                        { color: '#10b981', label: '느림 (< 6 km/h)' },
-                        { color: '#f59e0b', label: '보통 (6-9 km/h)' },
-                        { color: '#ef4444', label: '빠름 (9-12 km/h)' },
-                        { color: '#7c3aed', label: '매우 빠름 (> 12 km/h)' }
-                    ].map(({ color, label }) => (
-                        <div key={color} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ width: '16px', height: '4px', backgroundColor: color, borderRadius: '2px' }} />
-                            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>{label}</div>
-                        </div>
-                    ))}
-                </div>
-            </section>
 
             {/* Actions */}
             <div className="result-footer-actions">
