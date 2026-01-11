@@ -1002,6 +1002,147 @@ function RecordDetailModal({ record, onClose, onStartCourseChallenge, user }) {
                                 ))}
                             </div>
                         </div>
+
+                        {/* Speed & Elevation Analysis Chart */}
+                        {parsedRoute && parsedRoute.length > 10 && (
+                            <div style={{
+                                padding: '16px',
+                                backgroundColor: '#f8f8f8',
+                                borderRadius: '12px',
+                                marginTop: '16px'
+                            }}>
+                                <div style={{
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    marginBottom: '12px'
+                                }}>
+                                    속도 & 고도 분석
+                                </div>
+
+                                {(() => {
+                                    // 데이터 샘플링 (너무 많으면 50개로 줄임)
+                                    const sampleSize = Math.min(50, parsedRoute.length);
+                                    const step = Math.floor(parsedRoute.length / sampleSize);
+                                    const sampledData = parsedRoute.filter((_, i) => i % step === 0);
+
+                                    // 고도 및 속도 범위 계산
+                                    const elevations = sampledData.map(p => p.elevation || 0);
+                                    const speeds = sampledData.map(p => (p.speed || 0) * 3.6); // m/s → km/h
+
+                                    const minElevation = Math.min(...elevations);
+                                    const maxElevation = Math.max(...elevations);
+                                    const elevationRange = maxElevation - minElevation || 1;
+
+                                    const maxSpeed = Math.max(...speeds, 15);
+
+                                    const chartWidth = 300;
+                                    const chartHeight = 150;
+                                    const padding = { top: 10, right: 40, bottom: 20, left: 40 };
+                                    const innerWidth = chartWidth - padding.left - padding.right;
+                                    const innerHeight = chartHeight - padding.top - padding.bottom;
+
+                                    // 고도 경로 생성
+                                    const elevationPath = sampledData.map((point, i) => {
+                                        const x = padding.left + (i / (sampledData.length - 1)) * innerWidth;
+                                        const normalizedElevation = (point.elevation - minElevation) / elevationRange;
+                                        const y = padding.top + innerHeight - (normalizedElevation * innerHeight);
+                                        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                                    }).join(' ');
+
+                                    // 속도 경로 생성
+                                    const speedPath = sampledData.map((point, i) => {
+                                        const x = padding.left + (i / (sampledData.length - 1)) * innerWidth;
+                                        const speed = (point.speed || 0) * 3.6;
+                                        const normalizedSpeed = speed / maxSpeed;
+                                        const y = padding.top + innerHeight - (normalizedSpeed * innerHeight);
+                                        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                                    }).join(' ');
+
+                                    return (
+                                        <svg width="100%" height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`} style={{ overflow: 'visible' }}>
+                                            {/* 배경 그리드 */}
+                                            {[0, 0.25, 0.5, 0.75, 1].map((ratio) => (
+                                                <line
+                                                    key={ratio}
+                                                    x1={padding.left}
+                                                    y1={padding.top + innerHeight * (1 - ratio)}
+                                                    x2={padding.left + innerWidth}
+                                                    y2={padding.top + innerHeight * (1 - ratio)}
+                                                    stroke="#e0e0e0"
+                                                    strokeWidth="1"
+                                                    strokeDasharray="2,2"
+                                                />
+                                            ))}
+
+                                            {/* 고도 영역 (채우기) */}
+                                            <path
+                                                d={`${elevationPath} L ${padding.left + innerWidth} ${padding.top + innerHeight} L ${padding.left} ${padding.top + innerHeight} Z`}
+                                                fill="url(#elevationGradient)"
+                                                opacity="0.3"
+                                            />
+
+                                            {/* 고도 선 */}
+                                            <path
+                                                d={elevationPath}
+                                                fill="none"
+                                                stroke="#10b981"
+                                                strokeWidth="2"
+                                            />
+
+                                            {/* 속도 선 */}
+                                            <path
+                                                d={speedPath}
+                                                fill="none"
+                                                stroke="#ef4444"
+                                                strokeWidth="2"
+                                            />
+
+                                            {/* Y축 레이블 (고도) */}
+                                            <text x={padding.left - 5} y={padding.top} textAnchor="end" fontSize="10" fill="#10b981">
+                                                {Math.round(maxElevation)}m
+                                            </text>
+                                            <text x={padding.left - 5} y={padding.top + innerHeight} textAnchor="end" fontSize="10" fill="#10b981">
+                                                {Math.round(minElevation)}m
+                                            </text>
+
+                                            {/* Y축 레이블 (속도) */}
+                                            <text x={padding.left + innerWidth + 5} y={padding.top} textAnchor="start" fontSize="10" fill="#ef4444">
+                                                {Math.round(maxSpeed)}
+                                            </text>
+                                            <text x={padding.left + innerWidth + 5} y={padding.top + innerHeight} textAnchor="start" fontSize="10" fill="#ef4444">
+                                                0
+                                            </text>
+
+                                            {/* 그라데이션 정의 */}
+                                            <defs>
+                                                <linearGradient id="elevationGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.5" />
+                                                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.1" />
+                                                </linearGradient>
+                                            </defs>
+                                        </svg>
+                                    );
+                                })()}
+
+                                {/* 범례 */}
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    gap: '16px',
+                                    marginTop: '8px'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <div style={{ width: '16px', height: '2px', backgroundColor: '#10b981' }} />
+                                        <span style={{ fontSize: '11px', color: '#666' }}>고도 (m)</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <div style={{ width: '16px', height: '2px', backgroundColor: '#ef4444' }} />
+                                        <span style={{ fontSize: '11px', color: '#666' }}>속도 (km/h)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
