@@ -124,78 +124,6 @@ function MyRecordsTab({ user, onRecordClick }) {
         };
     }, [showAllRecords, displayCount, records.length]);
 
-    // Intersection Observer for cumulative tab
-    useEffect(() => {
-        if (!cumulativeShowAll || activeSubTab !== 'cumulative') return;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && cumulativeDisplayCount < yearlyStats.length) {
-                    setCumulativeDisplayCount(prev => prev + 10);
-                }
-            },
-            { threshold: 0.1 }
-        );
-
-        if (cumulativeLoadMoreRef.current) {
-            observer.observe(cumulativeLoadMoreRef.current);
-        }
-
-        return () => {
-            if (cumulativeLoadMoreRef.current) {
-                observer.unobserve(cumulativeLoadMoreRef.current);
-            }
-        };
-    }, [cumulativeShowAll, cumulativeDisplayCount, yearlyStats.length, activeSubTab]);
-
-    // Intersection Observer for monthly tab
-    useEffect(() => {
-        if (!monthlyShowAll || activeSubTab !== 'monthly') return;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && monthlyDisplayCount < monthlyStats.length) {
-                    setMonthlyDisplayCount(prev => prev + 10);
-                }
-            },
-            { threshold: 0.1 }
-        );
-
-        if (monthlyLoadMoreRef.current) {
-            observer.observe(monthlyLoadMoreRef.current);
-        }
-
-        return () => {
-            if (monthlyLoadMoreRef.current) {
-                observer.unobserve(monthlyLoadMoreRef.current);
-            }
-        };
-    }, [monthlyShowAll, monthlyDisplayCount, monthlyStats.length, activeSubTab]);
-
-    // Intersection Observer for weekly tab
-    useEffect(() => {
-        if (!weeklyShowAll || activeSubTab !== 'weekly') return;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && weeklyDisplayCount < weeklyStats.length) {
-                    setWeeklyDisplayCount(prev => prev + 10);
-                }
-            },
-            { threshold: 0.1 }
-        );
-
-        if (weeklyLoadMoreRef.current) {
-            observer.observe(weeklyLoadMoreRef.current);
-        }
-
-        return () => {
-            if (weeklyLoadMoreRef.current) {
-                observer.unobserve(weeklyLoadMoreRef.current);
-            }
-        };
-    }, [weeklyShowAll, weeklyDisplayCount, weeklyStats.length, activeSubTab]);
-
     // 총 데이터 통계
     const totalStats = useMemo(() => {
         if (records.length === 0) return null;
@@ -415,6 +343,78 @@ function MyRecordsTab({ user, onRecordClick }) {
             return b.week - a.week;
         });
     }, [records]);
+
+    // Intersection Observer for cumulative tab
+    useEffect(() => {
+        if (!cumulativeShowAll || activeSubTab !== 'cumulative') return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && cumulativeDisplayCount < yearlyStats.length) {
+                    setCumulativeDisplayCount(prev => prev + 10);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (cumulativeLoadMoreRef.current) {
+            observer.observe(cumulativeLoadMoreRef.current);
+        }
+
+        return () => {
+            if (cumulativeLoadMoreRef.current) {
+                observer.unobserve(cumulativeLoadMoreRef.current);
+            }
+        };
+    }, [cumulativeShowAll, cumulativeDisplayCount, yearlyStats.length, activeSubTab]);
+
+    // Intersection Observer for monthly tab
+    useEffect(() => {
+        if (!monthlyShowAll || activeSubTab !== 'monthly') return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && monthlyDisplayCount < monthlyStats.length) {
+                    setMonthlyDisplayCount(prev => prev + 10);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (monthlyLoadMoreRef.current) {
+            observer.observe(monthlyLoadMoreRef.current);
+        }
+
+        return () => {
+            if (monthlyLoadMoreRef.current) {
+                observer.unobserve(monthlyLoadMoreRef.current);
+            }
+        };
+    }, [monthlyShowAll, monthlyDisplayCount, monthlyStats.length, activeSubTab]);
+
+    // Intersection Observer for weekly tab
+    useEffect(() => {
+        if (!weeklyShowAll || activeSubTab !== 'weekly') return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && weeklyDisplayCount < weeklyStats.length) {
+                    setWeeklyDisplayCount(prev => prev + 10);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (weeklyLoadMoreRef.current) {
+            observer.observe(weeklyLoadMoreRef.current);
+        }
+
+        return () => {
+            if (weeklyLoadMoreRef.current) {
+                observer.unobserve(weeklyLoadMoreRef.current);
+            }
+        };
+    }, [weeklyShowAll, weeklyDisplayCount, weeklyStats.length, activeSubTab]);
 
     // 월 선택기 옵션 생성
     const monthOptions = useMemo(() => {
