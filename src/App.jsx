@@ -4,7 +4,6 @@ import { LoadScript } from '@react-google-maps/api';
 import './running-styles.css';
 import './main-layout.css';
 import { RUNNER_GRADES } from './constants/runnerGrades';
-import { generateRunners } from './utils/runnerUtils';
 import { deleteSession } from './utils/db';
 import { api } from './utils/api';
 import { useFcm } from './hooks/useFcm';
@@ -305,45 +304,79 @@ function App() {
         localStorage.setItem('running_user', JSON.stringify(newUserData));
     };
 
-    // Initialize Runners
-    useEffect(() => {
-        const initialRunners = generateRunners(50);
-        setRunners(initialRunners);
+    // Fetch Real User Running Data
+    const fetchRunningCenterData = async () => {
+        if (!user) return;
+        try {
+            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/running-center/latest`, {
+                headers: {
+                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+                }
+            });
 
-        const newStats = {};
-        Object.keys(RUNNER_GRADES).forEach(grade => {
-            newStats[grade] = initialRunners.filter(r => r.grade === grade).length;
-        });
-        setStats(newStats);
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📍 Running Center Data:', data);
 
-        const interval = setInterval(() => {
-            setRunners(prevRunners =>
-                prevRunners.map(runner => {
-                    const newPosition = {
-                        lat: runner.position.lat + (Math.random() - 0.5) * 0.001,
-                        lng: runner.position.lng + (Math.random() - 0.5) * 0.001
-                    };
+                // Transform backend data to runner format
+                const transformedRunners = data.map((session, index) => {
+                    // Parse route data
+                    let route = [];
+                    try {
+                        route = typeof session.route === 'string' ? JSON.parse(session.route) : session.route;
+                    } catch (e) {
+                        console.error('Failed to parse route:', e);
+                        route = [];
+                    }
+
+                    // Get current position (last point in route)
+                    const position = route.length > 0 ? route[route.length - 1] : { lat: 37.5665, lng: 126.9780 };
+
                     return {
-                        ...runner,
-                        position: newPosition,
-                        route: [...runner.route.slice(0, -1), newPosition]
+                        id: session.userId || index,
+                        nickname: session.nickname || '익명',
+                        position: position,
+                        grade: session.grade || 'BEGINNER',
+                        distance: (session.distance || 0).toFixed(1),
+                        speed: (session.speed || 0).toFixed(1),
+                        duration: Math.floor((session.duration || 0) / 60), // seconds to minutes
+                        route: route,
+                        pace: (session.pace || 0).toFixed(1),
+                        profileImageUrl: session.profileImageUrl,
+                        userId: session.userId
                     };
-                })
-            );
-        }, 5000);
+                });
 
-        return () => clearInterval(interval);
-    }, []);
+                setRunners(transformedRunners);
+
+                // Calculate stats
+                const newStats = {};
+                Object.keys(RUNNER_GRADES).forEach(grade => {
+                    newStats[grade] = transformedRunners.filter(r => r.grade === grade).length;
+                });
+                setStats(newStats);
+            }
+        } catch (error) {
+            console.error('Failed to fetch running center data:', error);
+        }
+    };
+
+    // Initialize and periodically refresh running center data
+    useEffect(() => {
+        if (user && activeTab === 'running') {
+            fetchRunningCenterData();
+
+            // Refresh every 30 seconds
+            const interval = setInterval(() => {
+                fetchRunningCenterData();
+            }, 30000);
+
+            return () => clearInterval(interval);
+        }
+    }, [user, activeTab]);
 
     const handleRefresh = () => {
-        const newRunners = generateRunners(50);
-        setRunners(newRunners);
-
-        const newStats = {};
-        Object.keys(RUNNER_GRADES).forEach(grade => {
-            newStats[grade] = newRunners.filter(r => r.grade === grade).length;
-        });
-        setStats(newStats);
+        fetchRunningCenterData();
         setSelectedRunner(null);
     };
 

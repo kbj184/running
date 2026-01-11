@@ -73,54 +73,62 @@ function RunnerDetailPanel({ runner, onClose }) {
                     </div>
                 </div>
 
-                {/* 상세 정보 */}
-                <div className="detail-section">
-                    <h3 className="section-title">상세 정보</h3>
-                    <div className="detail-list">
-                        <div className="detail-item">
-                            <span className="detail-label">🔥 소모 칼로리</span>
-                            <span className="detail-value">{runner.calories} kcal</span>
-                        </div>
-                        <div className="detail-item">
-                            <span className="detail-label">❤️ 평균 심박수</span>
-                            <span className="detail-value">{runner.heartRate} bpm</span>
-                        </div>
-                        <div className="detail-item">
-                            <span className="detail-label">📍 현재 위치</span>
-                            <span className="detail-value">
-                                {runner.position.lat.toFixed(4)}, {runner.position.lng.toFixed(4)}
-                            </span>
+                {/* 상세 정보 - Only show if data exists */}
+                {(runner.calories || runner.heartRate) && (
+                    <div className="detail-section">
+                        <h3 className="section-title">상세 정보</h3>
+                        <div className="detail-list">
+                            {runner.calories && (
+                                <div className="detail-item">
+                                    <span className="detail-label">🔥 소모 칼로리</span>
+                                    <span className="detail-value">{runner.calories} kcal</span>
+                                </div>
+                            )}
+                            {runner.heartRate && (
+                                <div className="detail-item">
+                                    <span className="detail-label">❤️ 평균 심박수</span>
+                                    <span className="detail-value">{runner.heartRate} bpm</span>
+                                </div>
+                            )}
+                            <div className="detail-item">
+                                <span className="detail-label">📍 현재 위치</span>
+                                <span className="detail-value">
+                                    {runner.position.lat.toFixed(4)}, {runner.position.lng.toFixed(4)}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* 경로 정보 */}
-                <div className="detail-section">
-                    <h3 className="section-title">경로 정보</h3>
-                    <div className="route-info">
-                        <div className="route-point">
-                            <div className="route-marker start">🟢</div>
-                            <div className="route-text">
-                                <div className="route-label">시작 위치</div>
-                                <div className="route-coords">
-                                    {runner.route[0].lat.toFixed(4)}, {runner.route[0].lng.toFixed(4)}
+                {runner.route && runner.route.length > 0 && (
+                    <div className="detail-section">
+                        <h3 className="section-title">경로 정보</h3>
+                        <div className="route-info">
+                            <div className="route-point">
+                                <div className="route-marker start">🟢</div>
+                                <div className="route-text">
+                                    <div className="route-label">시작 위치</div>
+                                    <div className="route-coords">
+                                        {runner.route[0].lat.toFixed(4)}, {runner.route[0].lng.toFixed(4)}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="route-divider"></div>
-                        <div className="route-point">
-                            <div className="route-marker current" style={{
-                                backgroundColor: RUNNER_GRADES[runner.grade].color
-                            }}>📍</div>
-                            <div className="route-text">
-                                <div className="route-label">현재 위치</div>
-                                <div className="route-coords">
-                                    {runner.position.lat.toFixed(4)}, {runner.position.lng.toFixed(4)}
+                            <div className="route-divider"></div>
+                            <div className="route-point">
+                                <div className="route-marker current" style={{
+                                    backgroundColor: RUNNER_GRADES[runner.grade].color
+                                }}>📍</div>
+                                <div className="route-text">
+                                    <div className="route-label">현재 위치</div>
+                                    <div className="route-coords">
+                                        {runner.position.lat.toFixed(4)}, {runner.position.lng.toFixed(4)}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
