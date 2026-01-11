@@ -364,13 +364,7 @@ function App() {
     const handleCountdownComplete = () => {
         setIsRunning(true);
         setSessionId(`session_${Date.now()}`);
-
-        // 코스 따라하기 데이터가 있으면 follow_course 모드로 진입
-        if (courseToFollow) {
-            setScreenMode('follow_course');
-        } else {
-            setScreenMode('running');
-        }
+        setScreenMode('running');
     };
 
     const handleRunningStop = async (result) => {
@@ -429,7 +423,7 @@ function App() {
         }
 
         setCourseToFollow(courseData);
-        setScreenMode('countdown');
+        setScreenMode('follow_course'); // 카운트다운 없이 즉시 위치 조절 화면으로 진입
         setShowRecordDetailModal(false);
         setShowCourseComparisonModal(false);
     };
