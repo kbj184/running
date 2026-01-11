@@ -364,7 +364,13 @@ function App() {
     const handleCountdownComplete = () => {
         setIsRunning(true);
         setSessionId(`session_${Date.now()}`);
-        setScreenMode('running');
+
+        // 코스 따라하기 데이터가 있으면 follow_course 모드로 진입
+        if (courseToFollow) {
+            setScreenMode('follow_course');
+        } else {
+            setScreenMode('running');
+        }
     };
 
     const handleRunningStop = async (result) => {
