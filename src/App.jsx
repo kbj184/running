@@ -332,11 +332,16 @@ function App() {
                     // Get current position (last point in route)
                     const position = route.length > 0 ? route[route.length - 1] : { lat: 37.5665, lng: 126.9780 };
 
+                    // Validate grade
+                    const validGrade = session.grade && RUNNER_GRADES[session.grade]
+                        ? session.grade
+                        : 'BEGINNER';
+
                     return {
                         id: session.userId || index,
                         nickname: session.nickname || '익명',
                         position: position,
-                        grade: session.grade || 'BEGINNER',
+                        grade: validGrade,
                         distance: (session.distance || 0).toFixed(1),
                         speed: (session.speed || 0).toFixed(1),
                         duration: Math.floor((session.duration || 0) / 60), // seconds to minutes
