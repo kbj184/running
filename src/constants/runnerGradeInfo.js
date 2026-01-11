@@ -3,8 +3,8 @@ export const RUNNER_GRADE_INFO = {
     BEGINNER: {
         name: 'Beginner',
         nameKo: 'Beginner',
-        emoji: '🥉',
-        color: '#94a3b8',
+        emoji: '👟',
+        color: '#ff8c00', // 주황색
         description: '5km 미만',
         minDistance: 0,
         maxDistance: 5,
@@ -13,8 +13,8 @@ export const RUNNER_GRADE_INFO = {
     RUNNER_5K: {
         name: '5K Runner',
         nameKo: '5K',
-        emoji: '🏃',
-        color: '#10b981',
+        emoji: '👟',
+        color: '#10b981', // 녹색
         description: '10km 미만 & 1시간 이내',
         minDistance: 5,
         maxDistance: 10,
@@ -23,8 +23,8 @@ export const RUNNER_GRADE_INFO = {
     RUNNER_10K: {
         name: '10K Runner',
         nameKo: '10K',
-        emoji: '🏃‍♂️',
-        color: '#3b82f6',
+        emoji: '👟',
+        color: '#3b82f6', // 파랑색
         description: '21km 미만 & 1시간 30분 이내',
         minDistance: 10,
         maxDistance: 21,
@@ -33,8 +33,8 @@ export const RUNNER_GRADE_INFO = {
     HALF_MARATHONER: {
         name: 'Half Marathoner',
         nameKo: 'Half',
-        emoji: '🎽',
-        color: '#8b5cf6',
+        emoji: '👟',
+        color: '#ef4444', // 빨강색
         description: '42km 미만 & 2시간 30분 이내',
         minDistance: 21,
         maxDistance: 42,
@@ -43,8 +43,8 @@ export const RUNNER_GRADE_INFO = {
     FULL_MARATHONER: {
         name: 'Full Marathoner',
         nameKo: 'Full',
-        emoji: '🏅',
-        color: '#f59e0b',
+        emoji: '👟',
+        color: '#1f2937', // 검정색
         description: '42km 이상 & 5시간 30분 이내',
         minDistance: 42,
         maxDistance: 42.195, // 마라톤 완주 기준
@@ -53,8 +53,8 @@ export const RUNNER_GRADE_INFO = {
     SUB3_MARATHONER: {
         name: 'Sub-3 Marathoner',
         nameKo: 'Sub3',
-        emoji: '⚡',
-        color: '#ef4444',
+        emoji: '👟',
+        color: '#1f2937', // 검정색 (Full과 동일)
         description: '42km 이상 & 3시간 이내',
         minDistance: 42.195,
         maxDistance: 42.195,
@@ -63,8 +63,8 @@ export const RUNNER_GRADE_INFO = {
     ELITE_MARATHONER: {
         name: 'Elite Marathoner',
         nameKo: 'Elite',
-        emoji: '👑',
-        color: '#dc2626',
+        emoji: '👟',
+        color: '#1f2937', // 검정색 (Full과 동일)
         description: '42km 이상 & 2시간 30분 이내',
         minDistance: 42.195,
         maxDistance: 42.195,
@@ -73,8 +73,8 @@ export const RUNNER_GRADE_INFO = {
     LEGEND_MARATHONER: {
         name: 'Legend Marathoner',
         nameKo: 'Legend',
-        emoji: '🌟',
-        color: '#fbbf24',
+        emoji: '👟',
+        color: '#fbbf24', // 금색
         description: '전국구 전설',
         minDistance: 42.195,
         maxDistance: 42.195,
