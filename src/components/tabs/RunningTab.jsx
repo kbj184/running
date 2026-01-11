@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import MapView from '../map/MapView';
 import RunnerDetailPanel from '../runner/RunnerDetailPanel';
 
@@ -14,6 +14,10 @@ function RunningTab({
     onToggleLabels,
     onClosePanel
 }) {
+    // Fetch data when component mounts
+    useEffect(() => {
+        onRefresh();
+    }, []);
     return (
         <div className="tab-content running-tab">
             {/* Map Controls Overlay - Right Side */}
