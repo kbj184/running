@@ -47,24 +47,44 @@ function RunnerMarkers({ map, runners, selectedRunner, onRunnerClick }) {
                         zIndex={isSelected ? 10 : 1}
                     >
                         <div style={{
+                            position: 'relative',
                             display: 'flex',
                             flexDirection: 'column',
-                            alignItems: 'center',
-                            transform: 'translateY(-50%)'
+                            alignItems: 'center'
                         }}>
+                            {/* 마커 점 */}
+                            <div style={{
+                                width: isSelected ? '16px' : '12px',
+                                height: isSelected ? '16px' : '12px',
+                                backgroundColor: gradeInfo.color,
+                                borderRadius: '50%',
+                                border: isSelected ? '3px solid white' : '2px solid white',
+                                opacity: isSelected ? 1 : 0.8,
+                                boxShadow: isSelected ? '0 0 8px rgba(0,0,0,0.4)' : '0 0 4px rgba(0,0,0,0.2)',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer',
+                                position: 'relative',
+                                zIndex: 1
+                            }} />
+
                             {/* 유저 정보 말풍선 - 선택된 경우만 표시 */}
                             {isSelected && (
                                 <div style={{
+                                    position: 'absolute',
+                                    bottom: '100%',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    marginBottom: '8px',
                                     backgroundColor: 'white',
                                     borderRadius: '12px',
                                     padding: '8px 12px',
-                                    marginBottom: '8px',
                                     boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
                                     border: `2px solid ${gradeInfo.color}`,
                                     minWidth: '140px',
-                                    position: 'relative',
                                     transition: 'all 0.3s ease',
-                                    pointerEvents: 'auto'
+                                    pointerEvents: 'auto',
+                                    zIndex: 10,
+                                    whiteSpace: 'nowrap'
                                 }}>
                                     {/* 닫기 버튼 */}
                                     <button
@@ -147,19 +167,6 @@ function RunnerMarkers({ map, runners, selectedRunner, onRunnerClick }) {
                                     </div>
                                 </div>
                             )}
-
-                            {/* 마커 점 */}
-                            <div style={{
-                                width: isSelected ? '16px' : '12px',
-                                height: isSelected ? '16px' : '12px',
-                                backgroundColor: gradeInfo.color,
-                                borderRadius: '50%',
-                                border: isSelected ? '3px solid white' : '2px solid white',
-                                opacity: isSelected ? 1 : 0.8,
-                                boxShadow: isSelected ? '0 0 8px rgba(0,0,0,0.4)' : '0 0 4px rgba(0,0,0,0.2)',
-                                transition: 'all 0.3s ease',
-                                cursor: 'pointer'
-                            }} />
                         </div>
                     </AdvancedMarker>
                 );
