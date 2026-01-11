@@ -37,14 +37,14 @@ export const RUNNER_GRADES = {
     },
     SUB3_MARATHONER: {
         name: 'Sub-3 마라토너',
-        color: '#7c3aed', // 보라색
+        color: '#1f2937', // 검정색
         description: '42km 이상 및 3시간 이내',
         minDistance: 42,
         maxDistance: Infinity
     },
     ELITE_MARATHONER: {
         name: '엘리트 마라토너',
-        color: '#dc2626', // 진한 빨강색
+        color: '#1f2937', // 검정색
         description: '42km 이상 및 2시간 30분 이내',
         minDistance: 42,
         maxDistance: Infinity
