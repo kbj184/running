@@ -87,16 +87,43 @@ const SpeedElevationChart = ({ splits }) => {
                     style={{ filter: 'drop-shadow(0 2px 4px rgba(67, 24, 255, 0.3))' }}
                 />
 
-                {/* Data Points */}
+                {/* Data Points and Labels */}
                 {data.map((d, i) => {
                     const x = padding + (i / (data.length - 1 || 1)) * innerWidth;
-                    const y = chartHeight - padding - (d.speed / spdRange) * innerHeight;
+                    const ySpd = chartHeight - padding - (d.speed / spdRange) * innerHeight;
+                    const yEle = chartHeight - padding - ((d.elevation - minEle) / eleRange) * innerHeight;
+
                     return (
-                        <circle key={i} cx={x} cy={y} r="3" fill="#4318FF" />
+                        <g key={i}>
+                            {/* Speed Dot & Label */}
+                            <circle cx={x} cy={ySpd} r="3" fill="#4318FF" />
+                            <text
+                                x={x}
+                                y={ySpd - 8}
+                                textAnchor="middle"
+                                fontSize="9"
+                                fontWeight="700"
+                                fill="#4318FF"
+                            >
+                                {d.speed.toFixed(1)}
+                            </text>
+
+                            {/* Elevation Label (Optional: only if you want numbers for elevation too) */}
+                            <text
+                                x={x}
+                                y={yEle + 12}
+                                textAnchor="middle"
+                                fontSize="9"
+                                fill="#667eea"
+                                fontWeight="600"
+                            >
+                                {Math.round(d.elevation)}m
+                            </text>
+                        </g>
                     );
                 })}
 
-                {/* Y-axis labels (optional but helpful) */}
+                {/* Y-axis labels */}
                 <text x={padding - 5} y={chartHeight - padding} textAnchor="end" fontSize="10" fill="#999">0</text>
                 <text x={padding - 5} y={chartHeight - padding - innerHeight} textAnchor="end" fontSize="10" fill="#999">{Math.round(maxSpd)}</text>
             </svg>
