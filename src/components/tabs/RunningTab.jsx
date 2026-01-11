@@ -11,7 +11,8 @@ function RunningTab({
     onRefresh,
     onStartToggle,
     onToggleLabels,
-    onClosePanel
+    onClosePanel,
+    onBoundsChange
 }) {
     // Fetch data when component mounts
     useEffect(() => {
@@ -40,6 +41,7 @@ function RunningTab({
                 onRefresh={onRefresh}
                 onStartToggle={onStartToggle}
                 showLabels={showLabels}
+                onBoundsChange={onBoundsChange}
             />
 
             {/* Empty State Message */}

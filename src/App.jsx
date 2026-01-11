@@ -68,6 +68,7 @@ function App() {
     const [stats, setStats] = useState({});
     const [selectedRunner, setSelectedRunner] = useState(null);
     const [showLabels, setShowLabels] = useState(false);
+    const [currentBounds, setCurrentBounds] = useState(null);
 
     // Running State
     const [isRunning, setIsRunning] = useState(false);
@@ -305,10 +306,24 @@ function App() {
     };
 
     // Fetch Real User Running Data
-    const fetchRunningCenterData = async () => {
+    // Fetching runners data from backend (latest runners across globe or within bounds)
+    const fetchRunningCenterData = async (bounds = null) => {
         if (!user) return;
+
         try {
-            const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/running-center/latest`, {
+            // Check if bounds are provided (SW, NE lat/lng)
+            let url = `${import.meta.env.VITE_API_URL}/api/running/running-center/latest`;
+            if (bounds && bounds.sw && bounds.ne) {
+                const params = new URLSearchParams({
+                    swLat: bounds.sw.lat,
+                    swLng: bounds.sw.lng,
+                    neLat: bounds.ne.lat,
+                    neLng: bounds.ne.lng
+                });
+                url = `${import.meta.env.VITE_API_URL}/api/running/running-center/bounds?${params.toString()}`;
+            }
+
+            const response = await api.request(url, {
                 headers: {
                     'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
                 }
@@ -316,7 +331,7 @@ function App() {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('📍 Running Center Data:', data);
+                console.log(`📍 Running Center Data (${bounds ? 'Bounds' : 'Global'}):`, data.length, 'runners');
 
                 // Transform backend data to runner format
                 const transformedRunners = data.map((session, index) => {
@@ -351,14 +366,6 @@ function App() {
                         userId: session.userId
                     };
 
-                    console.log(`🏃 Runner ${index}:`, {
-                        nickname: runner.nickname,
-                        userId: runner.userId,
-                        grade: runner.grade,
-                        hasRoute: route.length > 0,
-                        position: runner.position
-                    });
-
                     return runner;
                 });
 
@@ -379,20 +386,27 @@ function App() {
     // Initialize and periodically refresh running center data
     useEffect(() => {
         if (user) {
-            fetchRunningCenterData();
+            // Initial fetch - try to use currentBounds if already set
+            fetchRunningCenterData(currentBounds);
 
-            // Refresh every 30 seconds
+            // Refresh every 30 seconds with current bounds
             const interval = setInterval(() => {
-                fetchRunningCenterData();
+                fetchRunningCenterData(currentBounds);
             }, 30000);
 
             return () => clearInterval(interval);
         }
-    }, [user]);
+    }, [user, currentBounds]);
 
     const handleRefresh = () => {
-        fetchRunningCenterData();
+        fetchRunningCenterData(currentBounds);
         setSelectedRunner(null);
+    };
+
+    const handleBoundsChange = (newBounds) => {
+        console.log('🗺️ Map Bounds Changed:', newBounds);
+        setCurrentBounds(newBounds);
+        // fetchRunningCenterData(newBounds); // useEffect will trigger it
     };
 
     const handleRunnerClick = (runner) => {
@@ -700,6 +714,7 @@ function App() {
                                         onStartToggle={handleStartToggle}
                                         onToggleLabels={handleToggleLabels}
                                         onClosePanel={handleClosePanel}
+                                        onBoundsChange={handleBoundsChange}
                                     />
                                 } />
 

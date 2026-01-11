@@ -129,6 +129,8 @@ function RunningScreen({ onStop, sessionId, user }) {
                 totalAscent: data.totalAscent,
                 totalDescent: data.totalDescent,
                 route: JSON.stringify(data.route),
+                lastLatitude: data.currentPosition?.lat,
+                lastLongitude: data.currentPosition?.lng,
                 wateringSegments: JSON.stringify(data.wateringSegments),
                 splits: JSON.stringify(data.splits),
                 isComplete: isFinal

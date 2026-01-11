@@ -21,7 +21,8 @@ function MapView({
     onRunnerClick,
     onRefresh,
     onStartToggle,
-    showLabels
+    showLabels,
+    onBoundsChange
 }) {
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
@@ -40,6 +41,20 @@ function MapView({
         setMap(null);
     }, []);
 
+    const onIdle = useCallback(() => {
+        if (map && onBoundsChange) {
+            const bounds = map.getBounds();
+            if (bounds) {
+                const sw = bounds.getSouthWest();
+                const ne = bounds.getNorthEast();
+                onBoundsChange({
+                    sw: { lat: sw.lat(), lng: sw.lng() },
+                    ne: { lat: ne.lat(), lng: ne.lng() }
+                });
+            }
+        }
+    }, [map, onBoundsChange]);
+
     // Define mapCenter, assuming it should be SEOUL_CENTER based on original code
     // If mapCenter is meant to be dynamic, it would need to be passed as a prop or derived.
     // For now, keeping it consistent with the original center value.
@@ -55,6 +70,7 @@ function MapView({
                 zoom={14}
                 onLoad={onLoad}
                 onUnmount={onUnmount}
+                onIdle={onIdle}
                 options={{
                     ...(getInteractiveMapOptions() || {}),
                     mapId: getMapId()

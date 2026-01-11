@@ -219,6 +219,8 @@ function FollowCourseRunningScreen({ course, onStop, user, onClose }) {
                 totalAscent: data.totalAscent,
                 totalDescent: data.totalDescent,
                 route: JSON.stringify(data.route),
+                lastLatitude: data.currentPosition?.lat,
+                lastLongitude: data.currentPosition?.lng,
                 splits: JSON.stringify(data.splits),
                 isComplete: isFinal,
                 courseId: course.id,
