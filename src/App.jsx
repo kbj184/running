@@ -392,36 +392,46 @@ function App() {
 
     // 도전하기 핸들러
     const handleStartCourseChallenge = async (record) => {
-        console.log('🏃 코스 재도전 시작:', record);
+        console.log('🏃 코스 재도전 시작 (원본 데이터):', record);
+
+        // 코스 ID 추출 (record.courseId가 우선, 없으면 record.id 사용 - 코스 자체일 경우 대비)
+        const targetCourseId = record.courseId || record.id;
+        console.log('🎯 타겟 코스 ID:', targetCourseId);
 
         // 기본값: 현재 기록의 데이터 사용 (백업용)
         let courseData = {
-            id: record.courseId,
-            name: record.title || `코스 재도전 - ${new Date(record.timestamp || record.createdAt).toLocaleDateString()}`,
+            id: targetCourseId,
+            courseId: targetCourseId, // 필드명 혼선 방지 위해 둘 다 설정
+            name: record.title || record.name || `코스 재도전 - ${new Date(record.timestamp || record.createdAt).toLocaleDateString()}`,
             routeData: record.route,
             distance: record.distance,
             courseType: 'RETRY'
         };
 
-        // 만약 courseId가 있다면 서버에서 원본 코스 정보를 가져옴 (크루 코스 따라하기와 동일한 로직)
-        if (record.courseId) {
+        // 만약 targetCourseId가 있다면 서버에서 원본 코스 정보를 가져옴 (크루 코스 따라하기와 동일한 로직)
+        if (targetCourseId) {
             try {
-                const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/course/${record.courseId}`);
+                const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/course/${targetCourseId}`);
                 if (response.ok) {
                     const originalCourse = await response.json();
                     console.log('📖 원본 코스 정보 로드 성공:', originalCourse);
                     courseData = {
                         ...courseData,
+                        id: originalCourse.id || courseData.id,
+                        courseId: originalCourse.id || courseData.courseId,
                         name: originalCourse.title || originalCourse.name || courseData.name,
                         routeData: originalCourse.routeData || courseData.routeData,
                         distance: originalCourse.distance || courseData.distance
                     };
+                } else {
+                    console.warn(`⚠️ 코스 정보 조회 실패 (${response.status}). 기존 데이터를 사용합니다.`);
                 }
             } catch (err) {
                 console.warn('⚠️ 원본 코스를 불러올 수 없어 현재 기록 데이터를 유지합니다:', err);
             }
         }
 
+        console.log('🚀 최종 설정된 courseData:', courseData);
         setCourseToFollow(courseData);
         setScreenMode('follow_course'); // 카운트다운 없이 즉시 위치 조절 화면으로 진입
         setShowRecordDetailModal(false);
