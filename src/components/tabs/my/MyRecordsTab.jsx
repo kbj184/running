@@ -12,9 +12,12 @@ function MyRecordsTab({ user, onRecordClick }) {
     const [records, setRecords] = useState([]);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(null);
-    const [selectedPeriod, setSelectedPeriod] = useState({ type: 'month', year: new Date().getFullYear(), month: new Date().getMonth() + 1 }); // 월 선택기용
+    const [selectedPeriod, setSelectedPeriod] = useState({ type: 'month', year: new Date().getFullYear(), month: new Date().getMonth() + 1 });
     const [loading, setLoading] = useState(true);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [activeSubTab, setActiveSubTab] = useState('recent'); // recent, cumulative, monthly, weekly, daily
+    const [showAllRecords, setShowAllRecords] = useState(false);
+    const [displayCount, setDisplayCount] = useState(10);
 
     useEffect(() => {
         if (user && user.id) {
@@ -65,10 +68,10 @@ function MyRecordsTab({ user, onRecordClick }) {
 
                 // 마지막 런닝 날짜 자동 선택
                 if (sessions.length > 0 && !selectedDate) {
-                    const latestRecord = sessions[0]; // 이미 최신순으로 정렬되어 있음
+                    const latestRecord = sessions[0];
                     const latestDate = new Date(latestRecord.timestamp);
                     setSelectedDate(latestDate);
-                    setCurrentDate(latestDate); // 달력도 해당 월로 이동
+                    setCurrentDate(latestDate);
                 }
             }
         } catch (err) {
@@ -76,6 +79,11 @@ function MyRecordsTab({ user, onRecordClick }) {
         } finally {
             setLoading(false);
         }
+    };
+
+    // 무한 스크롤 핸들러
+    const handleLoadMore = () => {
+        setDisplayCount(prev => prev + 10);
     };
 
     // 총 데이터 통계
@@ -100,7 +108,6 @@ function MyRecordsTab({ user, onRecordClick }) {
     // 선택된 기간 통계 (월 또는 년)
     const periodStats = useMemo(() => {
         if (selectedPeriod.type === 'year') {
-            // 전년도 통계
             const yearRecords = records.filter(r => {
                 const date = new Date(r.timestamp);
                 return date.getFullYear() === selectedPeriod.year;
@@ -122,7 +129,6 @@ function MyRecordsTab({ user, onRecordClick }) {
                 avgPace
             };
         } else {
-            // 월별 통계
             const monthRecords = records.filter(r => {
                 const date = new Date(r.timestamp);
                 return date.getFullYear() === selectedPeriod.year && date.getMonth() + 1 === selectedPeriod.month;
@@ -182,7 +188,6 @@ function MyRecordsTab({ user, onRecordClick }) {
         for (let month = 12; month >= 1; month--) {
             if (month === 12) {
                 options.push({ type: 'month', year: currentYear - 1, month: 12, label: '12월' });
-                // 1월 1일 이후면 년도 표시
                 if (currentMonth >= 1) {
                     options.push({ type: 'year', year: currentYear - 1, label: `${currentYear - 1} 년` });
                 }
@@ -262,10 +267,109 @@ function MyRecordsTab({ user, onRecordClick }) {
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth() + 1;
 
+    // 최근 기록 10개
+    const recentRecords = records.slice(0, showAllRecords ? displayCount : 10);
+
     return (
         <div style={{ width: '100%', paddingBottom: '80px' }}>
-            {/* 총 통계 */}
-            {totalStats && (
+            {/* 서브탭 네비게이션 */}
+            <div style={{
+                display: 'flex',
+                gap: '8px',
+                padding: '12px 0',
+                overflowX: 'auto',
+                whiteSpace: 'nowrap',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+            }}>
+                {[
+                    { id: 'recent', label: '최근 활동' },
+                    { id: 'cumulative', label: '누적 활동' },
+                    { id: 'monthly', label: '월간 활동' },
+                    { id: 'weekly', label: '주간 활동' },
+                    { id: 'daily', label: '일별 활동' }
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => {
+                            setActiveSubTab(tab.id);
+                            setShowAllRecords(false);
+                            setDisplayCount(10);
+                        }}
+                        style={{
+                            padding: '10px 20px',
+                            borderRadius: '20px',
+                            border: 'none',
+                            backgroundColor: activeSubTab === tab.id ? '#4318FF' : '#f0f0f0',
+                            color: activeSubTab === tab.id ? '#fff' : '#666',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* 최근 활동 탭 */}
+            {activeSubTab === 'recent' && (
+                <div>
+                    <RecentRecords
+                        user={user}
+                        onRecordClick={onRecordClick}
+                        onRefresh={handleRefresh}
+                        limit={showAllRecords ? displayCount : 10}
+                        showAll={true}
+                        hideTitle={false}
+                    />
+                    {records.length > 10 && !showAllRecords && (
+                        <button
+                            onClick={() => setShowAllRecords(true)}
+                            style={{
+                                width: '100%',
+                                padding: '16px',
+                                marginTop: '16px',
+                                backgroundColor: '#fff',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '12px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#4318FF',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            더보기
+                        </button>
+                    )}
+                    {showAllRecords && displayCount < records.length && (
+                        <button
+                            onClick={handleLoadMore}
+                            style={{
+                                width: '100%',
+                                padding: '16px',
+                                marginTop: '16px',
+                                backgroundColor: '#fff',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '12px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#4318FF',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            더 불러오기 ({displayCount} / {records.length})
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {/* 누적 활동 탭 */}
+            {activeSubTab === 'cumulative' && totalStats && (
                 <div style={{
                     backgroundColor: '#fff',
                     borderRadius: '16px',
@@ -296,198 +400,224 @@ function MyRecordsTab({ user, onRecordClick }) {
                 </div>
             )}
 
-            {/* 월 선택기 */}
-            <div style={{
-                overflowX: 'auto',
-                whiteSpace: 'nowrap',
-                padding: '12px 0',
-                margin: '12px 0',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none'
-            }}>
-                <div style={{ display: 'inline-flex', gap: '8px', padding: '0 16px' }}>
-                    {monthOptions.map((option, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setSelectedPeriod(option)}
-                            style={{
-                                padding: '8px 16px',
-                                borderRadius: '20px',
-                                border: 'none',
-                                backgroundColor: selectedPeriod.type === option.type &&
-                                    selectedPeriod.year === option.year &&
-                                    (option.type === 'year' || selectedPeriod.month === option.month)
-                                    ? '#4318FF' : '#f0f0f0',
-                                color: selectedPeriod.type === option.type &&
-                                    selectedPeriod.year === option.year &&
-                                    (option.type === 'year' || selectedPeriod.month === option.month)
-                                    ? '#fff' : '#666',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                whiteSpace: 'nowrap'
-                            }}
-                        >
-                            {option.label}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* 월별/년별 통계 */}
-            {periodStats && (
-                <div style={{
-                    backgroundColor: '#fff',
-                    borderRadius: '16px',
-                    padding: '16px',
-                    margin: '12px 0',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                    border: '1px solid #f0f0f0'
-                }}>
-                    <h3 style={{
-                        margin: '0 0 16px 0',
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        color: '#1a1a1a'
-                    }}>
-                        {selectedPeriod.type === 'year'
-                            ? `${selectedPeriod.year}년 통계`
-                            : `${selectedPeriod.month}월 통계`}
-                    </h3>
+            {/* 월간 활동 탭 */}
+            {activeSubTab === 'monthly' && (
+                <div>
+                    {/* 월 선택기 */}
                     <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(5, 1fr)',
-                        gap: '8px'
+                        overflowX: 'auto',
+                        whiteSpace: 'nowrap',
+                        padding: '12px 0',
+                        margin: '12px 0',
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none'
                     }}>
-                        <StatItem label="거리" value={formatDistanceUtil(periodStats.totalDistance, unit)} />
-                        <StatItem label="시간" value={formatTime(periodStats.totalDuration)} />
-                        <StatItem label="페이스" value={formatPaceCustom(periodStats.avgPace * 60)} />
-                        <StatItem label="일수" value={`${periodStats.runningDays}일`} />
-                        <StatItem label="칼로리" value={`${periodStats.totalCalories.toLocaleString()}`} />
+                        <div style={{ display: 'inline-flex', gap: '8px', padding: '0 16px' }}>
+                            {monthOptions.map((option, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setSelectedPeriod(option)}
+                                    style={{
+                                        padding: '8px 16px',
+                                        borderRadius: '20px',
+                                        border: 'none',
+                                        backgroundColor: selectedPeriod.type === option.type &&
+                                            selectedPeriod.year === option.year &&
+                                            (option.type === 'year' || selectedPeriod.month === option.month)
+                                            ? '#4318FF' : '#f0f0f0',
+                                        color: selectedPeriod.type === option.type &&
+                                            selectedPeriod.year === option.year &&
+                                            (option.type === 'year' || selectedPeriod.month === option.month)
+                                            ? '#fff' : '#666',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
+
+                    {/* 월별/년별 통계 */}
+                    {periodStats && (
+                        <div style={{
+                            backgroundColor: '#fff',
+                            borderRadius: '16px',
+                            padding: '16px',
+                            margin: '12px 0',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                            border: '1px solid #f0f0f0'
+                        }}>
+                            <h3 style={{
+                                margin: '0 0 16px 0',
+                                fontSize: '16px',
+                                fontWeight: '700',
+                                color: '#1a1a1a'
+                            }}>
+                                {selectedPeriod.type === 'year'
+                                    ? `${selectedPeriod.year}년 통계`
+                                    : `${selectedPeriod.month}월 통계`}
+                            </h3>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(5, 1fr)',
+                                gap: '8px'
+                            }}>
+                                <StatItem label="거리" value={formatDistanceUtil(periodStats.totalDistance, unit)} />
+                                <StatItem label="시간" value={formatTime(periodStats.totalDuration)} />
+                                <StatItem label="페이스" value={formatPaceCustom(periodStats.avgPace * 60)} />
+                                <StatItem label="일수" value={`${periodStats.runningDays}일`} />
+                                <StatItem label="칼로리" value={`${periodStats.totalCalories.toLocaleString()}`} />
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
-            {/* 달력 */}
-            <div style={{
-                backgroundColor: '#fff',
-                borderRadius: '16px',
-                padding: '16px',
-                margin: '12px 0',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                border: '1px solid #f0f0f0'
-            }}>
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '16px'
-                }}>
-                    <button onClick={handlePrevMonth} style={monthNavButton}>←</button>
-                    <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
-                        {currentYear}년 {currentMonth}월
-                    </div>
-                    <button onClick={handleNextMonth} style={monthNavButton}>→</button>
-                </div>
-
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(7, 1fr)',
-                    gap: '4px',
-                    marginBottom: '8px'
-                }}>
-                    {['일', '월', '화', '수', '목', '금', '토'].map(day => (
-                        <div key={day} style={{
-                            textAlign: 'center',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            color: '#999',
-                            padding: '8px 0'
-                        }}>
-                            {day}
-                        </div>
-                    ))}
-                </div>
-
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(7, 1fr)',
-                    gap: '4px'
-                }}>
-                    {calendarDays.map((dayData, idx) => (
-                        <div
-                            key={idx}
-                            onClick={() => handleDateClick(dayData)}
-                            style={{
-                                aspectRatio: '1',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '14px',
-                                fontWeight: dayData?.hasRecord ? '700' : '400',
-                                color: dayData?.hasRecord ? '#fff' : '#666',
-                                backgroundColor: dayData?.hasRecord ? '#4318FF' : 'transparent',
-                                borderRadius: '8px',
-                                cursor: dayData?.hasRecord ? 'pointer' : 'default',
-                                transition: 'all 0.2s'
-                            }}
-                            onMouseEnter={(e) => {
-                                if (dayData?.hasRecord) {
-                                    e.currentTarget.style.transform = 'scale(1.1)';
-                                }
-                            }}
-                            onMouseLeave={(e) => {
-                                if (dayData?.hasRecord) {
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                }
-                            }}
-                        >
-                            {dayData?.day}
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* 일별 통계 */}
-            {dayStats && selectedDate && (
+            {/* 주간 활동 탭 (미구현) */}
+            {activeSubTab === 'weekly' && (
                 <div style={{
                     backgroundColor: '#fff',
                     borderRadius: '16px',
-                    padding: '16px',
+                    padding: '40px',
                     margin: '12px 0',
+                    textAlign: 'center',
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
                     border: '1px solid #f0f0f0'
                 }}>
-                    <h3 style={{
-                        margin: '0 0 16px 0',
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        color: '#1a1a1a'
-                    }}>
-                        일별 통계 - {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일
-                    </h3>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚧</div>
+                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#666' }}>준비 중입니다</div>
+                </div>
+            )}
+
+            {/* 일별 활동 탭 */}
+            {activeSubTab === 'daily' && (
+                <div>
+                    {/* 달력 */}
                     <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(5, 1fr)',
-                        gap: '8px',
-                        marginBottom: '16px'
+                        backgroundColor: '#fff',
+                        borderRadius: '16px',
+                        padding: '16px',
+                        margin: '12px 0',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                        border: '1px solid #f0f0f0'
                     }}>
-                        <StatItem label="거리" value={formatDistanceUtil(dayStats.totalDistance, unit)} />
-                        <StatItem label="시간" value={formatTime(dayStats.totalDuration)} />
-                        <StatItem label="페이스" value={formatPaceCustom(dayStats.avgPace * 60)} />
-                        <StatItem label="횟수" value={`${dayStats.runCount}회`} />
-                        <StatItem label="칼로리" value={`${dayStats.totalCalories.toLocaleString()}`} />
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '16px'
+                        }}>
+                            <button onClick={handlePrevMonth} style={monthNavButton}>←</button>
+                            <div style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>
+                                {currentYear}년 {currentMonth}월
+                            </div>
+                            <button onClick={handleNextMonth} style={monthNavButton}>→</button>
+                        </div>
+
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(7, 1fr)',
+                            gap: '4px',
+                            marginBottom: '8px'
+                        }}>
+                            {['일', '월', '화', '수', '목', '금', '토'].map(day => (
+                                <div key={day} style={{
+                                    textAlign: 'center',
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    color: '#999',
+                                    padding: '8px 0'
+                                }}>
+                                    {day}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(7, 1fr)',
+                            gap: '4px'
+                        }}>
+                            {calendarDays.map((dayData, idx) => (
+                                <div
+                                    key={idx}
+                                    onClick={() => handleDateClick(dayData)}
+                                    style={{
+                                        aspectRatio: '1',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '14px',
+                                        fontWeight: dayData?.hasRecord ? '700' : '400',
+                                        color: dayData?.hasRecord ? '#fff' : '#666',
+                                        backgroundColor: dayData?.hasRecord ? '#4318FF' : 'transparent',
+                                        borderRadius: '8px',
+                                        cursor: dayData?.hasRecord ? 'pointer' : 'default',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (dayData?.hasRecord) {
+                                            e.currentTarget.style.transform = 'scale(1.1)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (dayData?.hasRecord) {
+                                            e.currentTarget.style.transform = 'scale(1)';
+                                        }
+                                    }}
+                                >
+                                    {dayData?.day}
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* 해당 날짜의 기록 */}
-                    <RecentRecords
-                        user={user}
-                        onRecordClick={onRecordClick}
-                        onRefresh={handleRefresh}
-                        selectedDate={selectedDate}
-                        hideTitle={true}
-                    />
+                    {/* 일별 통계 */}
+                    {dayStats && selectedDate && (
+                        <div style={{
+                            backgroundColor: '#fff',
+                            borderRadius: '16px',
+                            padding: '16px',
+                            margin: '12px 0',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                            border: '1px solid #f0f0f0'
+                        }}>
+                            <h3 style={{
+                                margin: '0 0 16px 0',
+                                fontSize: '16px',
+                                fontWeight: '700',
+                                color: '#1a1a1a'
+                            }}>
+                                일별 통계 - {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일
+                            </h3>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(5, 1fr)',
+                                gap: '8px',
+                                marginBottom: '16px'
+                            }}>
+                                <StatItem label="거리" value={formatDistanceUtil(dayStats.totalDistance, unit)} />
+                                <StatItem label="시간" value={formatTime(dayStats.totalDuration)} />
+                                <StatItem label="페이스" value={formatPaceCustom(dayStats.avgPace * 60)} />
+                                <StatItem label="횟수" value={`${dayStats.runCount}회`} />
+                                <StatItem label="칼로리" value={`${dayStats.totalCalories.toLocaleString()}`} />
+                            </div>
+
+                            {/* 해당 날짜의 기록 */}
+                            <RecentRecords
+                                user={user}
+                                onRecordClick={onRecordClick}
+                                onRefresh={handleRefresh}
+                                selectedDate={selectedDate}
+                                hideTitle={true}
+                            />
+                        </div>
+                    )}
                 </div>
             )}
         </div>

@@ -74,7 +74,7 @@ function RouteThumbnail({ route, thumbnail }) {
     );
 }
 
-function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle = false, showAll = false, fetchUrl, filter }) {
+function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle = false, showAll = false, fetchUrl, filter, limit }) {
     const { t } = useTranslation();
     const { unit } = useUnit();
     const [records, setRecords] = useState([]);
@@ -191,12 +191,17 @@ function RecentRecords({ onRefresh, onRecordClick, user, selectedDate, hideTitle
             filtered = filtered.filter(filter);
         }
 
+        // limit 적용
+        if (limit && limit > 0) {
+            filtered = filtered.slice(0, limit);
+        }
+
         if (showAll || selectedDate) {
             setDisplayedRecords(filtered);
         } else {
             setDisplayedRecords([]); // 날짜 미선택 시 표시하지 않음
         }
-    }, [records, selectedDate, showAll, filter]);
+    }, [records, selectedDate, showAll, filter, limit]);
 
     if (records.length === 0) {
         return (
