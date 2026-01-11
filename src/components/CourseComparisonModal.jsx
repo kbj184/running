@@ -8,7 +8,7 @@ import { useUnit } from '../contexts/UnitContext';
 import { LIBRARIES, getInteractiveMapOptions, getMapId } from '../utils/mapConfig';
 import './result-screen.css';
 
-function CourseComparisonModal({ record, user, onClose }) {
+function CourseComparisonModal({ record, user, onClose, onStartCourseChallenge }) {
     const { t } = useTranslation();
     const { unit } = useUnit();
     const [attempts, setAttempts] = useState([]);
@@ -207,7 +207,16 @@ function CourseComparisonModal({ record, user, onClose }) {
             </div>
 
             <div className="result-footer-actions">
-                <button className="result-btn" style={{ backgroundColor: '#f1f5f9', color: '#64748b', flex: 1 }} onClick={onClose}>
+                {onStartCourseChallenge && (
+                    <button
+                        className="result-btn result-btn-save"
+                        style={{ backgroundColor: '#7c3aed' }}
+                        onClick={() => onStartCourseChallenge(record)}
+                    >
+                        <span>🏃</span> 코스 재도전하기
+                    </button>
+                )}
+                <button className="result-btn" style={{ backgroundColor: '#f1f5f9', color: '#64748b', flex: onStartCourseChallenge ? 0 : 1 }} onClick={onClose}>
                     닫기
                 </button>
             </div>

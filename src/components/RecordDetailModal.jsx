@@ -156,8 +156,6 @@ function RecordDetailModal({ record, onClose, onStartCourseChallenge }) {
         libraries: LIBRARIES
     });
 
-    const isCourseRecord = record.courseId != null;
-
     // 데이터 파싱
     const parsedRoute = useMemo(() => {
         if (!record?.route) return [];
@@ -165,6 +163,8 @@ function RecordDetailModal({ record, onClose, onStartCourseChallenge }) {
             return typeof record.route === 'string' ? JSON.parse(record.route) : record.route;
         } catch (e) { return []; }
     }, [record?.route]);
+
+    const isCourseRecord = parsedRoute && parsedRoute.length > 0;
 
     const parsedSplits = useMemo(() => {
         if (!record?.splits) return [];
