@@ -29,55 +29,76 @@ function CourseComparisonModal({ record, user, onClose, onStartCourseChallenge }
     }, [record]);
 
     const fetchAttempts = async () => {
+        if (!record || !record.courseId) {
+            console.warn('⚠️ Comparison record has no courseId:', record);
+            setLoading(false);
+            return;
+        }
+
+        console.log('🔄 Fetching attempts and original course for id:', record.courseId);
         setLoading(true);
         try {
+            const authHeader = {
+                'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
+            };
+
             // 1. 모든 시도 기록 가져오기
             const attemptsResponse = await api.request(`${import.meta.env.VITE_API_URL}/api/running/course/${record.courseId}/attempts?userId=${user.id}`, {
                 method: 'GET',
-                headers: {
-                    'Authorization': user.accessToken.startsWith('Bearer ') ? user.accessToken : `Bearer ${user.accessToken}`
-                }
+                headers: authHeader
             });
 
             // 2. 원본 코스 정보 가져오기
-            const courseResponse = await api.request(`${import.meta.env.VITE_API_URL}/api/running/course/${record.courseId}`);
+            const courseResponse = await api.request(`${import.meta.env.VITE_API_URL}/api/running/course/${record.courseId}`, {
+                method: 'GET',
+                headers: authHeader
+            });
 
             let parsedAttempts = [];
             let originalCourse = null;
 
             if (attemptsResponse.ok) {
                 const data = await attemptsResponse.json();
+                console.log('📋 Attempts meta data:', data.length);
                 parsedAttempts = data.map(item => ({
                     ...item,
                     route: typeof item.route === 'string' ? JSON.parse(item.route) : item.route,
                     splits: typeof item.splits === 'string' ? JSON.parse(item.splits) : item.splits
                 }));
+            } else {
+                console.error('❌ Failed to fetch attempts:', attemptsResponse.status);
             }
 
             if (courseResponse.ok) {
                 const courseData = await courseResponse.json();
+                console.log('📖 Original course data loaded:', courseData);
                 originalCourse = {
                     sessionId: 'original',
                     courseId: courseData.id,
                     title: '원본 코스',
                     courseType: 'OFFICIAL',
                     distance: courseData.distance,
-                    duration: 0, // 원본은 기준 시간 정보가 없을 수 있음
+                    duration: 0,
                     pace: 0,
                     totalAscent: 0,
                     route: typeof courseData.routeData === 'string' ? JSON.parse(courseData.routeData) : courseData.routeData,
                     createdAt: courseData.createdAt,
                     isOriginal: true
                 };
+            } else {
+                console.error('❌ Failed to fetch original course:', courseResponse.status);
             }
 
             // 원본 코스를 목록 최상단에 추가
             const finalAttempts = originalCourse ? [originalCourse, ...parsedAttempts] : parsedAttempts;
+            console.log('🏁 Final attempts list for comparison:', finalAttempts.map(a => a.sessionId));
             setAttempts(finalAttempts);
 
             // 기본 선택: 현재 기록 + 원본 코스 (없으면 첫 번째 기록)
             const currentId = record.sessionId;
             const targetId = originalCourse ? 'original' : (finalAttempts[1]?.sessionId || finalAttempts[0]?.sessionId);
+
+            console.log('🎯 Selection IDs:', { currentId, targetId });
 
             if (currentId && targetId) {
                 setSelectedAttemptIds(currentId === targetId ? [currentId] : [targetId, currentId]);
