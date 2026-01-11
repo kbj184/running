@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { LoadScript } from '@react-google-maps/api';
 import './running-styles.css';
 import './main-layout.css';
@@ -363,7 +363,7 @@ function App() {
 
     // Initialize and periodically refresh running center data
     useEffect(() => {
-        if (user && activeTab === 'running') {
+        if (user) {
             fetchRunningCenterData();
 
             // Refresh every 30 seconds
@@ -373,7 +373,7 @@ function App() {
 
             return () => clearInterval(interval);
         }
-    }, [user, activeTab]);
+    }, [user]);
 
     const handleRefresh = () => {
         fetchRunningCenterData();
