@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatTime } from '../../../utils/gps';
 import { formatDistance as formatDistanceUtil, formatPace } from '../../../utils/unitConverter';
@@ -18,6 +18,7 @@ function MyRecordsTab({ user, onRecordClick }) {
     const [activeSubTab, setActiveSubTab] = useState('recent'); // recent, cumulative, monthly, weekly, daily
     const [showAllRecords, setShowAllRecords] = useState(false);
     const [displayCount, setDisplayCount] = useState(10);
+    const loadMoreRef = useRef(null);
 
     useEffect(() => {
         if (user && user.id) {
@@ -85,6 +86,30 @@ function MyRecordsTab({ user, onRecordClick }) {
     const handleLoadMore = () => {
         setDisplayCount(prev => prev + 10);
     };
+
+    // Intersection Observer for infinite scroll
+    useEffect(() => {
+        if (!showAllRecords) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && displayCount < records.length) {
+                    handleLoadMore();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (loadMoreRef.current) {
+            observer.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (loadMoreRef.current) {
+                observer.unobserve(loadMoreRef.current);
+            }
+        };
+    }, [showAllRecords, displayCount, records.length]);
 
     // 총 데이터 통계
     const totalStats = useMemo(() => {
@@ -325,9 +350,13 @@ function MyRecordsTab({ user, onRecordClick }) {
                         showAll={true}
                         hideTitle={false}
                     />
+                    {/* 더보기 버튼 (처음 10개만 표시할 때) */}
                     {records.length > 10 && !showAllRecords && (
                         <button
-                            onClick={() => setShowAllRecords(true)}
+                            onClick={() => {
+                                setShowAllRecords(true);
+                                setDisplayCount(20); // 더보기 클릭 시 20개로 증가
+                            }}
                             style={{
                                 width: '100%',
                                 padding: '16px',
@@ -345,25 +374,22 @@ function MyRecordsTab({ user, onRecordClick }) {
                             더보기
                         </button>
                     )}
+                    {/* 무한 스크롤 감지용 div */}
                     {showAllRecords && displayCount < records.length && (
-                        <button
-                            onClick={handleLoadMore}
+                        <div
+                            ref={loadMoreRef}
                             style={{
-                                width: '100%',
-                                padding: '16px',
-                                marginTop: '16px',
-                                backgroundColor: '#fff',
-                                border: '1px solid #e0e0e0',
-                                borderRadius: '12px',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                color: '#4318FF',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
+                                height: '20px',
+                                margin: '16px 0',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                color: '#999',
+                                fontSize: '14px'
                             }}
                         >
-                            더 불러오기 ({displayCount} / {records.length})
-                        </button>
+                            로딩 중...
+                        </div>
                     )}
                 </div>
             )}
