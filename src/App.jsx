@@ -383,20 +383,14 @@ function App() {
         }
     };
 
-    // 1. 초기 데이터 보정 및 전체 데이터 로드 (최초 1회)
-    useEffect(() => {
-        if (user) {
-            console.log('🔄 Initial global fetch for data migration...');
-            fetchRunningCenterData(null);
-        }
-    }, [user]);
-
-    // 2. 영역 변경 및 주기적 갱신 (Bounds 기반)
+    // Initialize and periodically refresh running center data
     useEffect(() => {
         if (!user || !currentBounds) return;
 
+        // 즉시 한 번 호출 (또는 bounds 변경 시마다)
         fetchRunningCenterData(currentBounds);
 
+        // 30초마다 자동 갱신
         const interval = setInterval(() => {
             fetchRunningCenterData(currentBounds);
         }, 30000);
