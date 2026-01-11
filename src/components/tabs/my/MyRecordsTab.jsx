@@ -20,6 +20,19 @@ function MyRecordsTab({ user, onRecordClick }) {
     const [displayCount, setDisplayCount] = useState(10);
     const loadMoreRef = useRef(null);
 
+    // 각 탭별 무한 스크롤 상태
+    const [cumulativeShowAll, setCumulativeShowAll] = useState(false);
+    const [cumulativeDisplayCount, setCumulativeDisplayCount] = useState(10);
+    const cumulativeLoadMoreRef = useRef(null);
+
+    const [monthlyShowAll, setMonthlyShowAll] = useState(false);
+    const [monthlyDisplayCount, setMonthlyDisplayCount] = useState(10);
+    const monthlyLoadMoreRef = useRef(null);
+
+    const [weeklyShowAll, setWeeklyShowAll] = useState(false);
+    const [weeklyDisplayCount, setWeeklyDisplayCount] = useState(10);
+    const weeklyLoadMoreRef = useRef(null);
+
     useEffect(() => {
         if (user && user.id) {
             loadRecords();
@@ -111,6 +124,78 @@ function MyRecordsTab({ user, onRecordClick }) {
         };
     }, [showAllRecords, displayCount, records.length]);
 
+    // Intersection Observer for cumulative tab
+    useEffect(() => {
+        if (!cumulativeShowAll || activeSubTab !== 'cumulative') return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && cumulativeDisplayCount < yearlyStats.length) {
+                    setCumulativeDisplayCount(prev => prev + 10);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (cumulativeLoadMoreRef.current) {
+            observer.observe(cumulativeLoadMoreRef.current);
+        }
+
+        return () => {
+            if (cumulativeLoadMoreRef.current) {
+                observer.unobserve(cumulativeLoadMoreRef.current);
+            }
+        };
+    }, [cumulativeShowAll, cumulativeDisplayCount, yearlyStats.length, activeSubTab]);
+
+    // Intersection Observer for monthly tab
+    useEffect(() => {
+        if (!monthlyShowAll || activeSubTab !== 'monthly') return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && monthlyDisplayCount < monthlyStats.length) {
+                    setMonthlyDisplayCount(prev => prev + 10);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (monthlyLoadMoreRef.current) {
+            observer.observe(monthlyLoadMoreRef.current);
+        }
+
+        return () => {
+            if (monthlyLoadMoreRef.current) {
+                observer.unobserve(monthlyLoadMoreRef.current);
+            }
+        };
+    }, [monthlyShowAll, monthlyDisplayCount, monthlyStats.length, activeSubTab]);
+
+    // Intersection Observer for weekly tab
+    useEffect(() => {
+        if (!weeklyShowAll || activeSubTab !== 'weekly') return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && weeklyDisplayCount < weeklyStats.length) {
+                    setWeeklyDisplayCount(prev => prev + 10);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (weeklyLoadMoreRef.current) {
+            observer.observe(weeklyLoadMoreRef.current);
+        }
+
+        return () => {
+            if (weeklyLoadMoreRef.current) {
+                observer.unobserve(weeklyLoadMoreRef.current);
+            }
+        };
+    }, [weeklyShowAll, weeklyDisplayCount, weeklyStats.length, activeSubTab]);
+
     // 총 데이터 통계
     const totalStats = useMemo(() => {
         if (records.length === 0) return null;
@@ -201,6 +286,135 @@ function MyRecordsTab({ user, onRecordClick }) {
             avgPace
         };
     }, [records, selectedDate]);
+
+    // 연도별 통계 생성 (최근 연도가 위로)
+    const yearlyStats = useMemo(() => {
+        if (records.length === 0) return [];
+
+        const yearMap = new Map();
+
+        records.forEach(r => {
+            const year = new Date(r.timestamp).getFullYear();
+            if (!yearMap.has(year)) {
+                yearMap.set(year, []);
+            }
+            yearMap.get(year).push(r);
+        });
+
+        const yearlyData = Array.from(yearMap.entries()).map(([year, yearRecords]) => {
+            const totalDistance = yearRecords.reduce((sum, r) => sum + (r.distance || 0), 0);
+            const totalDuration = yearRecords.reduce((sum, r) => sum + (r.duration || 0), 0);
+            const totalCalories = yearRecords.reduce((sum, r) => sum + Math.floor((r.distance || 0) * 60), 0);
+            const runningDays = new Set(yearRecords.map(r => new Date(r.timestamp).toDateString())).size;
+            const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
+
+            return {
+                year,
+                totalDistance,
+                totalDuration,
+                totalCalories,
+                runningDays,
+                avgPace
+            };
+        });
+
+        // 최근 연도가 위로 (내림차순)
+        return yearlyData.sort((a, b) => b.year - a.year);
+    }, [records]);
+
+    // 월별 통계 생성 (최근 월이 위로)
+    const monthlyStats = useMemo(() => {
+        if (records.length === 0) return [];
+
+        const monthMap = new Map();
+
+        records.forEach(r => {
+            const date = new Date(r.timestamp);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const key = `${year}-${month}`;
+
+            if (!monthMap.has(key)) {
+                monthMap.set(key, { year, month, records: [] });
+            }
+            monthMap.get(key).records.push(r);
+        });
+
+        const monthlyData = Array.from(monthMap.values()).map(({ year, month, records: monthRecords }) => {
+            const totalDistance = monthRecords.reduce((sum, r) => sum + (r.distance || 0), 0);
+            const totalDuration = monthRecords.reduce((sum, r) => sum + (r.duration || 0), 0);
+            const totalCalories = monthRecords.reduce((sum, r) => sum + Math.floor((r.distance || 0) * 60), 0);
+            const runningDays = new Set(monthRecords.map(r => new Date(r.timestamp).toDateString())).size;
+            const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
+
+            return {
+                year,
+                month,
+                totalDistance,
+                totalDuration,
+                totalCalories,
+                runningDays,
+                avgPace
+            };
+        });
+
+        // 최근 월이 위로 (내림차순)
+        return monthlyData.sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;
+            return b.month - a.month;
+        });
+    }, [records]);
+
+    // 주별 통계 생성 (최근 주가 위로)
+    const weeklyStats = useMemo(() => {
+        if (records.length === 0) return [];
+
+        const weekMap = new Map();
+
+        records.forEach(r => {
+            const date = new Date(r.timestamp);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+
+            // 해당 월의 첫 날
+            const firstDayOfMonth = new Date(year, date.getMonth(), 1);
+            const dayOfMonth = date.getDate();
+            const weekOfMonth = Math.ceil((dayOfMonth + firstDayOfMonth.getDay()) / 7);
+
+            const key = `${year}-${month}-${weekOfMonth}`;
+
+            if (!weekMap.has(key)) {
+                weekMap.set(key, { year, month, week: weekOfMonth, records: [] });
+            }
+            weekMap.get(key).records.push(r);
+        });
+
+        const weeklyData = Array.from(weekMap.values()).map(({ year, month, week, records: weekRecords }) => {
+            const totalDistance = weekRecords.reduce((sum, r) => sum + (r.distance || 0), 0);
+            const totalDuration = weekRecords.reduce((sum, r) => sum + (r.duration || 0), 0);
+            const totalCalories = weekRecords.reduce((sum, r) => sum + Math.floor((r.distance || 0) * 60), 0);
+            const runningDays = new Set(weekRecords.map(r => new Date(r.timestamp).toDateString())).size;
+            const avgPace = totalDistance > 0 ? (totalDuration / 60) / totalDistance : 0;
+
+            return {
+                year,
+                month,
+                week,
+                totalDistance,
+                totalDuration,
+                totalCalories,
+                runningDays,
+                avgPace
+            };
+        });
+
+        // 최근 주가 위로 (내림차순)
+        return weeklyData.sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;
+            if (a.month !== b.month) return b.month - a.month;
+            return b.week - a.week;
+        });
+    }, [records]);
 
     // 월 선택기 옵션 생성
     const monthOptions = useMemo(() => {
@@ -395,81 +609,10 @@ function MyRecordsTab({ user, onRecordClick }) {
             )}
 
             {/* 누적 활동 탭 */}
-            {activeSubTab === 'cumulative' && totalStats && (
-                <div style={{
-                    backgroundColor: '#fff',
-                    borderRadius: '16px',
-                    padding: '16px',
-                    margin: '12px 0',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                    border: '1px solid #f0f0f0'
-                }}>
-                    <h3 style={{
-                        margin: '0 0 16px 0',
-                        fontSize: '16px',
-                        fontWeight: '700',
-                        color: '#1a1a1a'
-                    }}>
-                        총 통계
-                    </h3>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(5, 1fr)',
-                        gap: '8px'
-                    }}>
-                        <StatItem label="총 거리" value={formatDistanceUtil(totalStats.totalDistance, unit)} />
-                        <StatItem label="총 시간" value={formatTime(totalStats.totalDuration)} />
-                        <StatItem label="평균 페이스" value={formatPaceCustom(totalStats.avgPace * 60)} />
-                        <StatItem label="런닝 일수" value={`${totalStats.runningDays}일`} />
-                        <StatItem label="칼로리" value={`${totalStats.totalCalories.toLocaleString()}`} />
-                    </div>
-                </div>
-            )}
-
-            {/* 월간 활동 탭 */}
-            {activeSubTab === 'monthly' && (
+            {activeSubTab === 'cumulative' && (
                 <div>
-                    {/* 월 선택기 */}
-                    <div style={{
-                        overflowX: 'auto',
-                        whiteSpace: 'nowrap',
-                        padding: '12px 0',
-                        margin: '12px 0',
-                        scrollbarWidth: 'none',
-                        msOverflowStyle: 'none'
-                    }}>
-                        <div style={{ display: 'inline-flex', gap: '8px', padding: '0 16px' }}>
-                            {monthOptions.map((option, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => setSelectedPeriod(option)}
-                                    style={{
-                                        padding: '8px 16px',
-                                        borderRadius: '20px',
-                                        border: 'none',
-                                        backgroundColor: selectedPeriod.type === option.type &&
-                                            selectedPeriod.year === option.year &&
-                                            (option.type === 'year' || selectedPeriod.month === option.month)
-                                            ? '#4318FF' : '#f0f0f0',
-                                        color: selectedPeriod.type === option.type &&
-                                            selectedPeriod.year === option.year &&
-                                            (option.type === 'year' || selectedPeriod.month === option.month)
-                                            ? '#fff' : '#666',
-                                        fontSize: '14px',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {option.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* 월별/년별 통계 */}
-                    {periodStats && (
+                    {/* 총 누적 */}
+                    {totalStats && (
                         <div style={{
                             backgroundColor: '#fff',
                             borderRadius: '16px',
@@ -484,39 +627,265 @@ function MyRecordsTab({ user, onRecordClick }) {
                                 fontWeight: '700',
                                 color: '#1a1a1a'
                             }}>
-                                {selectedPeriod.type === 'year'
-                                    ? `${selectedPeriod.year}년 통계`
-                                    : `${selectedPeriod.month}월 통계`}
+                                총 누적
                             </h3>
                             <div style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(5, 1fr)',
                                 gap: '8px'
                             }}>
-                                <StatItem label="거리" value={formatDistanceUtil(periodStats.totalDistance, unit)} />
-                                <StatItem label="시간" value={formatTime(periodStats.totalDuration)} />
-                                <StatItem label="페이스" value={formatPaceCustom(periodStats.avgPace * 60)} />
-                                <StatItem label="일수" value={`${periodStats.runningDays}일`} />
-                                <StatItem label="칼로리" value={`${periodStats.totalCalories.toLocaleString()}`} />
+                                <StatItem label="총 거리" value={formatDistanceUtil(totalStats.totalDistance, unit)} />
+                                <StatItem label="총 시간" value={formatTime(totalStats.totalDuration)} />
+                                <StatItem label="평균 페이스" value={formatPaceCustom(totalStats.avgPace * 60)} />
+                                <StatItem label="런닝 일수" value={`${totalStats.runningDays}일`} />
+                                <StatItem label="칼로리" value={`${totalStats.totalCalories.toLocaleString()}`} />
                             </div>
+                        </div>
+                    )}
+
+                    {/* 연도별 누적 */}
+                    {yearlyStats.slice(0, cumulativeShowAll ? cumulativeDisplayCount : 10).map((yearStat) => (
+                        <div
+                            key={yearStat.year}
+                            style={{
+                                backgroundColor: '#fff',
+                                borderRadius: '16px',
+                                padding: '16px',
+                                margin: '12px 0',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                                border: '1px solid #f0f0f0'
+                            }}
+                        >
+                            <h3 style={{
+                                margin: '0 0 16px 0',
+                                fontSize: '16px',
+                                fontWeight: '700',
+                                color: '#1a1a1a'
+                            }}>
+                                {yearStat.year}년
+                            </h3>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(5, 1fr)',
+                                gap: '8px'
+                            }}>
+                                <StatItem label="거리" value={formatDistanceUtil(yearStat.totalDistance, unit)} />
+                                <StatItem label="시간" value={formatTime(yearStat.totalDuration)} />
+                                <StatItem label="페이스" value={formatPaceCustom(yearStat.avgPace * 60)} />
+                                <StatItem label="일수" value={`${yearStat.runningDays}일`} />
+                                <StatItem label="칼로리" value={`${yearStat.totalCalories.toLocaleString()}`} />
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* 더보기 버튼 */}
+                    {yearlyStats.length > 10 && !cumulativeShowAll && (
+                        <button
+                            onClick={() => {
+                                setCumulativeShowAll(true);
+                                setCumulativeDisplayCount(20);
+                            }}
+                            style={{
+                                width: '100%',
+                                padding: '16px',
+                                marginTop: '16px',
+                                backgroundColor: '#fff',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '12px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#4318FF',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            더보기
+                        </button>
+                    )}
+
+                    {/* 무한 스크롤 감지용 div */}
+                    {cumulativeShowAll && cumulativeDisplayCount < yearlyStats.length && (
+                        <div
+                            ref={cumulativeLoadMoreRef}
+                            style={{
+                                height: '20px',
+                                margin: '16px 0',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                color: '#999',
+                                fontSize: '14px'
+                            }}
+                        >
+                            로딩 중...
                         </div>
                     )}
                 </div>
             )}
 
-            {/* 주간 활동 탭 (미구현) */}
+            {/* 월간 활동 탭 */}
+            {activeSubTab === 'monthly' && (
+                <div>
+                    {/* 월별 누적 */}
+                    {monthlyStats.slice(0, monthlyShowAll ? monthlyDisplayCount : 10).map((monthStat) => (
+                        <div
+                            key={`${monthStat.year}-${monthStat.month}`}
+                            style={{
+                                backgroundColor: '#fff',
+                                borderRadius: '16px',
+                                padding: '16px',
+                                margin: '12px 0',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                                border: '1px solid #f0f0f0'
+                            }}
+                        >
+                            <h3 style={{
+                                margin: '0 0 16px 0',
+                                fontSize: '16px',
+                                fontWeight: '700',
+                                color: '#1a1a1a'
+                            }}>
+                                {monthStat.year}년 {monthStat.month}월
+                            </h3>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(5, 1fr)',
+                                gap: '8px'
+                            }}>
+                                <StatItem label="거리" value={formatDistanceUtil(monthStat.totalDistance, unit)} />
+                                <StatItem label="시간" value={formatTime(monthStat.totalDuration)} />
+                                <StatItem label="페이스" value={formatPaceCustom(monthStat.avgPace * 60)} />
+                                <StatItem label="일수" value={`${monthStat.runningDays}일`} />
+                                <StatItem label="칼로리" value={`${monthStat.totalCalories.toLocaleString()}`} />
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* 더보기 버튼 */}
+                    {monthlyStats.length > 10 && !monthlyShowAll && (
+                        <button
+                            onClick={() => {
+                                setMonthlyShowAll(true);
+                                setMonthlyDisplayCount(20);
+                            }}
+                            style={{
+                                width: '100%',
+                                padding: '16px',
+                                marginTop: '16px',
+                                backgroundColor: '#fff',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '12px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#4318FF',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            더보기
+                        </button>
+                    )}
+
+                    {/* 무한 스크롤 감지용 div */}
+                    {monthlyShowAll && monthlyDisplayCount < monthlyStats.length && (
+                        <div
+                            ref={monthlyLoadMoreRef}
+                            style={{
+                                height: '20px',
+                                margin: '16px 0',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                color: '#999',
+                                fontSize: '14px'
+                            }}
+                        >
+                            로딩 중...
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* 주간 활동 탭 */}
             {activeSubTab === 'weekly' && (
-                <div style={{
-                    backgroundColor: '#fff',
-                    borderRadius: '16px',
-                    padding: '40px',
-                    margin: '12px 0',
-                    textAlign: 'center',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                    border: '1px solid #f0f0f0'
-                }}>
-                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚧</div>
-                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#666' }}>준비 중입니다</div>
+                <div>
+                    {/* 주별 누적 */}
+                    {weeklyStats.slice(0, weeklyShowAll ? weeklyDisplayCount : 10).map((weekStat) => (
+                        <div
+                            key={`${weekStat.year}-${weekStat.month}-${weekStat.week}`}
+                            style={{
+                                backgroundColor: '#fff',
+                                borderRadius: '16px',
+                                padding: '16px',
+                                margin: '12px 0',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                                border: '1px solid #f0f0f0'
+                            }}
+                        >
+                            <h3 style={{
+                                margin: '0 0 16px 0',
+                                fontSize: '16px',
+                                fontWeight: '700',
+                                color: '#1a1a1a'
+                            }}>
+                                {weekStat.year}년 {weekStat.month}월 {weekStat.week}째주
+                            </h3>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(5, 1fr)',
+                                gap: '8px'
+                            }}>
+                                <StatItem label="거리" value={formatDistanceUtil(weekStat.totalDistance, unit)} />
+                                <StatItem label="시간" value={formatTime(weekStat.totalDuration)} />
+                                <StatItem label="페이스" value={formatPaceCustom(weekStat.avgPace * 60)} />
+                                <StatItem label="일수" value={`${weekStat.runningDays}일`} />
+                                <StatItem label="칼로리" value={`${weekStat.totalCalories.toLocaleString()}`} />
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* 더보기 버튼 */}
+                    {weeklyStats.length > 10 && !weeklyShowAll && (
+                        <button
+                            onClick={() => {
+                                setWeeklyShowAll(true);
+                                setWeeklyDisplayCount(20);
+                            }}
+                            style={{
+                                width: '100%',
+                                padding: '16px',
+                                marginTop: '16px',
+                                backgroundColor: '#fff',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '12px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#4318FF',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            더보기
+                        </button>
+                    )}
+
+                    {/* 무한 스크롤 감지용 div */}
+                    {weeklyShowAll && weeklyDisplayCount < weeklyStats.length && (
+                        <div
+                            ref={weeklyLoadMoreRef}
+                            style={{
+                                height: '20px',
+                                margin: '16px 0',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                color: '#999',
+                                fontSize: '14px'
+                            }}
+                        >
+                            로딩 중...
+                        </div>
+                    )}
                 </div>
             )}
 
