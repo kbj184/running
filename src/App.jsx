@@ -337,7 +337,7 @@ function App() {
                         ? session.grade
                         : 'BEGINNER';
 
-                    return {
+                    const runner = {
                         id: session.userId || index,
                         nickname: session.nickname || '익명',
                         position: position,
@@ -350,6 +350,16 @@ function App() {
                         profileImageUrl: session.profileImageUrl,
                         userId: session.userId
                     };
+
+                    console.log(`🏃 Runner ${index}:`, {
+                        nickname: runner.nickname,
+                        userId: runner.userId,
+                        grade: runner.grade,
+                        hasRoute: route.length > 0,
+                        position: runner.position
+                    });
+
+                    return runner;
                 });
 
                 setRunners(transformedRunners);
