@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import MapView from '../map/MapView';
-import RunnerDetailPanel from '../runner/RunnerDetailPanel';
 
 function RunningTab({
     runners,
@@ -65,12 +64,6 @@ function RunningTab({
                     </p>
                 </div>
             )}
-
-            {/* Runner Detail Panel */}
-            <RunnerDetailPanel
-                runner={selectedRunner}
-                onClose={onClosePanel}
-            />
         </div>
     );
 }

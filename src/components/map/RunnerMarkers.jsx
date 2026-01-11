@@ -52,69 +52,101 @@ function RunnerMarkers({ map, runners, selectedRunner, onRunnerClick }) {
                             alignItems: 'center',
                             transform: 'translateY(-50%)'
                         }}>
-                            {/* 유저 정보 말풍선 */}
-                            <div style={{
-                                backgroundColor: 'white',
-                                borderRadius: '12px',
-                                padding: '8px 12px',
-                                marginBottom: '8px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                                border: isSelected ? `2px solid ${gradeInfo.color}` : '1px solid rgba(0,0,0,0.1)',
-                                minWidth: '120px',
-                                position: 'relative',
-                                transition: 'all 0.3s ease',
-                                pointerEvents: 'none'
-                            }}>
-                                {/* 말풍선 꼬리 */}
+                            {/* 유저 정보 말풍선 - 선택된 경우만 표시 */}
+                            {isSelected && (
                                 <div style={{
-                                    position: 'absolute',
-                                    bottom: '-6px',
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    width: 0,
-                                    height: 0,
-                                    borderLeft: '6px solid transparent',
-                                    borderRight: '6px solid transparent',
-                                    borderTop: `6px solid ${isSelected ? gradeInfo.color : 'white'}`,
-                                }} />
-
-                                {/* 닉네임과 등급 */}
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    marginBottom: '4px'
+                                    backgroundColor: 'white',
+                                    borderRadius: '12px',
+                                    padding: '8px 12px',
+                                    marginBottom: '8px',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                                    border: `2px solid ${gradeInfo.color}`,
+                                    minWidth: '140px',
+                                    position: 'relative',
+                                    transition: 'all 0.3s ease',
+                                    pointerEvents: 'auto'
                                 }}>
-                                    <span style={{
-                                        fontSize: isSelected ? '13px' : '12px',
-                                        fontWeight: '600',
-                                        color: '#1a1a1a'
-                                    }}>
-                                        {runner.nickname}
-                                    </span>
-                                    <span style={{
-                                        fontSize: '9px',
-                                        padding: '2px 6px',
-                                        borderRadius: '8px',
-                                        backgroundColor: gradeInfo.color,
-                                        color: 'white',
-                                        fontWeight: '600'
-                                    }}>
-                                        {gradeInfo.name}
-                                    </span>
-                                </div>
+                                    {/* 닫기 버튼 */}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onRunnerClick(null);
+                                        }}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '-8px',
+                                            right: '-8px',
+                                            width: '24px',
+                                            height: '24px',
+                                            borderRadius: '50%',
+                                            backgroundColor: gradeInfo.color,
+                                            color: 'white',
+                                            border: '2px solid white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: 'pointer',
+                                            fontSize: '14px',
+                                            fontWeight: 'bold',
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                            padding: 0,
+                                            lineHeight: 1
+                                        }}
+                                    >
+                                        ✕
+                                    </button>
 
-                                {/* 러닝 정보 */}
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '8px',
-                                    fontSize: '10px',
-                                    color: '#666'
-                                }}>
-                                    <span>📏 {runner.distance}km</span>
-                                    <span>⚡ {runner.speed}km/h</span>
+                                    {/* 말풍선 꼬리 */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '-6px',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        width: 0,
+                                        height: 0,
+                                        borderLeft: '6px solid transparent',
+                                        borderRight: '6px solid transparent',
+                                        borderTop: `6px solid ${gradeInfo.color}`,
+                                    }} />
+
+                                    {/* 닉네임과 등급 */}
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        marginBottom: '6px'
+                                    }}>
+                                        <span style={{
+                                            fontSize: '14px',
+                                            fontWeight: '600',
+                                            color: '#1a1a1a'
+                                        }}>
+                                            {runner.nickname}
+                                        </span>
+                                        <span style={{
+                                            fontSize: '9px',
+                                            padding: '2px 6px',
+                                            borderRadius: '8px',
+                                            backgroundColor: gradeInfo.color,
+                                            color: 'white',
+                                            fontWeight: '600'
+                                        }}>
+                                            {gradeInfo.name}
+                                        </span>
+                                    </div>
+
+                                    {/* 러닝 정보 */}
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '8px',
+                                        fontSize: '11px',
+                                        color: '#666'
+                                    }}>
+                                        <span>📏 {runner.distance}km</span>
+                                        <span>⚡ {runner.speed}km/h</span>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* 마커 점 */}
                             <div style={{
