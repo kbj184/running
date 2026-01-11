@@ -383,19 +383,25 @@ function App() {
         }
     };
 
-    // Initialize and periodically refresh running center data
+    // 1. 초기 데이터 보정 및 전체 데이터 로드 (최초 1회)
     useEffect(() => {
         if (user) {
-            // Initial fetch - try to use currentBounds if already set
-            fetchRunningCenterData(currentBounds);
-
-            // Refresh every 30 seconds with current bounds
-            const interval = setInterval(() => {
-                fetchRunningCenterData(currentBounds);
-            }, 30000);
-
-            return () => clearInterval(interval);
+            console.log('🔄 Initial global fetch for data migration...');
+            fetchRunningCenterData(null);
         }
+    }, [user]);
+
+    // 2. 영역 변경 및 주기적 갱신 (Bounds 기반)
+    useEffect(() => {
+        if (!user || !currentBounds) return;
+
+        fetchRunningCenterData(currentBounds);
+
+        const interval = setInterval(() => {
+            fetchRunningCenterData(currentBounds);
+        }, 30000);
+
+        return () => clearInterval(interval);
     }, [user, currentBounds]);
 
     const handleRefresh = () => {
@@ -403,10 +409,22 @@ function App() {
         setSelectedRunner(null);
     };
 
+    // 지도를 조작할 때 서버 부하를 줄이기 위한 디바운싱 처리
+    const [boundsTimeout, setBoundsTimeout] = useState(null);
+
     const handleBoundsChange = (newBounds) => {
-        console.log('🗺️ Map Bounds Changed:', newBounds);
-        setCurrentBounds(newBounds);
-        // fetchRunningCenterData(newBounds); // useEffect will trigger it
+        // 이전 타이머 취소
+        if (boundsTimeout) {
+            clearTimeout(boundsTimeout);
+        }
+
+        // 500ms(0.5초) 동안 추가 움직임이 없을 때만 서버 호출
+        const timeout = setTimeout(() => {
+            console.log('🗺️ Map Bounds Fixed (Debounced):', newBounds);
+            setCurrentBounds(newBounds);
+        }, 500);
+
+        setBoundsTimeout(timeout);
     };
 
     const handleRunnerClick = (runner) => {
