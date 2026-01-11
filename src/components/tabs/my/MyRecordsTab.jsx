@@ -33,17 +33,11 @@ function MyRecordsTab({ user, onRecordClick }) {
     const [weeklyDisplayCount, setWeeklyDisplayCount] = useState(10);
     const weeklyLoadMoreRef = useRef(null);
 
-    useEffect(() => {
-        if (user && user.id) {
-            loadRecords();
-        }
-    }, [user]);
-
     const handleRefresh = useCallback(() => {
         setRefreshKey(prev => prev + 1);
     }, []);
 
-    const loadRecords = async () => {
+    const loadRecords = useCallback(async () => {
         setLoading(true);
         try {
             const response = await api.request(`${import.meta.env.VITE_API_URL}/api/running/sessions/completed?userId=${user.id}`, {
@@ -93,7 +87,13 @@ function MyRecordsTab({ user, onRecordClick }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
+
+    useEffect(() => {
+        if (user && user.id) {
+            loadRecords();
+        }
+    }, [user, loadRecords]);
 
     // 무한 스크롤 핸들러
     const handleLoadMore = () => {
