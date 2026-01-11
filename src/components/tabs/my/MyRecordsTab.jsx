@@ -87,7 +87,7 @@ function MyRecordsTab({ user, onRecordClick }) {
         } finally {
             setLoading(false);
         }
-    }, [user]);
+    }, [user, selectedDate]);
 
     useEffect(() => {
         if (user && user.id) {
